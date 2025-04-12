@@ -56,7 +56,7 @@ const GLoader: LucideIcon = forwardRef<SVGSVGElement, LucideProps>(function GLoa
     const { size = 24, className, ...rest } = props;
     let c1: string = "";
     let c2: string;
-    [c1, c2] = (className ?? "fill-amber-400").split("|", 2);
+    [c1, c2] = (className || "fill-amber-400").split("|", 2);
     c2 = c2 ? c2 : "fill-gray-100";
     return (
         <svg ref={ref} width={size ?? "24"} height={size ?? "24"} viewBox="0 0 24 24"

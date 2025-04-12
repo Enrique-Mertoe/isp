@@ -30,6 +30,23 @@ router_url_patterns = [
     path('api/routers/<int:pk>/delete/', views.router_delete, name='router_delete'),  # DELETE
 ]
 
+pkg_url_patterns = [
+    path('pkgs/page/', views.pkg_page, name='pkg_page'),  # Normal page for React app maybe
+    path('api/pkgs/', views.pkg_list, name='pkg_list'),  # GET all
+    path('api/pkgs/create/', views.pkg_create, name='pkg_create'),  # POST
+    path('api/pkgs/<int:pk>/', views.pkg_detail, name='pkg_detail'),  # GET one
+    path('api/pkgs/<int:pk>/update/', views.pkg_update, name='pkg_update'),  # PUT/PATCH
+    path('api/pkgs/<int:pk>/delete/', views.pkg_delete, name='pkg_delete'),  # DELETE
+]
+
+user_url_patterns = [
+    path('user/page/', views.user_page, name='user_page'),  # Normal page for React app maybe
+    path('api/user/', views.user_list, name='user_list'),  # GET all
+    path('api/user/create/', views.user_create, name='user_create'),  # POST
+    path('api/user/<int:pk>/', views.user_detail, name='user_detail'),  # GET one
+    path('api/user/<int:pk>/update/', views.user_update, name='user_update'),  # PUT/PATCH
+    path('api/user/<int:pk>/delete/', views.user_delete, name='user_delete'),  # DELETE
+]
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name='index.html')),
@@ -38,6 +55,8 @@ urlpatterns = [
     path('packages/', TemplateView.as_view(template_name='index.html')),
     path('api/csrf/', set_csrf),
     path('auth/', include("user_dashboard.auth.urls")),
-    *router_url_patterns
+    *router_url_patterns,
+    *pkg_url_patterns,
+    *user_url_patterns
 
 ]

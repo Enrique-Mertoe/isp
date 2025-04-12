@@ -1,0 +1,77 @@
+import React, {createContext, useContext, useState} from "react";
+
+type AppContextType = {
+    usersCount: number;
+    packageCount: number;
+    routerCount: number;
+    smsCount: number;
+    ticketsCount: number;
+    activeUsersCount: number;
+    leadsCount: number;
+    setCount: (type: "users" | "package" | "router" | "sms" | "tickets" | "activeUsers" | "leads", count: number) => void;
+};
+
+const Context = createContext<AppContextType>({} as AppContextType)
+export const AppProvider = ({children}: {
+    children: React.ReactNode
+}) => {
+
+    const [usersCount, setUsersCount] = useState(0);
+    const [packageCount, setPackageCount] = useState(0);
+    const [routerCount, setRouterCount] = useState(0);
+    const [smsCount, setSmsCount] = useState(0);
+    const [ticketsCount, setTicketsCount] = useState(0);
+    const [activeUsersCount, setActiveUsersCount] = useState(0);
+    const [leadsCount, setLeadsCount] = useState(0);
+
+    const setCount = (type: "users" | "package" | "router" | "sms" | "tickets" | "activeUsers" | "leads", count: number) => {
+        switch (type) {
+            case "users":
+                setUsersCount(count);
+                break;
+            case "package":
+                setPackageCount(count);
+                break;
+            case "router":
+                setRouterCount(count);
+                break;
+            case "sms":
+                setSmsCount(count);
+                break;
+            case "tickets":
+                setTicketsCount(count);
+                break;
+            case "activeUsers":
+                setActiveUsersCount(count);
+                break;
+            case "leads":
+                setLeadsCount(count);
+                break;
+        }
+    };
+
+    const handler: AppContextType = {
+        usersCount,
+        packageCount,
+        routerCount,
+        smsCount,
+        ticketsCount,
+        activeUsersCount,
+        leadsCount,
+        setCount,
+    };
+    return (
+        <Context.Provider
+            value={handler}
+        >
+            {children}
+        </Context.Provider>
+    )
+}
+
+export function useApp() {
+    const ctx = useContext(Context)
+    if (!ctx)
+        throw new Error("useApp must be called Inside AppProvider")
+    return ctx
+}

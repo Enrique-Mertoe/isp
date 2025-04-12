@@ -1,4 +1,5 @@
 import {useState} from "react";
+import OffCanvas from "./OffCanvas";
 
 export default function AddUser() {
     const [showPassword, setShowPassword] = useState(false);
@@ -6,23 +7,25 @@ export default function AddUser() {
     const togglePassword = () => setShowPassword(!showPassword);
     return (
         <>
-            <div className="offcanvas offcanvas-end w-full w-lg-1/3" data-bs-scroll="true" data-bs-backdrop="true"
-                 id="offcanvasAddUser" aria-labelledby="offcanvasCreateLabel" aria-modal="true"
-                 role="dialog">
-                <div className="offcanvas-header border-bottom py-5 bg-surface-secondary"><h5
-                    className="offcanvas-title" id="offcanvasCreateLabel">Create a new project</h5>
+            <OffCanvas
+                id="drawer-add-package"
+            >
+                <div className="offcanvas-header border-bottom py-5 bg-surface-secondary">
+                    <h3 className="text-xl font-semibold">Create User</h3>
                     <button type="button" className="btn-close text-reset text-xs" data-bs-dismiss="offcanvas"
                             aria-label="Close"></button>
                 </div>
                 <div className="offcanvas-body vstack gap-5">
-                    <div className="py-4">
-                        <h3>Create User</h3>
-                        <p className="text-muted">Create a new user by filling out the form below.</p>
-                        <form>
+                    <div className="pb-4">
+                        <p className="text-gray-500">Create a new user by filling out the form below.</p>
+                        <form className="mt-4 space-y-4">
                             {/* Type */}
-                            <div className="mb-3">
-                                <label className="form-label">Type <span className="text-danger">*</span></label>
-                                <select className="form-select">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Type <span className="text-red-600">*</span>
+                                </label>
+                                <select
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                                     <option value="">Select an option</option>
                                     <option>PPOE</option>
                                     <option>Hotspot</option>
@@ -30,36 +33,52 @@ export default function AddUser() {
                             </div>
 
                             {/* First Name */}
-                            <div className="mb-3">
-                                <label className="form-label">First Name</label>
-                                <input type="text" className="form-control" placeholder="First name"/>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">First Name</label>
+                                <input
+                                    type="text"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    placeholder="First name"
+                                />
                             </div>
 
                             {/* Last Name */}
-                            <div className="mb-3">
-                                <label className="form-label">Last Name</label>
-                                <input type="text" className="form-control" placeholder="Last name"/>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                                <input
+                                    type="text"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    placeholder="Last name"
+                                />
                             </div>
 
                             {/* Username */}
-                            <div className="mb-3">
-                                <label className="form-label">Username <span className="text-danger">*</span></label>
-                                <input type="text" className="form-control" placeholder="Username"/>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Username <span className="text-red-600">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    placeholder="Username"
+                                />
                             </div>
 
                             {/* Password */}
-                            <div className="mb-3">
-                                <label className="form-label">Password <span className="text-danger">*</span></label>
-                                <div className="input-group">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Password <span className="text-red-600">*</span>
+                                </label>
+                                <div className="flex rounded-md shadow-sm mt-1">
                                     <input
                                         type={showPassword ? 'text' : 'password'}
-                                        className="form-control"
+                                        className="flex-1 block w-full rounded-l-md border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                                         placeholder="Enter password"
                                     />
                                     <button
-                                        className="btn btn-outline-secondary"
                                         type="button"
                                         onClick={togglePassword}
+                                        className="px-3 py-2 bg-gray-100 border border-l-0 border-gray-300 rounded-r-md text-sm text-gray-700 hover:bg-gray-200"
                                     >
                                         {showPassword ? 'Hide' : 'Show'}
                                     </button>
@@ -67,76 +86,108 @@ export default function AddUser() {
                             </div>
 
                             {/* Package */}
-                            <div className="mb-3">
-                                <label className="form-label">Package <span className="text-danger">*</span></label>
-                                <div className="d-flex align-items-center gap-2">
-                                    <select className="form-select">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Package <span className="text-red-600">*</span>
+                                </label>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <select
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                                         <option value="">Select an option</option>
                                         <option>Basic</option>
                                         <option>Premium</option>
                                     </select>
-                                    <button type="button" className="btn btn-outline-secondary">
-                                        <i className="bi bi-plus-lg me-1"></i>
+                                    <button
+                                        type="button"
+                                        className="p-2 rounded-md border border-gray-300 hover:bg-gray-100"
+                                    >
+                                        <i className="bi bi-plus-lg"></i>
                                     </button>
                                 </div>
-                                <small className="text-muted d-block mt-1">
+                                <small className="text-gray-500 block mt-1">
                                     If the package is not available, create a new one by clicking the plus icon
                                 </small>
                             </div>
 
                             {/* Expiry Date */}
-                            <div className="mb-3">
-                                <label className="form-label">Expiry Date</label>
-                                <div className="input-group">
-                                    <span className="input-group-text"><i className="bi bi-calendar"></i></span>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Expiry Date</label>
+                                <div className="flex items-center rounded-md shadow-sm mt-1">
+                    <span
+                        className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                      <i className="bi bi-calendar"></i>
+                    </span>
                                     <input
                                         type="text"
-                                        className="form-control"
+                                        className="flex-1 block w-full rounded-r-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                                         placeholder="mm/dd/yyyy, --:--:-- --"
                                     />
                                 </div>
-                                <small className="text-muted d-block mt-1">
+                                <small className="text-gray-500 block mt-1">
                                     The date the package for this user will expire
                                 </small>
                             </div>
 
                             {/* Phone Number */}
-                            <div className="mb-3">
-                                <label className="form-label">Phone Number</label>
-                                <input type="text" className="form-control" placeholder="e.g. +254712345678"/>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                                <input
+                                    type="text"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    placeholder="e.g. +254712345678"
+                                />
                             </div>
 
                             {/* Email */}
-                            <div className="mb-3">
-                                <label className="form-label">Email Address</label>
-                                <input type="email" className="form-control" placeholder="you@example.com"/>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                                <input
+                                    type="email"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    placeholder="you@example.com"
+                                />
                             </div>
 
                             {/* Address */}
-                            <div className="mb-3">
-                                <label className="form-label">Address</label>
-                                <input type="text" className="form-control" placeholder="123 Main St, City, Country"/>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Address</label>
+                                <input
+                                    type="text"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    placeholder="123 Main St, City, Country"
+                                />
                             </div>
 
                             {/* Comment */}
-                            <div className="mb-3">
-                                <label className="form-label">Comment</label>
-                                <textarea className="form-control" placeholder="Optional comment"/>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Comment</label>
+                                <textarea
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    placeholder="Optional comment"
+                                />
                             </div>
 
                             {/* Buttons */}
-                            <div className="d-flex justify-content-between">
-                                <button type="submit" className="btn btn-primary">Create User</button>
-                                <button type="button" data-bs-dismiss={"offcanvas"} className="btn btn-secondary">Cancel</button>
+                            <div className="flex justify-between pt-4">
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                >
+                                    Create User
+                                </button>
+                                <button
+                                    type="button"
+                                    data-bs-dismiss="offcanvas"
+                                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+                                >
+                                    Cancel
+                                </button>
                             </div>
                         </form>
                     </div>
+
                 </div>
-                <div className="modal-footer py-2 bg-surface-secondary">
-                    <button type="button" className="btn btn-sm btn-neutral" data-bs-dismiss="offcanvas">Close</button>
-                    <button type="button" className="btn btn-sm btn-primary">Save</button>
-                </div>
-            </div>
+            </OffCanvas>
         </>
     )
 }

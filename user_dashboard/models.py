@@ -4,12 +4,42 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+class Router(models.Model):
+    name = models.CharField(max_length=255)
+    location = models.CharField(max_length=255)
+    ip_address = models.GenericIPAddressField()
+    username = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+    active = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+
+class Package(models.Model):
+    PACKAGE_CHOICES = (
+        ('hotspot', 'Hotspot'),
+        ('pppoe', 'PPPoE'),
+        ('data_plan', 'Data Plan'),
+    )
+    name = models.CharField(max_length=255)
+    price = models.CharField(max_length=255)
+    upload_speed = models.CharField(max_length=255, default="No limit")
+    download_speed = models.CharField(max_length=255, default="No limit")
+    type = models.CharField(max_length=20, choices=PACKAGE_CHOICES, default="hotspot", null=False)
+    router = models.ForeignKey(Router, related_name='packages', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
         ('user', 'User'),
     )
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='user')
+    # package = models.ForeignKey(Package, related_name='users', on_delete=models.CASCADE)
 
     def is_admin(self):
         return self.role == 'admin'
@@ -84,23 +114,3 @@ class Ticket(models.Model):
             number = random.randint(100000, 999999)
             if not Ticket.objects.filter(number=number).exists():
                 return number
-
-
-class Router(models.Model):
-    name = models.CharField(max_length=255)
-    location = models.CharField(max_length=255)
-    ip_address = models.GenericIPAddressField()
-    username = models.CharField(max_length=255)
-    password = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.name
-
-
-class Package(models.Model):
-    name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    router = models.ForeignKey(Router, related_name='packages', on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name

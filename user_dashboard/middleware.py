@@ -3,7 +3,8 @@ from django.utils.http import urlencode
 
 EXCLUDED_PATHS = [
     '/static/',  # static files
-    '/media/',  # media files
+    '/media/',
+    '/api/csrf/'
 ]
 
 AUTH_PATHS = [

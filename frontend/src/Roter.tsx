@@ -7,6 +7,8 @@ import UsersPage from "./pages/UsersPage.tsx";
 import SignInPage from "./pages/auth/SignInPage.tsx";
 import PackagesPage from "./pages/PackagesPage.tsx";
 import MikroTikPage from "./pages/MikroTikPage.tsx";
+import 'flowbite';
+import {AppProvider} from "./ui/AppContext.tsx";
 
 function RouterAwareApp() {
     const location = useLocation();
@@ -17,13 +19,15 @@ function RouterAwareApp() {
     }, [location]);
 
     return (
-        <Routes>
-            <Route path="/" element={<HomePage/>}/>
-            <Route path="/users" element={<UsersPage/>}/>
-            <Route path="/packages" element={<PackagesPage/>}/>
-            <Route path="/mikrotiks" element={<MikroTikPage/>}/>
-            <Route path="/auth/login" element={<SignInPage/>}/>
-        </Routes>
+        <AppProvider>
+            <Routes>
+                <Route path="/" element={<HomePage/>}/>
+                <Route path="/users" element={<UsersPage/>}/>
+                <Route path="/packages" element={<PackagesPage/>}/>
+                <Route path="/mikrotiks" element={<MikroTikPage/>}/>
+                <Route path="/auth/login" element={<SignInPage/>}/>
+            </Routes>
+        </AppProvider>
     );
 }
 

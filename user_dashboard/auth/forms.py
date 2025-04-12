@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import PasswordResetForm as DjangoPasswordResetForm
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
+
+from user_dashboard.models import User
 
 
 class LoginForm(forms.Form):
