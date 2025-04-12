@@ -1,0 +1,28 @@
+{% load static %}
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}My Site{% endblock %}</title>
+
+    <!-- Your CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <!-- Your JavaScript -->
+    <script src="{% static 'js/scripts.js' %}"></script>
+</head>
+<body>
+{% block auth %}
+    <main>
+        {% block content %}
+            <!-- Default content if not overwritten -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>My Website Footer</p>
+    </footer>
+{% endblock %}
+</body>
+</html>
