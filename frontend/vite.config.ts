@@ -7,6 +7,8 @@ import flowbiteReact from "flowbite-react/plugin/vite";
 export default defineConfig({
     plugins: [react(), tailwindcss(), flowbiteReact()],
     build: {
-        assetsDir: "static"
+        assetsDir: "static",
+        minify:"esbuild",
+
     }
 })
