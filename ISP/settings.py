@@ -29,7 +29,8 @@ SECRET_KEY = 'django-insecure--5x*ro(qbxct79zrhl8n*oc05l&g+(f0#nh9vv@pf&qv66q+=r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'isp.coolify.kaigates.com']
+
 
 # Application definition
 
@@ -140,6 +141,7 @@ LOGIN_URL = '/auth/login/'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
