@@ -1,5 +1,4 @@
 import Layout from "./home-components/Layout.tsx";
-import Head from "./home-components/Head.tsx";
 import React, {useEffect, useState} from "react";
 import request from "../build/request.ts";
 import Config from "../assets/config.ts";
@@ -14,11 +13,12 @@ import {
 } from 'chart.js';
 import EmptyList from "../ui/EmptyList.tsx";
 import PageLoader from "../ui/PageLoader.tsx";
+import {useApp} from "../ui/AppContext.tsx";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 
-export default function HomePage() {
+export default function ISPPage() {
     const [data, setDashData] = useState<DashResponse | null>(null);
 
     useEffect(() => {
@@ -34,116 +34,7 @@ export default function HomePage() {
     return (
         <>
             <Layout>
-                {data ?
-                    <>
-                        <Head
-                            paymentsThisMonth={data?.paymentsThisMonth}
-                            billsThisMonth={data?.billsThisMonth}
-                            totalPayments={data?.totalPayments}
-                            totalBills={data?.totalBills}
-                        />
-
-
-                        <div className="grid grid-cols-2">
-                            <div className="">
-                                <div className="flex flex-col m-0">
-                                    {/* Amount this month */}
-                                    <div className="w-full p-2">
-                                        <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-                                            <div className="p-4 flex items-center">
-                                                <div className="flex-1">
-                                                    <h6 className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-2">
-                                                        Users with Due
-                                                    </h6>
-                                                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                                                            {data.usersWithDueCount ?? 0}
-                                                          </span>
-                                                </div>
-                                                <div className="flex-shrink-0">
-                                                    <svg
-                                                        width="25"
-                                                        height="25"
-                                                        className="text-gray-400 dark:text-gray-500"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 256 256"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path d="M224.56,103.81C213.43,97.75..."/>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="w-full p-2">
-                                        <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-                                            <div className="p-4 flex items-center">
-                                                <div className="flex-1">
-                                                    <h6 className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-2">
-                                                        Payments this year
-                                                    </h6>
-                                                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                                                            {data.paymentsThisYear ?? 0}
-                                                          </span>
-                                                </div>
-                                                <div className="flex-shrink-0">
-                                                    <svg
-                                                        width="25"
-                                                        height="25"
-                                                        className="text-gray-400 dark:text-gray-500"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 256 256"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path d="M224.56,103.81C213.43,97.75..."/>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="w-full  p-2">
-                                        <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-                                            <div className="p-4 flex items-center">
-                                                <div className="flex-1">
-                                                    <h6 className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-2">
-                                                        Bills This Year
-                                                    </h6>
-                                                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                                                            {data.billsThisYear ?? 0}
-                                                          </span>
-                                                </div>
-                                                <div className="flex-shrink-0">
-                                                    <svg
-                                                        width="25"
-                                                        height="25"
-                                                        className="text-gray-400 dark:text-gray-500"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 256 256"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path d="M224.56,103.81C213.43,97.75..."/>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <DashboardCharts
-                                billingData={data?.billingData}
-                                paymentData={data?.paymentData}
-                                dailyBillingData={data?.dailyBillingData}
-                                dailyPaymentData={data?.dailyPaymentData}
-                            />
-                        </div>
-
-                        <TabSection
-                            users={data?.recentUsers}
-                            payments={data?.recentPayments}
-                        />
-                    </> :
-                    <PageLoader/>
-                }
+                ll
             </Layout>
         </>
     )
@@ -278,7 +169,7 @@ const TabSection = ({users, payments}: {
                         <button
                             onClick={() => setActiveTab("r-tickets")}
                             className={`inline-flex cursor-pointer items-center justify-center p-4 border-b-2 rounded-t-lg group ${
-                                activeTab === "r-tickets"
+                                activeTab === "others"
                                     ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
                                     : "border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
                             }`}
@@ -304,7 +195,7 @@ const TabSection = ({users, payments}: {
                         <button
                             onClick={() => setActiveTab("uwd")}
                             className={`inline-flex cursor-pointer items-center justify-center p-4 border-b-2 rounded-t-lg group ${
-                                activeTab === "uwd"
+                                activeTab === "others"
                                     ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
                                     : "border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
                             }`}

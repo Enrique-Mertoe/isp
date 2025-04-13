@@ -9,6 +9,7 @@ type AppContextType = {
     activeUsersCount: number;
     leadsCount: number;
     currentUser: (info?: UserInfo) => UserInfo | null;
+    page: (page?: string) => string | void;
     setCount: (type: "users" | "package" | "router" | "sms" | "tickets" | "activeUsers" | "leads", count: number) => void;
 };
 
@@ -25,7 +26,7 @@ export const AppProvider = ({children}: {
     const [activeUsersCount, setActiveUsersCount] = useState(0);
     const [leadsCount, setLeadsCount] = useState(0);
     const [user, setUser] = useState<UserInfo | null>(null)
-
+    const [cPage, setPage] = useState(location.pathname)
     const setCount = (type: "users" | "package" | "router" | "sms" | "tickets" | "activeUsers" | "leads", count: number) => {
         switch (type) {
             case "users":
@@ -57,6 +58,12 @@ export const AppProvider = ({children}: {
         setUser(info)
         return info
     }
+    const page = (page?: string): string | void => {
+        if (!page)
+            return cPage
+        setPage(page)
+        return page
+    }
 
     const handler: AppContextType = {
         usersCount,
@@ -67,7 +74,7 @@ export const AppProvider = ({children}: {
         activeUsersCount,
         leadsCount,
         setCount,
-        currentUser
+        currentUser, page
     };
     return (
         <Context.Provider

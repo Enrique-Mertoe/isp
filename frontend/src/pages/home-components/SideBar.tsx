@@ -1,5 +1,5 @@
 import {useNavigate} from "react-router-dom";
-import React from "react";
+import React, {useEffect} from "react";
 import {useApp} from "../../ui/AppContext.tsx";
 
 export default function SideBar() {
@@ -12,8 +12,8 @@ export default function SideBar() {
 
     const navItems: (NavItemType | "divider")[] = [
         {label: "Dashboard", icon: "bi-speedometer2", link: "/"},
-        {label: "Users", icon: "bi-people", link: "/users", badge: usersCount},
-        {label: "Active Users", icon: "bi-person-check", link: "#", badge: activeUsersCount},
+        {label: "Clients", icon: "bi-people", link: "/users", badge: usersCount},
+        {label: "Active Clients", icon: "bi-person-check", link: "#", badge: activeUsersCount},
         "divider",
         {label: "Tickets", icon: "bi-ticket", link: "#", badge: ticketsCount},
         {label: "Leads", icon: "bi-lightbulb", link: "#", badge: leadsCount},
@@ -24,9 +24,11 @@ export default function SideBar() {
         {label: "Expenses", icon: "bi-receipt-cutoff", link: "#"},
         "divider",
         {label: "Campaigns", icon: "bi-megaphone", link: "#", badge: "..."},
+        {label: "ISP", icon: "bi-megaphone", link: "/isp"},
         {label: "SMS", icon: "bi-chat-dots", link: "#", badge: "..."},
         "divider",
-        {label: "MikroTik", icon: "bi bi-router", link: "/mikrotiks", badge: routerCount},
+        {label: "Routers", icon: "bi bi-router", link: "/mikrotiks", badge: routerCount},
+        {label: "Management", icon: "bi bi-gear-wide-connected", link: "/management"},
         {label: "Equipments", icon: "bi bi-hdd-rack", link: "#", badge: "..."},
     ];
 
@@ -49,10 +51,14 @@ export default function SideBar() {
 
 const NavList = function ({navItems}: { navItems: (NavItemType | "divider")[] }) {
     const navigate = useNavigate();
+    const {page} = useApp()
     const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, link: string) => {
         e.preventDefault();
+        page(link)
         navigate(link);
+
     };
+
     return (
         <>
             <ul className="space-y-2  font-medium pe-1">
@@ -66,7 +72,11 @@ const NavList = function ({navItems}: { navItems: (NavItemType | "divider")[] })
                             <a
                                 href={item.link}
                                 onClick={item.link.startsWith("/") ? (e) => handleNavigation(e, item.link) : undefined}
-                                className="flex items-center w-full ps-6 p-2 text-gray-700 hover:bg-gray-200 rounded-r-full transition"
+                                className={`flex items-center 
+                                ${
+                                    page() == item.link ? "bg-gray-200" : ""
+                                }
+                                w-full ps-6 p-2 text-gray-700 hover:bg-gray-200 rounded-r-full transition`}
                             >
                                 <i className={`bi ${item.icon} text-lg me-3`}></i>
                                 <span className="flex-1">{item.label}</span>

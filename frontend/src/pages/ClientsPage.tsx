@@ -13,7 +13,7 @@ type UserResponse = {
     hotspot_count: number;
 };
 
-export default function UsersPage() {
+export default function ClientsPage() {
     const [loading, setLoading] = useState(true)
     const [items, setItems] = useState<UserInfo[]>([])
     const [activeTab, setActiveTab] = useState<string>("all");
