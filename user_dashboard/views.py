@@ -105,14 +105,16 @@ def router_detail(request, pk):
 @csrf_exempt
 def router_update(request, pk):
     router = get_object_or_404(Router, pk=pk)
-    if request.method == "PUT" or request.method == "PATCH":
+    if request.method == "POST":
         try:
             data = request.POST
             router.name = data.get('name', router.name)
+            router.username = data.get('username', router.username)
             router.password = data.get('password', router.password)
             router.location = data.get('location', router.location)
-            router.ip_address = data.get('ip_address', router.ip_address)
+            router.ip_address = data.get('ip', router.ip_address)
             router.save()
+            print(router_to_dict(router))
             return JsonResponse(router_to_dict(router))
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)

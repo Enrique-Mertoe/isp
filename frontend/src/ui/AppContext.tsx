@@ -1,4 +1,5 @@
 import React, {createContext, useContext, useState} from "react";
+import {DialogProvider} from "./providers/DialogProvider.tsx";
 
 type AppContextType = {
     usersCount: number;
@@ -80,7 +81,9 @@ export const AppProvider = ({children}: {
         <Context.Provider
             value={handler}
         >
-            {children}
+            <DialogProvider>
+                {children}
+            </DialogProvider>
         </Context.Provider>
     )
 }
