@@ -119,3 +119,10 @@ class Ticket(models.Model):
             number = random.randint(100000, 999999)
             if not Ticket.objects.filter(number=number).exists():
                 return number
+
+
+class Company(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.TextField()
+    phone = models.CharField(max_length=50)
+    email = models.EmailField()

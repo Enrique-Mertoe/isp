@@ -4,7 +4,7 @@ import request from "../build/request.ts";
 import Config from "../assets/config.ts";
 import {Cable, Inbox, Plus, RotateCw, Wifi} from "lucide-react";
 import GIcon from "../ui/components/Icons.tsx";
-import AddUser from "../ui/offcanvas/AddUser.tsx";
+import AddClient from "../ui/offcanvas/AddClient.tsx";
 
 type UserResponse = {
     users: UserInfo[];
@@ -50,9 +50,9 @@ export default function ClientsPage() {
                 {/* Card Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-4">
                     <div className="flex flex-col gap-2">
-                        <h3 className="text-amber-600 text-2xl font-semibold mb-0">Users</h3>
+                        <h3 className="text-amber-600 text-2xl font-semibold mb-0">Clients</h3>
                         <p className="text-gray-600 text-sm">
-                            All users including hotspot and PPPoE users
+                            All clients including hotspot and PPPoE clients
                         </p>
                     </div>
                     <div className="flex gap-2 mt-4 md:mt-0">
@@ -71,9 +71,9 @@ export default function ClientsPage() {
                             data-bs-toggle="offcanvas"
                         >
                             <Plus className="text-lg"/>
-                            Add User
+                            Add Client
                         </a>
-                        <AddUser/>
+                        <AddClient/>
                     </div>
                 </div>
 
@@ -116,7 +116,7 @@ export default function ClientsPage() {
                                         } rounded-t-lg group`}
                                     >
                                         <Wifi size={16}/>
-                                        Hotspot Users
+                                        Hotspot Clients
                                         <span
                                             className="ms-auto h-6 w-6 flex justify-center items-center text-xs text-white rounded bg-amber-400">
                                               {hotspotCount}
@@ -133,7 +133,7 @@ export default function ClientsPage() {
                                         } rounded-t-lg group`}
                                     >
                                         <Cable size={16} className="wtext-gray-500"/>
-                                        PPPoE Users
+                                        PPPoE Clients
 
                                         <span
                                             className="ms-auto h-6 w-6 flex justify-center items-center text-xs text-white rounded bg-amber-400">
@@ -166,13 +166,13 @@ function ItemList({items}: ItemListProps) {
     return (
         <>
             {items?.length > 0 ?
-                <UserTable items={items}/>
+                <ClientsTable items={items}/>
                 :
                 <div className="min-h-[5rem] py-10 justify-center gap-2 flex-col items-center w-full flex">
                     <Inbox size={64}/>
-                    <strong> No Users</strong>
+                    <strong> No clients</strong>
                     <p className={"text-gray-500"}>
-                        Add users by clicking the button above
+                        Add clients by clicking the button above
                     </p>
                 </div>
             }
@@ -180,7 +180,7 @@ function ItemList({items}: ItemListProps) {
     )
 }
 
-const UserTable: React.FC<{
+const ClientsTable: React.FC<{
     items: UserInfo[];
 }> = ({items}) => {
     const [searchText, setSearchText] = useState("");

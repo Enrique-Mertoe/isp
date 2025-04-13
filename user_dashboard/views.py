@@ -1,14 +1,16 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 
-from user_dashboard.forms import RouterForm
-from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict
-from user_dashboard.models import Router, Package, User
+from user_dashboard.forms import RouterForm, CompanyForm
+from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict, company_to_dict
+from user_dashboard.models import Router, Package, User, Company
 
 
 # Create your views here.
@@ -312,3 +314,22 @@ def user_delete(request, pk):
         router.delete()
         return JsonResponse({'message': 'Router deleted successfully.'})
     return HttpResponseBadRequest()
+
+
+class CompanyEditView(LoginRequiredMixin, View):
+    def get(self, request):
+        fetch = request.GET.get('api')
+        if not fetch:
+            return render(request, 'index.html')
+        company, _ = Company.objects.get_or_create(id=1)
+        return JsonResponse({'company': company_to_dict(company)})
+
+    def post(self, request):
+        try:
+            company, _ = Company.objects.get_or_create(id=1)
+            form = CompanyForm(request.POST, instance=company)
+            if form.is_valid():
+                form.save()
+                return JsonResponse(company_to_dict(company), status=201)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)

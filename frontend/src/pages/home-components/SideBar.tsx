@@ -1,5 +1,5 @@
 import {useNavigate} from "react-router-dom";
-import React, {useEffect} from "react";
+import React from "react";
 import {useApp} from "../../ui/AppContext.tsx";
 
 export default function SideBar() {
@@ -8,7 +8,7 @@ export default function SideBar() {
         packageCount, routerCount,
         activeUsersCount,
         ticketsCount, leadsCount
-    } = useApp()
+    } = useApp();
 
     const navItems: (NavItemType | "divider")[] = [
         {label: "Dashboard", icon: "bi-speedometer2", link: "/"},
@@ -76,7 +76,7 @@ const NavList = function ({navItems}: { navItems: (NavItemType | "divider")[] })
                                 ${
                                     page() == item.link ? "bg-gray-200" : ""
                                 }
-                                w-full ps-6 p-2 text-gray-700 hover:bg-gray-200 rounded-r-full transition`}
+                                w-full ps-6 p-2 text-gray-900 hover:bg-gray-200 rounded-r-full transition`}
                             >
                                 <i className={`bi ${item.icon} text-lg me-3`}></i>
                                 <span className="flex-1">{item.label}</span>

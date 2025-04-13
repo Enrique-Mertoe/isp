@@ -8,7 +8,7 @@ import {Inbox, Plus, RotateCw, Wifi, WifiOff} from "lucide-react";
 
 
 
-export default function MikroTikPage() {
+export default function RoutersPage() {
 
     const [loading, setLoading] = useState(true)
     const [items, setItems] = useState<Mikrotik[]>([])
@@ -46,11 +46,11 @@ export default function MikroTikPage() {
                 <div className="bg-white rounded-lg shadow p-4 pb-0 mx-1">
                     {/* Card Header */}
                     <div
-                        className="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4">
+                        className="flex flex-col md:flex-row justify-between items-start md:items-center pb-4">
                         <div className="flex flex-col gap-2">
-                            <h3 className="text-amber-600 text-2xl font-semibold mb-0">Mikrotik Devices</h3>
+                            <h3 className="text-amber-600 text-2xl font-semibold mb-0">Routers</h3>
                             <p className="text-gray-600 text-sm">
-                                List of Mikrotik devices
+                                List of Router devices
                             </p>
                         </div>
                         <div className="flex gap-2 mt-4 md:mt-0">
@@ -69,7 +69,7 @@ export default function MikroTikPage() {
                                 data-bs-toggle="offcanvas"
                             >
                                 <Plus className="text-lg"/>
-                                Link Mikrotik
+                                Link Router
                             </a>
                             <AddMikrotik/>
                         </div>
@@ -165,13 +165,13 @@ function ItemList({items}: ItemListProps) {
     return (
         <>
             {items?.length > 0 ?
-                <MikrotikTable items={items}/>
+                <RoutersTable items={items}/>
                 :
                 <div className="min-h-[5rem] py-10 justify-center gap-2 flex-col items-center w-full flex">
                     <Inbox size={64}/>
                     <strong> No Device Connected</strong>
                     <p className={"text-gray-500"}>
-                        Add mikrotik by clicking the button above
+                        Add router by clicking the button above
                     </p>
                 </div>
             }
@@ -179,7 +179,7 @@ function ItemList({items}: ItemListProps) {
     )
 }
 
-const MikrotikTable: React.FC<{
+const RoutersTable: React.FC<{
     items: Mikrotik[];
 }> = ({items}) => {
     const [searchText, setSearchText] = useState("");

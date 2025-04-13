@@ -4,7 +4,7 @@ import request from "../../build/request.ts";
 import Config from "../../assets/config.ts";
 import GIcon from "../components/Icons.tsx";
 
-export default function AddUser() {
+export default function AddClient() {
     const [showPassword, setShowPassword] = useState(true);
     const [loading, setLoading] = useState(false);
     const onSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {

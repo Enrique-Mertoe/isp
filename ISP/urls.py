@@ -59,6 +59,7 @@ urlpatterns = [
     *pkg_url_patterns,
     *user_url_patterns,
     path("api/start-up/", views.start_app, name="start-up"),
-    path("api/dash/", dash_view.dashboard_view, name="dash-view-api")
+    path("api/dash/", dash_view.dashboard_view, name="dash-view-api"),
+    path('isp/', views.CompanyEditView.as_view(), name='company_edit'),
 
 ]

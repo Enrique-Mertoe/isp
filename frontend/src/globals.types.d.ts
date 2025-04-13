@@ -123,3 +123,10 @@ interface Ticket {
         username: string;
     };
 }
+
+declare type CompanyInfo = {
+    name: string;
+    address: string;
+    phone: string;
+    email: string;
+};
