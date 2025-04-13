@@ -13,6 +13,7 @@ import {
     Legend
 } from 'chart.js';
 import EmptyList from "../ui/EmptyList.tsx";
+import PageLoader from "../ui/PageLoader.tsx";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -33,17 +34,15 @@ export default function HomePage() {
     return (
         <>
             <Layout>
-                {data &&
+                {data ?
+                    <>
                     <Head
                         paymentsThisMonth={data?.paymentsThisMonth}
                         billsThisMonth={data?.billsThisMonth}
                         totalPayments={data?.totalPayments}
                         totalBills={data?.totalBills}
                     />
-                }
 
-                {data &&
-                    <>
 
                         <DashboardCharts
                             billingData={data?.billingData}
@@ -56,7 +55,8 @@ export default function HomePage() {
                             users={data?.recentUsers}
                             payments={data?.recentPayments}
                         />
-                    </>
+                    </>:
+                    <PageLoader/>
                 }
             </Layout>
         </>
