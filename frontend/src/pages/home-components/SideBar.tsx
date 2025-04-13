@@ -66,14 +66,14 @@ const NavList = function ({navItems}: { navItems: (NavItemType | "divider")[] })
                             <a
                                 href={item.link}
                                 onClick={item.link.startsWith("/") ? (e) => handleNavigation(e, item.link) : undefined}
-                                className="flex items-center w-full p-2 text-gray-700 hover:bg-gray-200 rounded-r-full transition"
+                                className="flex items-center w-full ps-6 p-2 text-gray-700 hover:bg-gray-200 rounded-r-full transition"
                             >
                                 <i className={`bi ${item.icon} text-lg me-3`}></i>
                                 <span className="flex-1">{item.label}</span>
 
                                 {item.badge !== undefined && (
                                     <span
-                                        className="ms-auto h-6 w-6 flex justify-center items-center text-xs text-white rounded-full bg-amber-400">
+                                        className="ms-auto h-6 w-6 flex justify-center items-center text-xs text-gray-700 rounded-full bg-amber-200">
                   {item.badge}
                 </span>
                                 )}

@@ -22,6 +22,19 @@ def set_csrf(request):
     return JsonResponse({'detail': 'CSRF cookie set'})
 
 
+def start_app(request):
+    if request.method == "POST":
+        users = User.objects.all().count()
+        pakgs = Package.objects.all().count()
+        routers = Router.objects.all().count()
+        return JsonResponse({
+            "users": users,
+            "user": user_to_dict(request.user),
+            "packages": pakgs,
+            "routers": routers,
+        }, safe=False)
+
+
 # Router controller
 def router_page(request):
     return render(request, 'index.html')
@@ -251,15 +264,16 @@ def user_create(request):
         try:
             data = request.POST
             print(data)
-            user = User.objects.create(
-                name=data.get('name'),
-                type=data.get('type'),
-                upload_speed=data.get('upload_speed'),
-                download_speed=data.get('download_speed'),
-                price=data.get('price'),
-                router=Router.objects.get(id=data.get('router'))
-            )
-            return JsonResponse(user_to_dict(user), status=201)
+            # user = User.objects.create(
+            #     name=data.get('name'),
+            #     type=data.get('type'),
+            #     upload_speed=data.get('upload_speed'),
+            #     download_speed=data.get('download_speed'),
+            #     price=data.get('price'),
+            #     router=Router.objects.get(id=data.get('router'))
+            # )
+            # return JsonResponse(user_to_dict(user), status=201)
+            return HttpResponseBadRequest()
         except Exception as e:
             print(e)
             return JsonResponse({'error': str(e)}, status=400)

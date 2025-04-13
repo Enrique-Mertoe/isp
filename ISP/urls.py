@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from user_dashboard import views
+from user_dashboard import views, dash_view
 from user_dashboard.views import set_csrf
 
 router_url_patterns = [
@@ -57,6 +57,8 @@ urlpatterns = [
     path('auth/', include("user_dashboard.auth.urls")),
     *router_url_patterns,
     *pkg_url_patterns,
-    *user_url_patterns
+    *user_url_patterns,
+    path("api/start-up/", views.start_app, name="start-up"),
+    path("api/dash/", dash_view.dashboard_view, name="dash-view-api")
 
 ]

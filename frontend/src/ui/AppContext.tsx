@@ -8,6 +8,7 @@ type AppContextType = {
     ticketsCount: number;
     activeUsersCount: number;
     leadsCount: number;
+    currentUser: (info?: UserInfo) => UserInfo | null;
     setCount: (type: "users" | "package" | "router" | "sms" | "tickets" | "activeUsers" | "leads", count: number) => void;
 };
 
@@ -23,6 +24,7 @@ export const AppProvider = ({children}: {
     const [ticketsCount, setTicketsCount] = useState(0);
     const [activeUsersCount, setActiveUsersCount] = useState(0);
     const [leadsCount, setLeadsCount] = useState(0);
+    const [user, setUser] = useState<UserInfo | null>(null)
 
     const setCount = (type: "users" | "package" | "router" | "sms" | "tickets" | "activeUsers" | "leads", count: number) => {
         switch (type) {
@@ -49,6 +51,12 @@ export const AppProvider = ({children}: {
                 break;
         }
     };
+    const currentUser = (info?: UserInfo): UserInfo | null => {
+        if (!info)
+            return user
+        setUser(info)
+        return info
+    }
 
     const handler: AppContextType = {
         usersCount,
@@ -59,6 +67,7 @@ export const AppProvider = ({children}: {
         activeUsersCount,
         leadsCount,
         setCount,
+        currentUser
     };
     return (
         <Context.Provider

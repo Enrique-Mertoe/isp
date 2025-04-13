@@ -1,5 +1,7 @@
 # serializers.py
-from .models import Router, Package, User
+from typing import Dict
+
+from .models import Router, Package, User, Payment, Ticket
 
 
 def router_to_dict(router: Router):
@@ -33,4 +35,28 @@ def user_to_dict(user: User):
         # "package": pkg_to_dict(user.package),
         "role": user.role,
         "due_amount": user.due_amount()
+    }
+
+
+def payment_to_dict(payment: Payment) -> Dict:
+    return {
+        "id": payment.id,
+        "billing_id": payment.billing.id,
+        "user_id": payment.user.id,
+        "invoice": payment.invoice,
+        "payment_method": payment.payment_method,
+        "package_price": float(payment.package_price),
+        "created_at": payment.created_at.isoformat(),  # or .strftime() if you want a specific format
+    }
+
+
+def ticket_to_dict(ticket: Ticket) -> Dict:
+    return {
+        "id": ticket.id,
+        "subject": ticket.subject,
+        "message": ticket.message,
+        "status": ticket.status,
+        "priority": ticket.priority,
+        "user_id": ticket.user.id,
+        "number": ticket.number,
     }

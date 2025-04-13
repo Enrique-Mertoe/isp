@@ -1,9 +1,29 @@
-import {useState} from "react";
+import {FormEvent, useCallback, useState} from "react";
 import OffCanvas from "./OffCanvas";
+import request from "../../build/request.ts";
+import Config from "../../assets/config.ts";
+import GIcon from "../components/Icons.tsx";
 
 export default function AddUser() {
-    const [showPassword, setShowPassword] = useState(false);
+    const [showPassword, setShowPassword] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const onSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        try {
+            setLoading(true)
+            const formData = new FormData(e.target as HTMLFormElement);
 
+            const response = await request.post(Config.baseURL + "/api/user/create/", formData);
+            setLoading(false)
+            if (response.status === 201) {
+                alert("Package added successfully!");
+            }
+        } catch (error: unknown) {
+            console.error("Error saving router:", error);
+            alert("Failed to save router.");
+            setLoading(false);
+        }
+    }, []);
     const togglePassword = () => setShowPassword(!showPassword);
     return (
         <>
@@ -18,13 +38,16 @@ export default function AddUser() {
                 <div className="offcanvas-body vstack gap-5">
                     <div className="pb-4">
                         <p className="text-gray-500">Create a new user by filling out the form below.</p>
-                        <form className="mt-4 space-y-4">
+                        <form className="mt-4 space-y-4"
+                              onSubmit={onSubmit}
+                        >
                             {/* Type */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     Type <span className="text-red-600">*</span>
                                 </label>
                                 <select
+                                    name={"user_type"}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                                     <option value="">Select an option</option>
                                     <option>PPOE</option>
@@ -37,6 +60,7 @@ export default function AddUser() {
                                 <label className="block text-sm font-medium text-gray-700">First Name</label>
                                 <input
                                     type="text"
+                                    name={"first_name"}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
                                     placeholder="First name"
                                 />
@@ -46,6 +70,7 @@ export default function AddUser() {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Last Name</label>
                                 <input
+                                    name={"last_name"}
                                     type="text"
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
                                     placeholder="Last name"
@@ -58,6 +83,7 @@ export default function AddUser() {
                                     Username <span className="text-red-600">*</span>
                                 </label>
                                 <input
+                                    name={"username"}
                                     type="text"
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
                                     placeholder="Username"
@@ -71,6 +97,7 @@ export default function AddUser() {
                                 </label>
                                 <div className="flex rounded-md shadow-sm mt-1">
                                     <input
+                                        name={"password"}
                                         type={showPassword ? 'text' : 'password'}
                                         className="flex-1 block w-full rounded-l-md border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                                         placeholder="Enter password"
@@ -92,6 +119,7 @@ export default function AddUser() {
                                 </label>
                                 <div className="flex items-center gap-2 mt-1">
                                     <select
+                                        name={"package"}
                                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                                         <option value="">Select an option</option>
                                         <option>Basic</option>
@@ -118,7 +146,8 @@ export default function AddUser() {
                       <i className="bi bi-calendar"></i>
                     </span>
                                     <input
-                                        type="text"
+                                        name={"expiry-date"}
+                                        type="date"
                                         className="flex-1 block w-full rounded-r-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                                         placeholder="mm/dd/yyyy, --:--:-- --"
                                     />
@@ -133,6 +162,7 @@ export default function AddUser() {
                                 <label className="block text-sm font-medium text-gray-700">Phone Number</label>
                                 <input
                                     type="text"
+                                    name={"phone"}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
                                     placeholder="e.g. +254712345678"
                                 />
@@ -143,6 +173,7 @@ export default function AddUser() {
                                 <label className="block text-sm font-medium text-gray-700">Email Address</label>
                                 <input
                                     type="email"
+                                    name={"email"}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
                                     placeholder="you@example.com"
                                 />
@@ -152,6 +183,7 @@ export default function AddUser() {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Address</label>
                                 <input
+                                    name={"address"}
                                     type="text"
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
                                     placeholder="123 Main St, City, Country"
@@ -162,6 +194,7 @@ export default function AddUser() {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Comment</label>
                                 <textarea
+                                    name={"comment"}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
                                     placeholder="Optional comment"
                                 />
@@ -174,6 +207,7 @@ export default function AddUser() {
                                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                                 >
                                     Create User
+                                    {loading && <GIcon name={"g-loader"} color={"fill-amber-500"}/>}
                                 </button>
                                 <button
                                     type="button"
