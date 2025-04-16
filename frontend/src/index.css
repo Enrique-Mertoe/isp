@@ -1,10 +1,5 @@
-@import "tailwindcss";
-@import "flowbite/src/themes/default";
+@import "../node_modules/tailwindcss";
 
-@plugin "flowbite/plugin";
-@source "../node_modules/flowbite";
-@plugin "flowbite-react/plugin/tailwindcss";
-@source "../.flowbite-react/class-list.json";
 *,
 *::before,
 *::after {
@@ -478,4 +473,22 @@ body {
     align-items: center;
     -ms-flex-item-align: stretch;
     align-self: stretch;
+}
+
+.main-sidebar {
+    /*isolation: isolate;*/
+}
+
+.sdb-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    content: '';
+    z-index: 39;
+    opacity: 0;
+    transition: opacity .3s ease;
+}
+
+.sdb-backdrop.show {
+    opacity: 1;
 }

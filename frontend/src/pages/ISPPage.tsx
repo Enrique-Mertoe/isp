@@ -93,7 +93,7 @@ export default function ISPPage() {
                                             </label>
                                             <input
                                                 onChange={handleChange}
-                                                className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 id="name" name="name" type="text"
                                                 value={data.name}
                                                 placeholder="Tech Solutions"
@@ -107,7 +107,7 @@ export default function ISPPage() {
                                             </label>
                                             <input
                                                 onChange={handleChange}
-                                                className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 id="address" name="address"
                                                 value={data.address}
                                                 type="text" placeholder="1234 Tech Avenue"
@@ -121,7 +121,7 @@ export default function ISPPage() {
                                             </label>
                                             <input
                                                 onChange={handleChange}
-                                                className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 id="email" name="email"
                                                 value={data.email}
                                                 type="text" placeholder="info@yourcompany.com"
@@ -135,7 +135,7 @@ export default function ISPPage() {
                                             </label>
                                             <input
                                                 onChange={handleChange}
-                                                className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 id="phone" name="phone"
                                                 value={data.phone}
                                                 type="text" placeholder="+254 700000000"

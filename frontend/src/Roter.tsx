@@ -7,9 +7,10 @@ import ClientsPage from "./pages/ClientsPage.tsx";
 import SignInPage from "./pages/auth/SignInPage.tsx";
 import PackagesPage from "./pages/PackagesPage.tsx";
 import RoutersPage from "./pages/RoutersPage.tsx";
-import 'flowbite';
 import {AppProvider} from "./ui/AppContext.tsx";
 import ISPPage from "./pages/ISPPage.tsx";
+import SignUpPage from "./pages/auth/SignUpPage.tsx";
+import RouterView from "./pages/RouterView.tsx";
 
 function RouterAwareApp() {
     const location = useLocation();
@@ -23,11 +24,13 @@ function RouterAwareApp() {
         <AppProvider>
             <Routes>
                 <Route path="/" element={<HomePage/>}/>
-                <Route path="/users" element={<ClientsPage/>}/>
-                <Route path="/isp" element={<ISPPage/>}/>
-                <Route path="/packages" element={<PackagesPage/>}/>
-                <Route path="/mikrotiks" element={<RoutersPage/>}/>
-                <Route path="/auth/login" element={<SignInPage/>}/>
+                <Route path="/users/" element={<ClientsPage/>}/>
+                <Route path="/isp/" element={<ISPPage/>}/>
+                <Route path="/packages/" element={<PackagesPage/>}/>
+                <Route path="/mikrotiks/" element={<RoutersPage/>}/>
+                <Route path="/mikrotiks/:pk/" element={<RouterView/>}/>
+                <Route path="/auth/login/" element={<SignInPage/>}/>
+                <Route path="/auth/register/" element={<SignUpPage/>}/>
             </Routes>
         </AppProvider>
     );

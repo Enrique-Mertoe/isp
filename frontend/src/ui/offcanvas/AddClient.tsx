@@ -18,6 +18,9 @@ export default function AddClient() {
             if (response.status === 201) {
                 alert("Package added successfully!");
             }
+            if (response.data.error) {
+                alert(response.data.error)
+            }
         } catch (error: unknown) {
             console.error("Error saving router:", error);
             alert("Failed to save router.");
@@ -41,29 +44,31 @@ export default function AddClient() {
                         <form className="mt-4 space-y-4"
                               onSubmit={onSubmit}
                         >
-                            {/* Type */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Type <span className="text-red-600">*</span>
-                                </label>
-                                <select
-                                    name={"user_type"}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
-                                    <option value="">Select an option</option>
-                                    <option>PPOE</option>
-                                    <option>Hotspot</option>
-                                </select>
-                            </div>
+                            <div className="grid grid-cols-2 gap-1">
+                                {/* Type */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Type <span className="text-red-600">*</span>
+                                    </label>
+                                    <select
+                                        name={"user_type"}
+                                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="">Select an option</option>
+                                        <option>PPOE</option>
+                                        <option>Hotspot</option>
+                                    </select>
+                                </div>
 
-                            {/* First Name */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">First Name</label>
-                                <input
-                                    type="text"
-                                    name={"first_name"}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-                                    placeholder="First name"
-                                />
+                                {/* First Name */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">First Name</label>
+                                    <input
+                                        type="text"
+                                        name={"first_name"}
+                                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        placeholder="First name"
+                                    />
+                                </div>
                             </div>
 
                             {/* Last Name */}
@@ -72,7 +77,7 @@ export default function AddClient() {
                                 <input
                                     name={"last_name"}
                                     type="text"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     placeholder="Last name"
                                 />
                             </div>
@@ -85,7 +90,7 @@ export default function AddClient() {
                                 <input
                                     name={"username"}
                                     type="text"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     placeholder="Username"
                                 />
                             </div>
@@ -120,7 +125,7 @@ export default function AddClient() {
                                 <div className="flex items-center gap-2 mt-1">
                                     <select
                                         name={"package"}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                                         <option value="">Select an option</option>
                                         <option>Basic</option>
                                         <option>Premium</option>
@@ -163,7 +168,7 @@ export default function AddClient() {
                                 <input
                                     type="text"
                                     name={"phone"}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     placeholder="e.g. +254712345678"
                                 />
                             </div>
@@ -174,7 +179,7 @@ export default function AddClient() {
                                 <input
                                     type="email"
                                     name={"email"}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     placeholder="you@example.com"
                                 />
                             </div>
@@ -185,7 +190,7 @@ export default function AddClient() {
                                 <input
                                     name={"address"}
                                     type="text"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     placeholder="123 Main St, City, Country"
                                 />
                             </div>
@@ -195,7 +200,7 @@ export default function AddClient() {
                                 <label className="block text-sm font-medium text-gray-700">Comment</label>
                                 <textarea
                                     name={"comment"}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     placeholder="Optional comment"
                                 />
                             </div>

@@ -1,8 +1,10 @@
 import {useNavigate} from "react-router-dom";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {useApp} from "../../ui/AppContext.tsx";
+import Signal from "../../lib/Signal.ts";
 
 export default function SideBar() {
+    const [isOpen, setIsOpen] = useState(false)
     const {
         usersCount,
         packageCount, routerCount,
@@ -31,20 +33,34 @@ export default function SideBar() {
         {label: "Management", icon: "bi bi-gear-wide-connected", link: "/management"},
         {label: "Equipments", icon: "bi bi-hdd-rack", link: "#", badge: "..."},
     ];
-
+    useEffect(() => {
+        Signal.on("drawer", e => {
+            if (e === 'logo-sidebar')
+                setIsOpen(prev => !prev)
+        })
+    }, []);
 
     return (
         <>
             <aside id="logo-sidebar"
-                   className="fixed top-0 left-0 z-40 w-74 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
+                   className={`fixed top-0 left-0 z-40 w-74 h-screen bg-white  pt-20 transition-transform 
+                       bg-white border-r border-gray-200 md:translate-x-0
+                       ${
+                       isOpen ? 'show' : "-translate-x-full"
+                   }
+                       dark:bg-gray-800 dark:border-gray-700
+                       main-sidebar
+                       `}
                    aria-label="Sidebar">
+
                 <div className="h-full vstack overflow-y-auto pb-6  bg-white dark:bg-gray-800">
                     <div className=" flex-grow-1">
                         <NavList navItems={navItems}/>
                     </div>
                 </div>
             </aside>
-
+            {isOpen &&
+                <div className="sdb-backdrop md:hidden show"></div>}
         </>
     )
 }

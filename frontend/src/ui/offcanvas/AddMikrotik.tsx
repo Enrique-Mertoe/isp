@@ -15,6 +15,7 @@ type RouterForm = {
 export default function AddMikrotik() {
     // const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [msg, setMsg] = useState('');
 
     // const togglePassword = () => setShowPassword(!showPassword);
     const [form, setForm] = useState<RouterForm>({
@@ -32,7 +33,8 @@ export default function AddMikrotik() {
     };
 
     const onSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
+        e.preventDefault();
+        setMsg('')
         try {
             setLoading(true)
             const formData = new FormData();
@@ -45,7 +47,7 @@ export default function AddMikrotik() {
             setLoading(false)
 
             if (response.status === 201) {
-                alert("Router added successfully!");
+                setMsg("Router added successfully!");
                 setForm({
                     routerName: "",
                     location: "",
@@ -54,9 +56,13 @@ export default function AddMikrotik() {
                     password: ""
                 });
             }
-        } catch (error: unknown) {
-            console.error("Error saving router:", error);
-            alert("Failed to save router.");
+        } catch (err: any) {
+            setLoading(false)
+            const errMsg =
+                err.response?.data?.error ||
+                err.message ||
+                "Failed to save router.";
+            setMsg(errMsg);
         }
     }, [form]);
 
@@ -150,7 +156,9 @@ export default function AddMikrotik() {
                                     className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 />
                             </div>
-
+                            {
+                                msg && <span className="text-red-500 text-sm">{msg}</span>
+                            }
                             {/* Buttons */}
                             <div className="flex justify-between pt-2">
                                 <button

@@ -1,44 +1,17 @@
 import datetime
 import random
-
+from routeros_api import RouterOsApiPool
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
-
-
-class Router(models.Model):
-    name = models.CharField(max_length=255)
-    location = models.CharField(max_length=255)
-    ip_address = models.GenericIPAddressField()
-    username = models.CharField(max_length=255)
-    password = models.CharField(max_length=255)
-    active = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.name
-
-
-class Package(models.Model):
-    PACKAGE_CHOICES = (
-        ('hotspot', 'Hotspot'),
-        ('pppoe', 'PPPoE'),
-        ('data_plan', 'Data Plan'),
-    )
-    name = models.CharField(max_length=255)
-    price = models.CharField(max_length=255)
-    upload_speed = models.CharField(max_length=255, default="No limit")
-    download_speed = models.CharField(max_length=255, default="No limit")
-    type = models.CharField(max_length=20, choices=PACKAGE_CHOICES, default="hotspot", null=False)
-    router = models.ForeignKey(Router, related_name='packages', on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
+from routeros_api.api import RouterOsApi
 
 
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
         ('user', 'User'),
+        ('isp', 'ISP'),
     )
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='user')
 
@@ -58,17 +31,40 @@ class User(AbstractUser):
 
 class Detail(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='detail')
-    address = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20)
-    dob = models.DateField(null=True, blank=True)
-    pin = models.CharField(max_length=20)
-    router_password = models.CharField(max_length=255)
-    package_name = models.CharField(max_length=255)
-    package_price = models.DecimalField(max_digits=10, decimal_places=2)
-    package_start = models.DateField(null=True, blank=True)
-    due = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=50)
-    router_name = models.CharField(max_length=255)
+
+
+class ISPProvider(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.TextField()
+    phone = models.CharField(max_length=50)
+    email = models.EmailField()
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='isp')
+
+
+class Router(models.Model):
+    name = models.CharField(max_length=255)
+    location = models.CharField(max_length=255)
+    ip_address = models.GenericIPAddressField()
+    username = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+    active = models.BooleanField(default=False)
+    isp = models.ForeignKey(ISPProvider, related_name='routers', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+    def connection(self) -> RouterOsApi | None:
+        try:
+            res = RouterOsApiPool(
+                host=self.ip_address, username=self.username,
+                password=self.password, plaintext_login=True
+            )
+            return res.get_api()
+        except Exception as e:
+            return None
 
 
 class Billing(models.Model):
@@ -121,8 +117,30 @@ class Ticket(models.Model):
                 return number
 
 
-class Company(models.Model):
+class Package(models.Model):
+    PACKAGE_CHOICES = (
+        ('hotspot', 'Hotspot'),
+        ('pppoe', 'PPPoE'),
+        ('data_plan', 'Data Plan'),
+    )
     name = models.CharField(max_length=255)
-    address = models.TextField()
-    phone = models.CharField(max_length=50)
-    email = models.EmailField()
+    price = models.CharField(max_length=255)
+    upload_speed = models.CharField(max_length=255, default="No limit")
+    download_speed = models.CharField(max_length=255, default="No limit")
+    type = models.CharField(max_length=20, choices=PACKAGE_CHOICES, default="hotspot", null=False)
+    router = models.ForeignKey(Router, related_name='packages', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+
+class Client(models.Model):
+    package = models.ForeignKey(Package, related_name='clients', on_delete=models.CASCADE)
+    isp = models.ForeignKey(User, related_name='clients', on_delete=models.CASCADE)
+    package_price = models.DecimalField(max_digits=10, decimal_places=2)
+    package_start = models.DateField(null=True, blank=True)
+    router_password = models.CharField(max_length=255)
+    package_name = models.CharField(max_length=255)
+    router_name = models.CharField(max_length=255)
+    due = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(default=timezone.now)

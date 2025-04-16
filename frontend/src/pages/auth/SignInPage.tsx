@@ -1,8 +1,10 @@
-import {useState} from "react";
+import React, {useState} from "react";
 import AuthLayout from "./layout.tsx";
 import loginBg from "../../assets/bg/loginbg.svg"
 import GIcon from "../../ui/components/Icons.tsx";
 import {useSignIn} from "../../hooks/useSignIn.ts";
+import {Plus} from "lucide-react";
+import {useNavigate} from "react-router-dom";
 
 const SignInPage: React.FC = () => {
     const su = useSignIn()
@@ -31,23 +33,27 @@ const SignInPage: React.FC = () => {
 
     };
 
+    const navigate = useNavigate()
+
     return (
         <AuthLayout>
-            <div className="w-1/2">
+            <div className="w-full">
                 <h2 className="text-2xl font-semibold mb-4">
                     Hey there!<br/>Welcome back.
                 </h2>
-                <div className="flex justify-center">
+                <div className="flexjustify-center">
                     <img
                         alt="Illustration"
                         src={loginBg}
                         className="w-full h-full object-cover"
                     />
                 </div>
+
+
             </div>
 
-            <div className="w-1/2 px-6 py-4">
-                <form onSubmit={handleSubmit} className="space-y-4">
+            <div className=" px-6 w-full py-4 vstack">
+                <form onSubmit={handleSubmit} className="space-y-4 mb-auto flex-grow-1">
                     <div>
                         <label htmlFor="si-email" className="text-sm font-medium">Email address</label>
                         <input
@@ -102,6 +108,21 @@ const SignInPage: React.FC = () => {
                         }
                     </button>
                 </form>
+
+                <div className={'mt-10 hstack'}>
+
+                    <a href="/auth/register/"
+                       onClick={e => {
+                           e.preventDefault()
+                           const urlParams = (new URLSearchParams(window.location.search)).get('next');
+                           const p = urlParams ? '?next=' + urlParams : ''
+                           navigate('/auth/register/' + p)
+                       }}
+                       className="text-sm hstack gap-2   p-3 text-blue-500 ms-auto">
+                        <Plus size={16}/>
+                        Create account
+                    </a>
+                </div>
             </div>
         </AuthLayout>
     );

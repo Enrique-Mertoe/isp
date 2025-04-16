@@ -7,6 +7,7 @@ import AddMikrotik from "../ui/offcanvas/AddMikrotik.tsx";
 import {Inbox, Plus, RotateCw, Wifi, WifiOff} from "lucide-react";
 import {useDialog} from "../ui/providers/DialogProvider.tsx";
 import Signal from "../lib/Signal.ts";
+import {useNavigate} from "react-router-dom";
 
 
 export default function RoutersPage() {
@@ -149,10 +150,12 @@ export default function RoutersPage() {
                     </div>
                 </div>
                 <div className="bg-white mt-2 rounded-lg shadow pb-0 mx-1">
-                    {loading ? <div className="h-[5rem] justify-center items-center w-full flex">
-                            <GIcon color={"fill-amber-500 | fill-gray-800"} name={"g-loader"} size={64}/>
-                        </div>
-                        : <ItemList items={items}/>
+                    {loading && <div className="h-[5rem] justify-center items-center w-full flex">
+                        <GIcon color={"fill-amber-500 | fill-gray-800"} name={"g-loader"} size={64}/>
+                    </div>
+                    }
+                    {items.length > 0 &&
+                        <ItemList items={items}/>
                     }
                 </div>
             </Layout>
@@ -188,7 +191,8 @@ const RoutersTable: React.FC<{
     items: Mikrotik[];
 }> = ({items}) => {
     const [searchText, setSearchText] = useState("");
-    const dialog = useDialog()
+    const dialog = useDialog();
+    const navigate = useNavigate()
     return (
         <>
             <div className="mb-4">
@@ -275,9 +279,7 @@ const RoutersTable: React.FC<{
                                     </button>
                                     <button
                                         onClick={() => {
-                                            dialog.create({
-                                                content: <>uuu</>
-                                            })
+                                            navigate(`/mikrotiks/${router.id}/`)
                                         }}
                                         className="font-medium cursor-pointer p-2 bg-gray-300 rounded hover:bg-gray-400">
                                         View

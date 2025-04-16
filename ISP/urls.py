@@ -49,9 +49,10 @@ user_url_patterns = [
 ]
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', TemplateView.as_view(template_name='index.html')),
+    path('', views.home),
     path('users/', TemplateView.as_view(template_name='index.html')),
     path('mikrotiks/', TemplateView.as_view(template_name='index.html')),
+    path('mikrotiks/<int:pk>/', views.MTKView.as_view(), name='mtk-view'),
     path('packages/', TemplateView.as_view(template_name='index.html')),
     path('api/csrf/', set_csrf),
     path('auth/', include("user_dashboard.auth.urls")),

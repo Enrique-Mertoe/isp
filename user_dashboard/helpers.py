@@ -1,7 +1,7 @@
 # serializers.py
 from typing import Dict
 
-from .models import Router, Package, User, Payment, Ticket, Company
+from .models import Router, Package, User, Payment, Ticket, ISPProvider, Client
 
 
 def router_to_dict(router: Router):
@@ -38,6 +38,16 @@ def user_to_dict(user: User):
     }
 
 
+def client_to_dict(client: Client):
+    return {
+        "id": client.id,
+        "package": pkg_to_dict(client.package),
+        "package_price": client.package_price,
+        "package_start": client.package_start,
+        "due": client.due,
+    }
+
+
 def payment_to_dict(payment: Payment) -> Dict:
     return {
         "id": payment.id,
@@ -62,7 +72,9 @@ def ticket_to_dict(ticket: Ticket) -> Dict:
     }
 
 
-def company_to_dict(company: Company):
+def company_to_dict(company: ISPProvider):
+    if not company:
+        return {}
     return {
         "id": company.id,
         "name": company.name,
