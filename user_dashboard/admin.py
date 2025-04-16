@@ -17,9 +17,9 @@ class UserAdmin(admin.ModelAdmin):
     list_filter = ('role', 'is_active')
 
 class DetailAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone', 'package_name', 'package_price', 'status')
-    search_fields = ('user__username', 'phone', 'package_name')
-    list_filter = ('status',)
+    list_display = ('user', 'phone', 'first_name', 'last_name')
+    search_fields = ('user__username', 'phone', 'first_name', 'last_name')
+    list_filter = ()
 
 class BillingAdmin(admin.ModelAdmin):
     list_display = ('invoice', 'user', 'package_name', 'package_price', 'package_start', 'created_at')
@@ -32,9 +32,9 @@ class PaymentAdmin(admin.ModelAdmin):
     list_filter = ('payment_method', 'created_at')
 
 class TicketAdmin(admin.ModelAdmin):
-    list_display = ('number', 'subject', 'user', 'status', 'priority', 'created_at')
+    list_display = ('number', 'subject', 'user', 'status', 'priority')
     search_fields = ('number', 'subject', 'user__username')
-    list_filter = ('status', 'priority', 'created_at')
+    list_filter = ('status', 'priority')
 
 admin.site.register(Router, RouterAdmin)
 admin.site.register(Package, PackageAdmin)

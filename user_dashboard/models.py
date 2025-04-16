@@ -109,6 +109,7 @@ class Ticket(models.Model):
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets')
     number = models.CharField(max_length=20, unique=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def generate_random_number(self):
         while True:
