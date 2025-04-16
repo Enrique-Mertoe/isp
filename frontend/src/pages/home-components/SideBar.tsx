@@ -90,9 +90,9 @@ const NavList = function ({navItems}: { navItems: (NavItemType | "divider")[] })
                                 onClick={item.link.startsWith("/") ? (e) => handleNavigation(e, item.link) : undefined}
                                 className={`flex items-center 
                                 ${
-                                    page() == item.link ? "bg-gray-200" : ""
+                                    page() == item.link ? "bg-gray-200 dark:bg-gray-600" : ""
                                 }
-                                w-full ps-6 p-2 text-gray-900 hover:bg-gray-200 rounded-r-full transition`}
+                                w-full ps-6 p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-r-full transition`}
                             >
                                 <i className={`bi ${item.icon} text-lg me-3`}></i>
                                 <span className="flex-1">{item.label}</span>
