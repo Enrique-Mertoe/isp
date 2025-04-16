@@ -14,7 +14,8 @@ class User(AbstractUser):
         ('isp', 'ISP'),
     )
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='user')
-
+    isp = models.ForeignKey('ISPProvider', null=True, blank=True, on_delete=models.SET_NULL,
+                                     related_name='users')
     # package = models.ForeignKey(Package, related_name='users', on_delete=models.CASCADE)
 
     def is_admin(self):
@@ -41,7 +42,7 @@ class ISPProvider(models.Model):
     address = models.TextField()
     phone = models.CharField(max_length=50)
     email = models.EmailField()
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='isp')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='isp_account')
 
 
 class Router(models.Model):
