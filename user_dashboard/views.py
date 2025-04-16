@@ -1,17 +1,14 @@
+import routeros_api as r_os
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
-from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
-from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 
-from user_dashboard.forms import RouterForm, CompanyForm
 from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict, company_to_dict, client_to_dict
-from user_dashboard.models import Router, Package, User, ISPProvider, Client
-import routeros_api as r_os
+from user_dashboard.models import Router, Package, ISPProvider, Client
 
 
 # Create your views here.
@@ -161,12 +158,6 @@ def pkg_page(request):
 def pkg_list(request):
     if request.method == "POST":
         load_type = request.POST.get("load_type", "all")
-        # search = request.data.get("search", "")
-        #
-        # if search:
-        #     routers = routers.filter(
-        #         Q(name__icontains=search) | Q(ip_address__icontains=search)
-        #     )
         user_pkgs = Package.objects.filter(Q(
             router__isp__user=request.user.id
         ))

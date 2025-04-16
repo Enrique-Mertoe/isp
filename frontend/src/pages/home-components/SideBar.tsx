@@ -21,7 +21,7 @@ export default function SideBar() {
         {label: "Leads", icon: "bi-lightbulb", link: "#", badge: leadsCount},
         "divider",
         {label: "Packages", icon: "bi-cash-coin", link: "/packages", badge: packageCount},
-        {label: "Payments", icon: "bi-credit-card-2-front", link: "#"},
+        {label: "Payments", icon: "bi-credit-card-2-front", link: "/payments"},
         {label: "Vouchers", icon: "bi-ticket-perforated", link: "#", badge: 0},
         {label: "Expenses", icon: "bi-receipt-cutoff", link: "#"},
         "divider",
