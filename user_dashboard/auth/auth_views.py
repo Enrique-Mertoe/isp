@@ -5,7 +5,7 @@ from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetVi
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views import View
 from .forms import LoginForm, PasswordResetForm
-from ..models import User
+from ..models import User, ISPProvider, Detail
 
 
 class AjaxFormMixin(LoginView):
@@ -48,15 +48,34 @@ class RegisterView(View):
 
     def post(self, request):
         data = request.POST
-        print(data)
-        user = User.objects.create_user(
-            email=data['email'],
-            password=data['password'],
+        email = data['email']
+        password = data['password']
+        user = User.objects.create_user(email=email,
+                                        username=data['fname'] + '_' + data['lname'],
+                                        password=password)
+        user.role = 'isp'
+        user.save()
+        ISPProvider.objects.create(
+            name=data['fname'] + ' ' + data['fname'],
+            phone=data['phone'],
+            email=email,
+            user=user
+        )
+
+        Detail.objects.create(
+            user=user,
             first_name=data['fname'],
             last_name=data['lname'],
-            phone=data['fname'],
-            username=data['fname'] + '_' + data['lname']
+            phone=data['phone'],
         )
+        # user = User.objects.create_user(
+        #     email=data['email'],
+        #     password=data['password'],
+        #     first_name=data['fname'],
+        #     last_name=data['lname'],
+        #     phone=data['fname'],
+        #     username=data['fname'] + '_' + data['lname']
+        # )
         login(request, user)
         return JsonResponse({'ok': True})
 
