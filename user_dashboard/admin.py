@@ -32,9 +32,9 @@ class PaymentAdmin(admin.ModelAdmin):
     list_filter = ('payment_method', 'created_at')
 
 class TicketAdmin(admin.ModelAdmin):
-    list_display = ('number', 'subject', 'user', 'status', 'priority')
+    list_display = ('number', 'subject', 'user', 'status', 'priority', 'created_at')
     search_fields = ('number', 'subject', 'user__username')
-    list_filter = ('status', 'priority')
+    list_filter = ('status', 'priority', 'created_at')
 
 admin.site.register(Router, RouterAdmin)
 admin.site.register(Package, PackageAdmin)
