@@ -1,14 +1,16 @@
 import {useNavigate} from "react-router-dom";
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {useApp} from "../../ui/AppContext.tsx";
+import Signal from "../../lib/Signal.ts";
 
 export default function SideBar() {
+    const [isOpen, setIsOpen] = useState(false)
     const {
         usersCount,
         packageCount, routerCount,
         activeUsersCount,
         ticketsCount, leadsCount
-    } = useApp()
+    } = useApp();
 
     const navItems: (NavItemType | "divider")[] = [
         {label: "Dashboard", icon: "bi-speedometer2", link: "/"},
@@ -31,20 +33,34 @@ export default function SideBar() {
         {label: "Management", icon: "bi bi-gear-wide-connected", link: "/management"},
         {label: "Equipments", icon: "bi bi-hdd-rack", link: "#", badge: "..."},
     ];
-
+    useEffect(() => {
+        Signal.on("drawer", e => {
+            if (e === 'logo-sidebar')
+                setIsOpen(prev => !prev)
+        })
+    }, []);
 
     return (
         <>
             <aside id="logo-sidebar"
-                   className="fixed top-0 left-0 z-40 w-74 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
+                   className={`fixed top-0 left-0 z-40 w-74 h-screen bg-white  pt-20 transition-transform 
+                       bg-white border-r border-gray-200 md:translate-x-0
+                       ${
+                       isOpen ? 'show' : "-translate-x-full"
+                   }
+                       dark:bg-gray-800 dark:border-gray-700
+                       main-sidebar
+                       `}
                    aria-label="Sidebar">
+
                 <div className="h-full vstack overflow-y-auto pb-6  bg-white dark:bg-gray-800">
                     <div className=" flex-grow-1">
                         <NavList navItems={navItems}/>
                     </div>
                 </div>
             </aside>
-
+            {isOpen &&
+                <div className="sdb-backdrop md:hidden show"></div>}
         </>
     )
 }
@@ -76,7 +92,7 @@ const NavList = function ({navItems}: { navItems: (NavItemType | "divider")[] })
                                 ${
                                     page() == item.link ? "bg-gray-200" : ""
                                 }
-                                w-full ps-6 p-2 text-gray-700 hover:bg-gray-200 rounded-r-full transition`}
+                                w-full ps-6 p-2 text-gray-900 hover:bg-gray-200 rounded-r-full transition`}
                             >
                                 <i className={`bi ${item.icon} text-lg me-3`}></i>
                                 <span className="flex-1">{item.label}</span>

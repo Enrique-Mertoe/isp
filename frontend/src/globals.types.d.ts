@@ -19,6 +19,7 @@ type Mikrotik = {
     ip_address: string;
     location: string;
     username: string;
+    password: string;
 }
 
 type NetPackage = {
@@ -123,3 +124,11 @@ interface Ticket {
         username: string;
     };
 }
+
+declare type CompanyInfo = {
+    name: string;
+    address: string;
+    phone: string;
+    email: string;
+};
+declare type Closure = (...args) => void;

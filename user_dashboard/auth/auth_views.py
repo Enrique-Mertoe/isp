@@ -2,9 +2,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView, LoginView
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.views import View
 from .forms import LoginForm, PasswordResetForm
+from ..models import User
 
 
 class AjaxFormMixin(LoginView):
@@ -39,6 +40,33 @@ class LoginView(View):
             return JsonResponse({'ok': False, 'error': errors})
 
 
+class RegisterView(View):
+    template_name = 'index.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        data = request.POST
+        print(data)
+        user = User.objects.create_user(
+            email=data['email'],
+            password=data['password'],
+            first_name=data['fname'],
+            last_name=data['lname'],
+            phone=data['fname'],
+            username=data['fname'] + '_' + data['lname']
+        )
+        login(request, user)
+        return JsonResponse({'ok': True})
+
+    # else:
+    # errors = []
+    # for field_errors in form.errors.values():
+    #     errors.extend(field_errors)
+    # return JsonResponse({'ok': False, 'error': errors})
+
+
 class PasswordResetCustomView(AjaxFormMixin, DjangoPasswordResetView):
     template_name = 'index.html'
     form_class = PasswordResetForm
@@ -49,3 +77,18 @@ class PasswordResetCustomView(AjaxFormMixin, DjangoPasswordResetView):
 def logout_view(request):
     logout(request)
     return redirect('/auth/login/')
+
+
+def validate(request):
+    email = request.POST.get('email')
+    if request.method == 'POST' and email:
+        user = User.objects.filter(email=email).first()
+        if user:
+            return JsonResponse({
+                "ok": False,
+                'error': ['Email exists. Try another one']
+            }, status=200)
+        return JsonResponse({
+            "ok": True,
+        })
+    return HttpResponseBadRequest()

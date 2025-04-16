@@ -29,3 +29,4 @@ class LoginForm(forms.Form):
 
 class PasswordResetForm(DjangoPasswordResetForm):
     pass  # use Django's secure password reset form
+

@@ -5,10 +5,12 @@ import request from "../build/request.ts";
 import Config from "../assets/config.ts";
 import AddMikrotik from "../ui/offcanvas/AddMikrotik.tsx";
 import {Inbox, Plus, RotateCw, Wifi, WifiOff} from "lucide-react";
+import {useDialog} from "../ui/providers/DialogProvider.tsx";
+import Signal from "../lib/Signal.ts";
+import {useNavigate} from "react-router-dom";
 
 
-
-export default function MikroTikPage() {
+export default function RoutersPage() {
 
     const [loading, setLoading] = useState(true)
     const [items, setItems] = useState<Mikrotik[]>([])
@@ -19,6 +21,10 @@ export default function MikroTikPage() {
 
     useEffect(() => {
         fetchItems(activeTab);
+        Signal.on("rts-page-reload", () => fetchItems(activeTab))
+        return () => {
+            Signal.off("rts-page-reload");
+        }
     }, [activeTab]);
     const fetchItems = (tab: string) => {
         setLoading(true);
@@ -46,11 +52,11 @@ export default function MikroTikPage() {
                 <div className="bg-white rounded-lg shadow p-4 pb-0 mx-1">
                     {/* Card Header */}
                     <div
-                        className="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4">
+                        className="flex flex-col md:flex-row justify-between items-start md:items-center pb-4">
                         <div className="flex flex-col gap-2">
-                            <h3 className="text-amber-600 text-2xl font-semibold mb-0">Mikrotik Devices</h3>
+                            <h3 className="text-amber-600 text-2xl font-semibold mb-0">Routers</h3>
                             <p className="text-gray-600 text-sm">
-                                List of Mikrotik devices
+                                List of Router devices
                             </p>
                         </div>
                         <div className="flex gap-2 mt-4 md:mt-0">
@@ -69,7 +75,7 @@ export default function MikroTikPage() {
                                 data-bs-toggle="offcanvas"
                             >
                                 <Plus className="text-lg"/>
-                                Link Mikrotik
+                                Link Router
                             </a>
                             <AddMikrotik/>
                         </div>
@@ -144,10 +150,12 @@ export default function MikroTikPage() {
                     </div>
                 </div>
                 <div className="bg-white mt-2 rounded-lg shadow pb-0 mx-1">
-                    {loading ? <div className="h-[5rem] justify-center items-center w-full flex">
-                            <GIcon color={"fill-amber-500 | fill-gray-800"} name={"g-loader"} size={64}/>
-                        </div>
-                        : <ItemList items={items}/>
+                    {loading && <div className="h-[5rem] justify-center items-center w-full flex">
+                        <GIcon color={"fill-amber-500 | fill-gray-800"} name={"g-loader"} size={64}/>
+                    </div>
+                    }
+                    {items.length > 0 &&
+                        <ItemList items={items}/>
                     }
                 </div>
             </Layout>
@@ -165,13 +173,13 @@ function ItemList({items}: ItemListProps) {
     return (
         <>
             {items?.length > 0 ?
-                <MikrotikTable items={items}/>
+                <RoutersTable items={items}/>
                 :
                 <div className="min-h-[5rem] py-10 justify-center gap-2 flex-col items-center w-full flex">
                     <Inbox size={64}/>
                     <strong> No Device Connected</strong>
                     <p className={"text-gray-500"}>
-                        Add mikrotik by clicking the button above
+                        Add router by clicking the button above
                     </p>
                 </div>
             }
@@ -179,11 +187,12 @@ function ItemList({items}: ItemListProps) {
     )
 }
 
-const MikrotikTable: React.FC<{
+const RoutersTable: React.FC<{
     items: Mikrotik[];
 }> = ({items}) => {
     const [searchText, setSearchText] = useState("");
-
+    const dialog = useDialog();
+    const navigate = useNavigate()
     return (
         <>
             <div className="mb-4">
@@ -222,6 +231,9 @@ const MikrotikTable: React.FC<{
                             Username
                         </th>
                         <th scope="col" className="px-6 py-3">
+                            Password
+                        </th>
+                        <th scope="col" className="px-6 py-3">
                             Action
                         </th>
                     </tr>
@@ -246,13 +258,32 @@ const MikrotikTable: React.FC<{
                                 <td className="px-6 py-4">{router.location}</td>
                                 <td className="px-6 py-4">{router.ip_address}</td>
                                 <td className="px-6 py-4">{router.username}</td>
+                                <td className="px-6 py-4">{router.password}</td>
                                 <td className="px-6 flex gap-2 py-4">
-                                    <a href="#" className="font-medium  p-2 bg-gray-300 rounded hover:bg-gray-400">
+                                    <button
+                                        onClick={() => {
+                                            const d = dialog.create({
+                                                content: <RouterEdit router={router} dismiss={() => d.dismiss()}/>,
+                                                cancelable: false,
+                                            })
+                                        }}
+                                        className="font-sm hstack gap-2 cursor-pointer px-2 py-0 text-white bg-amber-300 rounded hover:bg-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                             fill="currentColor" className="bi bi-pencil-square" viewBox="0 0 16 16">
+                                            <path
+                                                d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                            <path fillRule="evenodd"
+                                                  d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                                        </svg>
                                         Edit
-                                    </a>
-                                    <a href="#" className="font-medium  p-2 bg-gray-300 rounded hover:bg-gray-400">
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            navigate(`/mikrotiks/${router.id}/`)
+                                        }}
+                                        className="font-medium cursor-pointer p-2 bg-gray-300 rounded hover:bg-gray-400">
                                         View
-                                    </a>
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -262,3 +293,111 @@ const MikrotikTable: React.FC<{
         </>
     );
 };
+
+
+const RouterEdit = ({router, dismiss}: {
+    router: Mikrotik, dismiss: Closure
+}) => {
+    const [loading, setLoading] = useState(false)
+    const [data, setDashData] = useState<Mikrotik>(router)
+    const editRouter = (eventTarget: HTMLFormElement) => {
+        setLoading(true);
+        const fd = new FormData(eventTarget)
+        request.post(Config.baseURL + "/api/routers/" + router.id + "/update/", fd)
+            .then(res => {
+                setLoading(false);
+                if (res.status == 200) {
+                    alert("Edited successfully")
+                    dismiss()
+                    Signal.trigger("rts-page-reload")
+                }
+            }).catch(err => {
+            console.log(err);
+            setLoading(false);
+        });
+    }
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
+        const {name, value} = e.target;
+        setDashData((prev) => ({...prev, [name]: value}));
+    };
+    return (
+        <>
+            <div className="p-4 sm:p-8">
+
+                <h2 className="font-semibold text-xl text-gray-800 leading-tight border-b-2 border-slate-100 pb-4">
+                    Edit Router
+                </h2>
+
+                <form method="put" onSubmit={event => {
+                    event.preventDefault();
+                    editRouter(event.target as HTMLFormElement)
+                }} className="mt-6 space-y-6">
+                    <div className="grid gap-4">
+
+                        <div>
+                            <div>
+                                <label className="block font-medium text-sm text-gray-700" htmlFor="name">
+                                    Router name
+                                </label>
+                                <input
+                                    className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full bg-gray-100"
+                                    id="name" name={"name"} type="text" value={data.name}/>
+                            </div>
+                            <div>
+                                <label className="block font-medium text-sm text-gray-700 mt-4" htmlFor="location">
+                                    Location
+                                </label>
+                                <input
+                                    onChange={handleChange}
+                                    className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                    id="location" name="location" type="text" value={data.location}/>
+                            </div>
+                            <div>
+                                <label className="block font-medium text-sm text-gray-700 mt-4" htmlFor="ip">
+                                    Router IP
+                                </label>
+                                <input
+                                    onChange={handleChange}
+                                    className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                    id="ip" name="ip" type="text" value={data.ip_address} required/>
+                            </div>
+                            <div>
+                                <label className="block font-medium text-sm text-gray-700 mt-4" htmlFor="username">
+                                    Router username
+                                </label>
+                                <input
+                                    onChange={handleChange}
+                                    className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                    id="username" name="username" type="text" value={data.username} required/>
+                            </div>
+                            <div>
+                                <label className="block font-medium text-sm text-gray-700 mt-4" htmlFor="password">
+                                    Router password
+                                </label>
+                                <input
+                                    onChange={handleChange}
+                                    className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
+                                    id="password" name="password" type="text" value={data.password} required/>
+                            </div>
+
+                            <div className="flex items-center gap-4 mt-4">
+                                <button type="submit"
+                                        className="inline-flex gap-2 items-center px-4 py-2 bg-amber-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700  active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    Update
+                                    {loading && <GIcon name={"g-loader"} color={"fill-amber-500"}/>}
+                                </button>
+                                <span
+                                    onClick={() => dismiss()}
+                                    className="inline-flex gap-2 items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700  active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    Cancel
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </>
+    )
+}
