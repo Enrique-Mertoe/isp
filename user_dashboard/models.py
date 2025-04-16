@@ -137,12 +137,13 @@ class Package(models.Model):
 
 
 class Client(models.Model):
-    package = models.ForeignKey(Package, related_name='clients', on_delete=models.CASCADE)
-    isp = models.ForeignKey(User, related_name='clients', on_delete=models.CASCADE)
-    package_price = models.DecimalField(max_digits=10, decimal_places=2)
+    package = models.ForeignKey(Package, related_name='packages', on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255)
+    isp = models.ForeignKey(User, related_name='ispAccount', on_delete=models.CASCADE)
     package_start = models.DateField(null=True, blank=True)
     router_password = models.CharField(max_length=255)
-    package_name = models.CharField(max_length=255)
-    router_name = models.CharField(max_length=255)
-    due = models.DecimalField(max_digits=10, decimal_places=2)
+    router_username = models.CharField(max_length=255)
+    due = models.DateTimeField()
     created_at = models.DateTimeField(default=timezone.now)
+

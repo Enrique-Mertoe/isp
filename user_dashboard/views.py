@@ -6,6 +6,12 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from datetime import datetime, timedelta
+from django.utils import timezone
 
 from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict, company_to_dict, client_to_dict
 from user_dashboard.models import Router, Package, ISPProvider, Client
@@ -293,17 +299,26 @@ def user_create(request):
     if request.method == "POST":
         try:
             data = request.POST
-            print(data)
-            # user = User.objects.create(
-            #     name=data.get('name'),
-            #     type=data.get('type'),
-            #     upload_speed=data.get('upload_speed'),
-            #     download_speed=data.get('download_speed'),
-            #     price=data.get('price'),
-            #     router=Router.objects.get(id=data.get('router'))
-            # )
-            # return JsonResponse(user_to_dict(user), status=201)
-            return HttpResponseBadRequest()
+            # Create the client with the current user as isp
+            client = Client.objects.create(
+                phone=data.get('phone'),
+                isp=request.user,
+                router_username=data.get('username'),
+                router_password=data.get('password'),
+                due=data.get('expiry_date') or timezone.now() + timedelta(days=30),  # Default to 30 days if not provided
+                package_start=timezone.now()
+            )
+            
+            # Set the package if provided
+            package_id = data.get('package')
+            if package_id:
+                package = Package.objects.get(id=package_id)
+                client.package = package
+                client.save()
+            
+            return JsonResponse(client_to_dict(client), status=201)
+        except Package.DoesNotExist:
+            return JsonResponse({'error': 'Package not found'}, status=404)
         except Exception as e:
             print(e)
             return JsonResponse({'error': str(e)}, status=400)
@@ -388,3 +403,37 @@ class MTKView(View):
             return JsonResponse({
                 "error": "Router connection failed."
             }, status=401)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_packages(request):
+    """
+    Get all packages associated with the logged-in user
+    """
+    try:
+        # Get the client associated with the logged-in user
+        client = Client.objects.get(user=request.user)
+        
+        # Get all packages associated with the client
+        packages = client.packages.all()
+        
+        # Serialize the packages
+        serializer = PackageSerializer(packages, many=True)
+        
+        return Response({
+            'status': 'success',
+            'data': serializer.data
+        })
+    except Client.DoesNotExist:
+        raise
+        return Response({
+            'status': 'error',
+            'message': 'Client profile not found'
+        }, status=404)
+    except Exception as e:
+        raise
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)

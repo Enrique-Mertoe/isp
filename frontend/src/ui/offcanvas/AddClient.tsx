@@ -1,29 +1,72 @@
-import {FormEvent, useCallback, useState} from "react";
+import {FormEvent, useCallback, useState, useEffect} from "react";
 import OffCanvas from "./OffCanvas";
 import request from "../../build/request.ts";
-import Config from "../../assets/config.ts";
 import GIcon from "../components/Icons.tsx";
+import * as bootstrap from 'bootstrap';
 
 export default function AddClient() {
     const [showPassword, setShowPassword] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [packages, setPackages] = useState<{id: number, name: string}[]>([]);
+    
+    useEffect(() => {
+        const fetchPackages = async () => {
+            try {
+                const response = await request.post("/api/pkgs/");
+                if (response.data.pkgs) {
+                    console.log(response.data.pkgs);
+                    setPackages(response.data.pkgs);
+                }
+            } catch (error) {
+                console.error("Error fetching packages:", error);
+            }
+        };
+        
+        fetchPackages();
+    }, []);
+
     const onSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            setLoading(true)
+            setLoading(true);
             const formData = new FormData(e.target as HTMLFormElement);
+            
+            // Create the client data object
+            const clientData = {
+                user_type: formData.get('user_type'),
+                first_name: formData.get('first_name'),
+                last_name: formData.get('last_name'),
+                username: formData.get('username'),
+                password: formData.get('password'),
+                package: formData.get('package'),
+                expiry_date: formData.get('expiry-date'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                address: formData.get('address'),
+                comment: formData.get('comment')
+            };
 
-            const response = await request.post(Config.baseURL + "/api/user/create/", formData);
-            setLoading(false)
+            const response = await request.post("/api/user/create/", clientData);
+            setLoading(false);
+            
             if (response.status === 201) {
-                alert("Package added successfully!");
-            }
-            if (response.data.error) {
-                alert(response.data.error)
+                alert("Client added successfully!");
+                // Close the offcanvas
+                const offcanvas = document.getElementById('drawer-add-package');
+                if (offcanvas) {
+                    const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
+                    if (bsOffcanvas) {
+                        bsOffcanvas.hide();
+                    }
+                }
+                // Reset the form
+                (e.target as HTMLFormElement).reset();
+            } else if (response.data.error) {
+                alert(response.data.error);
             }
         } catch (error: unknown) {
-            console.error("Error saving router:", error);
-            alert("Failed to save router.");
+            console.error("Error creating client:", error);
+            alert("Failed to create client.");
             setLoading(false);
         }
     }, []);
@@ -54,8 +97,12 @@ export default function AddClient() {
                                         name={"user_type"}
                                         className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                                         <option value="">Select an option</option>
-                                        <option>PPOE</option>
-                                        <option>Hotspot</option>
+                                        {packages.length > 0 && (
+                                            <>
+                                                <option value="pppoe">PPPOE</option>
+                                                <option value="hotspot">Hotspot</option>
+                                            </>
+                                        )}
                                     </select>
                                 </div>
 
@@ -127,8 +174,11 @@ export default function AddClient() {
                                         name={"package"}
                                         className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                                         <option value="">Select an option</option>
-                                        <option>Basic</option>
-                                        <option>Premium</option>
+                                        {packages.map((pkg) => (
+                                            <option key={pkg.id} value={pkg.id}>
+                                                {pkg.name}
+                                            </option>
+                                        ))}
                                     </select>
                                     <button
                                         type="button"
