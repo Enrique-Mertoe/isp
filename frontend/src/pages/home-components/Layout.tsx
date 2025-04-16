@@ -31,7 +31,7 @@ export default function Layout({children}: {
         });
     }, []);
     return (
-        <div className={"bg-[#f5f9fc] min-h-screen"}>
+        <div className={"bg-[#f5f9fc] dark:bg-[#081324] min-h-screen"}>
             <Header/>
             <SideBar/>
             <div className="p-4 md:ml-74">
