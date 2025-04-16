@@ -46,7 +46,7 @@ export default function ClientsPage() {
     };
     return (
         <Layout>
-            <div className="bg-white rounded-lg shadow p-4 pb-0 mx-1">
+            <div className="bg-inherit rounded-lg pb-0 mx-1">
                 {/* Card Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-4">
                     <div className="flex flex-col gap-2">
@@ -146,7 +146,7 @@ export default function ClientsPage() {
                     </div>
                 </div>
             </div>
-            <div className="bg-white mt-2 rounded-lg shadow p-4 pb-0 mx-1">
+            <div className="bg-inherit mt-2 rounded-lg pb-0 mx-1">
                 {loading ? <div className="h-[5rem] justify-center items-center w-full flex">
                         <GIcon color={"fill-amber-500 | fill-gray-800"} name={"g-loader"} size={64}/>
                     </div>
@@ -199,7 +199,7 @@ const ClientsTable: React.FC<{
                 <label htmlFor="table-search" className="sr-only">Search</label>
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <svg className="w-4 h-4 text-gray-500" aria-hidden="true"
+                        <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
                              xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                   d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
@@ -210,11 +210,12 @@ const ClientsTable: React.FC<{
                         id="table-search"
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
-                        className="block pt-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+                        className="block py-2 pl-10 text-sm outline-0 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg w-80 bg-gray-50 dark:bg-gray-700 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Search packages..."
                     />
                 </div>
             </div>
+
 
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
                 <table className="w-full text-sm text-left text-gray-800">
@@ -254,7 +255,7 @@ const ClientsTable: React.FC<{
                             <td className="px-6 py-4">{user.package.type}</td>
                             <td className="px-6 py-4">{user.package.upload_speed}</td>
                             <td className="px-6 py-4">{user.package.download_speed}</td>
-                            <td className="px-6 py-4">{user.package.price}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">Kes {user.package.price}</td>
                             <td className="px-6 py-4">{user.router_username}</td>
                             <td className="px-6 py-4">
                                 <a href="#" className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit
