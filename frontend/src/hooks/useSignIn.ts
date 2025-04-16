@@ -49,7 +49,7 @@ export const useSignIn = () => {
     const createUser = async (formData: FormData): Promise<SignInResponse> => {
         setError(null);
         try {
-            const response = await request.post('auth/register/', formData);
+            const response = await request.post('/auth/register/', formData);
             return response.data;
         } catch (err: any) {
             const errMsg =

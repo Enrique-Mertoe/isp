@@ -199,14 +199,11 @@ def pkg_create(request):
             router = Router.objects.get(id=data.get('router'))
             if not router:
                 return JsonResponse({'error': "Unrecognised router."}, status=400)
-            conn = r_os.RouterOsApiPool(host='192.168.88.1',
-                                        password='12345_-',
-                                        username='admin',
-                                        plaintext_login=True)
+
             try:
-                api = conn.get_api()
-                api.get_resource("ppp/profile").add(name=data.get('name'))
-                conn.disconnect()
+                rate_limit = f"{data.get('upload_speed')}/{data.get('download_speed')}"
+                api = router.connection()
+                api.get_resource("ppp/profile").add(name=data.get('name'), rate_limit=rate_limit)
             except Exception as e:
                 return JsonResponse({'error': "Router connection failed"}, status=400)
 
