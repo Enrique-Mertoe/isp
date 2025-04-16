@@ -35,7 +35,7 @@ export const useSignIn = () => {
         try {
             const formData = new FormData();
             formData.append('email', email);
-            const response = await request.post("auth/validate/", formData);
+            const response = await request.post("/auth/validate/", formData);
             return response.data;
         } catch (err: any) {
             const errMsg =
