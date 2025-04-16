@@ -303,6 +303,7 @@ def user_create(request):
             # Create the client with the current user as isp
             client = Client.objects.create(
                 phone=data.get('phone'),
+                full_name=data.get('full_name'),
                 isp=request.user,
                 package=Package.objects.get(id=data.get('package')),
                 router_username=data.get('username'),
