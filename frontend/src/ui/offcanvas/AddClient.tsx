@@ -2,27 +2,27 @@ import {FormEvent, useCallback, useState, useEffect} from "react";
 import OffCanvas from "./OffCanvas";
 import request from "../../build/request.ts";
 import GIcon from "../components/Icons.tsx";
-import * as bootstrap from 'bootstrap';
+// import bootstrap from "bootstrap";
 
 export default function AddClient() {
     const [showPassword, setShowPassword] = useState(true);
     const [loading, setLoading] = useState(false);
-    const [packages, setPackages] = useState<{id: number, name: string}[]>([]);
-    
-    useEffect(() => {
-        const fetchPackages = async () => {
-            try {
-                const response = await request.post("/api/pkgs/");
-                if (response.data.pkgs) {
-                    console.log(response.data.pkgs);
-                    setPackages(response.data.pkgs);
-                }
-            } catch (error) {
-                console.error("Error fetching packages:", error);
+    const [packages, setPackages] = useState<{ id: number, name: string }[]>([]);
+
+    const fetchPackages = async () => {
+        try {
+            const response = await request.post("/api/pkgs/");
+            if (response.data.pkgs) {
+                console.log(response.data.pkgs);
+                setPackages(response.data.pkgs);
             }
-        };
-        
-        fetchPackages();
+        } catch (error) {
+            console.error("Error fetching packages:", error);
+        }
+    };
+    useEffect(() => {
+
+        fetchPackages().then();
     }, []);
 
     const onSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
@@ -30,7 +30,7 @@ export default function AddClient() {
         try {
             setLoading(true);
             const formData = new FormData(e.target as HTMLFormElement);
-            
+
             // Create the client data object
             const clientData = {
                 user_type: formData.get('user_type'),
@@ -48,17 +48,17 @@ export default function AddClient() {
 
             const response = await request.post("/api/user/create/", clientData);
             setLoading(false);
-            
+
             if (response.status === 201) {
                 alert("Client added successfully!");
                 // Close the offcanvas
-                const offcanvas = document.getElementById('drawer-add-package');
-                if (offcanvas) {
-                    const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
-                    if (bsOffcanvas) {
-                        bsOffcanvas.hide();
-                    }
-                }
+                // const offcanvas = document.getElementById('drawer-add-package');
+                // if (offcanvas) {
+                //     const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
+                //     if (bsOffcanvas) {
+                //         bsOffcanvas.hide();
+                //     }
+                // }
                 // Reset the form
                 (e.target as HTMLFormElement).reset();
             } else if (response.data.error) {
@@ -90,12 +90,12 @@ export default function AddClient() {
                             <div className="grid grid-cols-2 gap-1">
                                 {/* Type */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-white">
                                         Type <span className="text-red-600">*</span>
                                     </label>
                                     <select
                                         name={"user_type"}
-                                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                                         <option value="">Select an option</option>
                                         {packages.length > 0 && (
                                             <>
@@ -108,11 +108,11 @@ export default function AddClient() {
 
                                 {/* First Name */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">First Name</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-white">First Name</label>
                                     <input
                                         type="text"
                                         name={"first_name"}
-                                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                         placeholder="First name"
                                     />
                                 </div>
@@ -120,44 +120,44 @@ export default function AddClient() {
 
                             {/* Last Name */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">Last Name</label>
                                 <input
                                     name={"last_name"}
                                     type="text"
-                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     placeholder="Last name"
                                 />
                             </div>
 
                             {/* Username */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">
                                     Username <span className="text-red-600">*</span>
                                 </label>
                                 <input
                                     name={"username"}
                                     type="text"
-                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     placeholder="Username"
                                 />
                             </div>
 
                             {/* Password */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">
                                     Password <span className="text-red-600">*</span>
                                 </label>
                                 <div className="flex rounded-md shadow-sm mt-1">
                                     <input
                                         name={"password"}
                                         type={showPassword ? 'text' : 'password'}
-                                        className="flex-1 block w-full rounded-l-md border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                        className="flex-1 block w-full rounded-l-md border border-gray-300 dark:border-gray-100 focus:border-blue-500 focus:ring focus:ring-blue-200"
                                         placeholder="Enter password"
                                     />
                                     <button
                                         type="button"
                                         onClick={togglePassword}
-                                        className="px-3 py-2 bg-gray-100 border border-l-0 border-gray-300 rounded-r-md text-sm text-gray-700 hover:bg-gray-200"
+                                        className="px-3 py-2 bg-gray-100 border border-l-0 border-gray-300 dark:border-gray-100 rounded-r-md text-sm text-gray-700 dark:text-white hover:bg-gray-200"
                                     >
                                         {showPassword ? 'Hide' : 'Show'}
                                     </button>
@@ -166,13 +166,13 @@ export default function AddClient() {
 
                             {/* Package */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">
                                     Package <span className="text-red-600">*</span>
                                 </label>
                                 <div className="flex items-center gap-2 mt-1">
                                     <select
                                         name={"package"}
-                                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
                                         <option value="">Select an option</option>
                                         {packages.map((pkg) => (
                                             <option key={pkg.id} value={pkg.id}>
@@ -182,7 +182,7 @@ export default function AddClient() {
                                     </select>
                                     <button
                                         type="button"
-                                        className="p-2 rounded-md border border-gray-300 hover:bg-gray-100"
+                                        className="p-2 rounded-md border border-gray-300 dark:border-gray-100 hover:bg-gray-100"
                                     >
                                         <i className="bi bi-plus-lg"></i>
                                     </button>
@@ -194,16 +194,16 @@ export default function AddClient() {
 
                             {/* Expiry Date */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Expiry Date</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">Expiry Date</label>
                                 <div className="flex items-center rounded-md shadow-sm mt-1">
                     <span
-                        className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                        className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-100 bg-gray-50 text-gray-500 text-sm">
                       <i className="bi bi-calendar"></i>
                     </span>
                                     <input
                                         name={"expiry-date"}
                                         type="date"
-                                        className="flex-1 block w-full rounded-r-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                        className="flex-1 block w-full rounded-r-md border-gray-300 dark:border-gray-100 focus:border-blue-500 focus:ring focus:ring-blue-200"
                                         placeholder="mm/dd/yyyy, --:--:-- --"
                                     />
                                 </div>
@@ -214,43 +214,43 @@ export default function AddClient() {
 
                             {/* Phone Number */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">Phone Number</label>
                                 <input
                                     type="text"
                                     name={"phone"}
-                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     placeholder="e.g. +254712345678"
                                 />
                             </div>
 
                             {/* Email */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">Email Address</label>
                                 <input
                                     type="email"
                                     name={"email"}
-                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     placeholder="you@example.com"
                                 />
                             </div>
 
                             {/* Address */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Address</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">Address</label>
                                 <input
                                     name={"address"}
                                     type="text"
-                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     placeholder="123 Main St, City, Country"
                                 />
                             </div>
 
                             {/* Comment */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Comment</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">Comment</label>
                                 <textarea
                                     name={"comment"}
-                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     placeholder="Optional comment"
                                 />
                             </div>

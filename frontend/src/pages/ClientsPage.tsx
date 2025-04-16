@@ -7,7 +7,7 @@ import GIcon from "../ui/components/Icons.tsx";
 import AddClient from "../ui/offcanvas/AddClient.tsx";
 
 type UserResponse = {
-    users: UserInfo[];
+    users: ClientInfo[];
     all_count: number;
     pppoe_count: number;
     hotspot_count: number;
@@ -15,7 +15,7 @@ type UserResponse = {
 
 export default function ClientsPage() {
     const [loading, setLoading] = useState(true)
-    const [items, setItems] = useState<UserInfo[]>([])
+    const [items, setItems] = useState<ClientInfo[]>([])
     const [activeTab, setActiveTab] = useState<string>("all");
     const [allCount, setAllCount] = useState(0);
     const [hotspotCount, setHotspotCount] = useState(0);
@@ -159,7 +159,7 @@ export default function ClientsPage() {
 }
 
 interface ItemListProps {
-    items: UserInfo[]
+    items: ClientInfo[]
 }
 
 function ItemList({items}: ItemListProps) {
@@ -181,16 +181,17 @@ function ItemList({items}: ItemListProps) {
 }
 
 const ClientsTable: React.FC<{
-    items: UserInfo[];
+    items: ClientInfo[];
 }> = ({items}) => {
     const [searchText, setSearchText] = useState("");
-
+    console.log("eee", items)
     const filteredUsers = items.filter(user =>
-        user.username.toLowerCase().includes(searchText.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchText.toLowerCase()) ||
+        user.full_name.toLowerCase().includes(searchText.toLowerCase()) ||
+        user.phone.toLowerCase().includes(searchText.toLowerCase()) ||
         user.package.name.toLowerCase().includes(searchText.toLowerCase()) ||
         user.package.type.toLowerCase().includes(searchText.toLowerCase())
     );
+
 
     return (
         <>
@@ -219,48 +220,48 @@ const ClientsTable: React.FC<{
                 <table className="w-full text-sm text-left text-gray-800">
                     <thead className="text-xs text-white uppercase bg-gray-400 border-b border-blue-400">
                     <tr>
-                        <th className="px-6 py-3">Name</th>
+                        <th scope="col" className="p-4">
+                            <div className="flex items-center">
+                                <input id="checkbox-all-search" type="checkbox"
+                                       className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"/>
+                                <label htmlFor="checkbox-all-search" className="sr-only">checkbox</label>
+                            </div>
+                        </th>
+                        <th className="px-6 py-3">Client Name</th>
+                        <th className="px-6 py-3">Phone</th>
+                        <th className="px-6 py-3">Package Name</th>
                         <th className="px-6 py-3">Type</th>
-                        <th className="px-6 py-3">Upload Speed</th>
-                        <th className="px-6 py-3">Download Speed</th>
+                        <th className="px-6 py-3">Upload</th>
+                        <th className="px-6 py-3">Download</th>
                         <th className="px-6 py-3">Price</th>
-                        <th className="px-6 py-3">Router</th>
+                        <th className="px-6 py-3">Router Username</th>
                         <th className="px-6 py-3">Action</th>
                     </tr>
+
                     </thead>
                     <tbody>
                     {filteredUsers.map((user, index) => (
-                        <tr key={index+user.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <tr key={index + user.id} className="...">
                             <td className="w-4 p-4">
                                 <div className="flex items-center">
-                                    <input id="checkbox-table-search-1" type="checkbox"
-                                           className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"/>
-                                    <label htmlFor="checkbox-table-search-1" className="sr-only">checkbox</label>
+                                    <input id={`checkbox-${user.id}`} type="checkbox" className="..."/>
+                                    <label htmlFor={`checkbox-${user.id}`} className="sr-only">checkbox</label>
                                 </div>
                             </td>
-                            <th scope="row"
-                                className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
-                                <img className="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-1.jpg"
-                                     alt="Jese image"/>
-                                <div className="ps-3">
-                                    <div className="text-base font-semibold">{user.username}</div>
-                                    {/*<div className="font-normal text-gray-500">{user.email}</div>*/}
-                                </div>
-                            </th>
-                            <td className="px-6 py-4">
-                                {user.email}
-                            </td>
-                            <td className="px-6 py-4">
-                                <div className="flex items-center">
-                                    <div className="h-2.5 w-2.5 rounded-full bg-green-500 me-2"></div>
-                                    {user.package.name}
-                                </div>
-                            </td>
+                            <td className="px-6 py-4">{user.full_name}</td>
+                            <td className="px-6 py-4">{user.phone}</td>
+                            <td className="px-6 py-4">{user.package.name}</td>
+                            <td className="px-6 py-4">{user.package.type}</td>
+                            <td className="px-6 py-4">{user.package.upload_speed}</td>
+                            <td className="px-6 py-4">{user.package.download_speed}</td>
+                            <td className="px-6 py-4">{user.package.price}</td>
+                            <td className="px-6 py-4">{user.router_username}</td>
                             <td className="px-6 py-4">
                                 <a href="#" className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit
                                     user</a>
                             </td>
                         </tr>
+
                     ))}
                     </tbody>
                 </table>

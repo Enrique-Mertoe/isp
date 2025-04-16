@@ -79,14 +79,14 @@ export default function AddMikrotik() {
                 <div className="offcanvas-body vstack gap-5">
                     <div className="py-4">
 
-                        <p className="text-sm text-gray-500">Enter the router information below to register a new
+                        <p className="text-sm text-gray-500 dark:text-gray-200">Enter the router information below to register a new
                             Mikrotik device.</p>
                         <form className="mt-4 space-y-4"
                               onSubmit={onSubmit}
                         >
                             {/* Router Name */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">
                                     Router Name <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -95,26 +95,26 @@ export default function AddMikrotik() {
                                     name={"routerName"}
                                     value={form.routerName}
                                     placeholder="Router name"
-                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 />
                             </div>
 
                             {/* Location */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Location</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">Location</label>
                                 <input
                                     name={"location"}
                                     value={form.location}
                                     type="text"
                                     onChange={handleChange}
                                     placeholder="e.g. Office, Main Branch"
-                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 />
                             </div>
 
                             {/* Router IP */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">
                                     Router IP <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -123,13 +123,13 @@ export default function AddMikrotik() {
                                     name={"ip"}
                                     value={form.ip}
                                     placeholder="e.g. 192.168.88.1"
-                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 />
                             </div>
 
                             {/* Router Username */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">
                                     Router Username <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -138,13 +138,13 @@ export default function AddMikrotik() {
                                     name={"username"}
                                     type="text"
                                     placeholder="e.g. admin"
-                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 />
                             </div>
 
                             {/* Router Password */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-white">
                                     Router Password <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -153,7 +153,7 @@ export default function AddMikrotik() {
                                     value={form.password}
                                     name={"password"}
                                     placeholder="Password"
-                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 />
                             </div>
                             {
@@ -185,11 +185,11 @@ export default function AddMikrotik() {
                     {/*                <form className="mt-4 space-y-4">*/}
                     {/*                    /!* Type *!/*/}
                     {/*                    <div>*/}
-                    {/*                        <label className="block text-sm font-medium text-gray-700">*/}
+                    {/*                        <label className="block text-sm font-medium text-gray-700 dark:text-white">*/}
                     {/*                            Type <span className="text-red-600">*</span>*/}
                     {/*                        </label>*/}
                     {/*                        <select*/}
-                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">*/}
+                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">*/}
                     {/*                            <option value="">Select an option</option>*/}
                     {/*                            <option>PPOE</option>*/}
                     {/*                            <option>Hotspot</option>*/}
@@ -198,51 +198,51 @@ export default function AddMikrotik() {
 
                     {/*                    /!* First Name *!/*/}
                     {/*                    <div>*/}
-                    {/*                        <label className="block text-sm font-medium text-gray-700">First Name</label>*/}
+                    {/*                        <label className="block text-sm font-medium text-gray-700 dark:text-white">First Name</label>*/}
                     {/*                        <input*/}
                     {/*                            type="text"*/}
-                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
+                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
                     {/*                            placeholder="First name"*/}
                     {/*                        />*/}
                     {/*                    </div>*/}
 
                     {/*                    /!* Last Name *!/*/}
                     {/*                    <div>*/}
-                    {/*                        <label className="block text-sm font-medium text-gray-700">Last Name</label>*/}
+                    {/*                        <label className="block text-sm font-medium text-gray-700 dark:text-white">Last Name</label>*/}
                     {/*                        <input*/}
                     {/*                            type="text"*/}
-                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
+                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
                     {/*                            placeholder="Last name"*/}
                     {/*                        />*/}
                     {/*                    </div>*/}
 
                     {/*                    /!* Username *!/*/}
                     {/*                    <div>*/}
-                    {/*                        <label className="block text-sm font-medium text-gray-700">*/}
+                    {/*                        <label className="block text-sm font-medium text-gray-700 dark:text-white">*/}
                     {/*                            Username <span className="text-red-600">*</span>*/}
                     {/*                        </label>*/}
                     {/*                        <input*/}
                     {/*                            type="text"*/}
-                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
+                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
                     {/*                            placeholder="Username"*/}
                     {/*                        />*/}
                     {/*                    </div>*/}
 
                     {/*                    /!* Password *!/*/}
                     {/*                    <div>*/}
-                    {/*                        <label className="block text-sm font-medium text-gray-700">*/}
+                    {/*                        <label className="block text-sm font-medium text-gray-700 dark:text-white">*/}
                     {/*                            Password <span className="text-red-600">*</span>*/}
                     {/*                        </label>*/}
                     {/*                        <div className="flex rounded-md shadow-sm mt-1">*/}
                     {/*                            <input*/}
                     {/*                                type={showPassword ? 'text' : 'password'}*/}
-                    {/*                                className="flex-1 block w-full rounded-l-md border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
+                    {/*                                className="flex-1 block w-full rounded-l-md border border-gray-300 dark:border-gray-100 focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
                     {/*                                placeholder="Enter password"*/}
                     {/*                            />*/}
                     {/*                            <button*/}
                     {/*                                type="button"*/}
                     {/*                                onClick={togglePassword}*/}
-                    {/*                                className="px-3 py-2 bg-gray-100 border border-l-0 border-gray-300 rounded-r-md text-sm text-gray-700 hover:bg-gray-200"*/}
+                    {/*                                className="px-3 py-2 bg-gray-100 border border-l-0 border-gray-300 dark:border-gray-100 rounded-r-md text-sm text-gray-700 dark:text-white hover:bg-gray-200"*/}
                     {/*                            >*/}
                     {/*                                {showPassword ? 'Hide' : 'Show'}*/}
                     {/*                            </button>*/}
@@ -251,19 +251,19 @@ export default function AddMikrotik() {
 
                     {/*                    /!* Package *!/*/}
                     {/*                    <div>*/}
-                    {/*                        <label className="block text-sm font-medium text-gray-700">*/}
+                    {/*                        <label className="block text-sm font-medium text-gray-700 dark:text-white">*/}
                     {/*                            Package <span className="text-red-600">*</span>*/}
                     {/*                        </label>*/}
                     {/*                        <div className="flex items-center gap-2 mt-1">*/}
                     {/*                            <select*/}
-                    {/*                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">*/}
+                    {/*                                className="block w-full rounded-md border-gray-300 dark:border-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">*/}
                     {/*                                <option value="">Select an option</option>*/}
                     {/*                                <option>Basic</option>*/}
                     {/*                                <option>Premium</option>*/}
                     {/*                            </select>*/}
                     {/*                            <button*/}
                     {/*                                type="button"*/}
-                    {/*                                className="p-2 rounded-md border border-gray-300 hover:bg-gray-100"*/}
+                    {/*                                className="p-2 rounded-md border border-gray-300 dark:border-gray-100 hover:bg-gray-100"*/}
                     {/*                            >*/}
                     {/*                                <i className="bi bi-plus-lg"></i>*/}
                     {/*                            </button>*/}
@@ -275,15 +275,15 @@ export default function AddMikrotik() {
 
                     {/*                    /!* Expiry Date *!/*/}
                     {/*                    <div>*/}
-                    {/*                        <label className="block text-sm font-medium text-gray-700">Expiry Date</label>*/}
+                    {/*                        <label className="block text-sm font-medium text-gray-700 dark:text-white">Expiry Date</label>*/}
                     {/*                        <div className="flex items-center rounded-md shadow-sm mt-1">*/}
                     {/*<span*/}
-                    {/*    className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">*/}
+                    {/*    className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-100 bg-gray-50 text-gray-500 text-sm">*/}
                     {/*  <i className="bi bi-calendar"></i>*/}
                     {/*</span>*/}
                     {/*                            <input*/}
                     {/*                                type="text"*/}
-                    {/*                                className="flex-1 block w-full rounded-r-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
+                    {/*                                className="flex-1 block w-full rounded-r-md border-gray-300 dark:border-gray-100 focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
                     {/*                                placeholder="mm/dd/yyyy, --:--:-- --"*/}
                     {/*                            />*/}
                     {/*                        </div>*/}
@@ -294,39 +294,39 @@ export default function AddMikrotik() {
 
                     {/*                    /!* Phone Number *!/*/}
                     {/*                    <div>*/}
-                    {/*                        <label className="block text-sm font-medium text-gray-700">Phone Number</label>*/}
+                    {/*                        <label className="block text-sm font-medium text-gray-700 dark:text-white">Phone Number</label>*/}
                     {/*                        <input*/}
                     {/*                            type="text"*/}
-                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
+                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
                     {/*                            placeholder="e.g. +254712345678"*/}
                     {/*                        />*/}
                     {/*                    </div>*/}
 
                     {/*                    /!* Email *!/*/}
                     {/*                    <div>*/}
-                    {/*                        <label className="block text-sm font-medium text-gray-700">Email Address</label>*/}
+                    {/*                        <label className="block text-sm font-medium text-gray-700 dark:text-white">Email Address</label>*/}
                     {/*                        <input*/}
                     {/*                            type="email"*/}
-                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
+                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
                     {/*                            placeholder="you@example.com"*/}
                     {/*                        />*/}
                     {/*                    </div>*/}
 
                     {/*                    /!* Address *!/*/}
                     {/*                    <div>*/}
-                    {/*                        <label className="block text-sm font-medium text-gray-700">Address</label>*/}
+                    {/*                        <label className="block text-sm font-medium text-gray-700 dark:text-white">Address</label>*/}
                     {/*                        <input*/}
                     {/*                            type="text"*/}
-                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
+                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
                     {/*                            placeholder="123 Main St, City, Country"*/}
                     {/*                        />*/}
                     {/*                    </div>*/}
 
                     {/*                    /!* Comment *!/*/}
                     {/*                    <div>*/}
-                    {/*                        <label className="block text-sm font-medium text-gray-700">Comment</label>*/}
+                    {/*                        <label className="block text-sm font-medium text-gray-700 dark:text-white">Comment</label>*/}
                     {/*                        <textarea*/}
-                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
+                    {/*                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"*/}
                     {/*                            placeholder="Optional comment"*/}
                     {/*                        />*/}
                     {/*                    </div>*/}

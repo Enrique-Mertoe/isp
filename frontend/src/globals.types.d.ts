@@ -43,6 +43,21 @@ type UserInfo = {
     // router: Mikrotik;
 };
 
+type ClientInfo = {
+    id: string;
+    full_name: string;
+    phone: string;
+    router_username: string;
+    router_password: string;
+    package_start?: string | null; // ISO date string or null
+    due: string; // ISO date-time string
+    created_at: string; // ISO date-time string
+
+    package: NetPackage;
+    isp: UserInfo
+};
+
+
 type RoutersResponse = {
     routers: Mikrotik[];
     all_count: number;

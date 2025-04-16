@@ -299,23 +299,19 @@ def user_create(request):
     if request.method == "POST":
         try:
             data = request.POST
+            print(data)
             # Create the client with the current user as isp
             client = Client.objects.create(
                 phone=data.get('phone'),
                 isp=request.user,
+                package=Package.objects.get(id=data.get('package')),
                 router_username=data.get('username'),
                 router_password=data.get('password'),
-                due=data.get('expiry_date') or timezone.now() + timedelta(days=30),  # Default to 30 days if not provided
+                due=data.get('expiry_date') or timezone.now() + timedelta(days=30),
+                # Default to 30 days if not provided
                 package_start=timezone.now()
             )
-            
-            # Set the package if provided
-            package_id = data.get('package')
-            if package_id:
-                package = Package.objects.get(id=package_id)
-                client.package = package
-                client.save()
-            
+
             return JsonResponse(client_to_dict(client), status=201)
         except Package.DoesNotExist:
             return JsonResponse({'error': 'Package not found'}, status=404)
@@ -414,13 +410,13 @@ def get_user_packages(request):
     try:
         # Get the client associated with the logged-in user
         client = Client.objects.get(user=request.user)
-        
+
         # Get all packages associated with the client
         packages = client.packages.all()
-        
+
         # Serialize the packages
         serializer = PackageSerializer(packages, many=True)
-        
+
         return Response({
             'status': 'success',
             'data': serializer.data

@@ -41,10 +41,15 @@ def user_to_dict(user: User):
 def client_to_dict(client: Client):
     return {
         "id": client.id,
+        "full_name": client.full_name,
+        "phone": client.phone,
         "package": pkg_to_dict(client.package),
-        "package_price": client.package_price,
         "package_start": client.package_start,
+        "router_username": client.router_username,
+        "router_password": client.router_password,
         "due": client.due,
+        "created_at": client.created_at,
+        "isp": client.isp.id
     }
 
 

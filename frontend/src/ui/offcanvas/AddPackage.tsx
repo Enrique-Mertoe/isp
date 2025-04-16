@@ -126,18 +126,18 @@ export default function AddPackage() {
                 <div className="offcanvas-body vstack gap-5">
                     {routers.length > 0 ?
                         <div className="py-4">
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 dark:text-gray-200">
                                 Enter package information to register a new internet plan.
                             </p>
                             <form className="mt-4 space-y-4" onSubmit={onSubmit}>
                                 {/* Router */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Select Mikrotik</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-white">Select Mikrotik</label>
                                     <select
                                         name="router"
                                         value={form.router}
                                         onChange={handleChange}
-                                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     >
                                         <option selected>Select Router</option>
                                         {
@@ -150,54 +150,54 @@ export default function AddPackage() {
 
                                 {/* Package Name */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Package Name</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-white">Package Name</label>
                                     <input
                                         name="pkgName"
                                         type="text"
                                         value={form.pkgName}
                                         onChange={handleChange}
                                         placeholder="e.g. Silver Plan"
-                                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     />
                                 </div>
 
                                 {/* Price */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Price (KES)</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-white">Price (KES)</label>
                                     <input
                                         name="pkgPrice"
                                         type="number"
                                         value={form.pkgPrice}
                                         onChange={handleChange}
                                         placeholder="e.g. 1200"
-                                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     />
                                 </div>
 
                                 {/* Upload Speed */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Upload Speed</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-white">Upload Speed</label>
                                     <input
                                         name="uploadSpeed"
                                         type="text"
                                         value={form.uploadSpeed}
                                         onChange={handleChange}
                                         placeholder="e.g. 5Mbps"
-                                        className="mt-1 w-full   rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="mt-1 w-full   rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     />
                                     {errors.uploadSpeed && <p className="text-red-500 text-xs">{errors.uploadSpeed}</p>}
                                 </div>
 
                                 {/* Download Speed */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Download Speed</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-white">Download Speed</label>
                                     <input
                                         name="downloadSpeed"
                                         type="text"
                                         value={form.downloadSpeed}
                                         onChange={handleChange}
                                         placeholder="e.g. 10Mbps"
-                                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     />
                                     {errors.downloadSpeed &&
                                         <p className="text-red-500 text-xs">{errors.downloadSpeed}</p>}
@@ -205,12 +205,12 @@ export default function AddPackage() {
 
                                 {/* Package Type */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Package Type</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-white">Package Type</label>
                                     <select
                                         name="type"
                                         value={form.type}
                                         onChange={handleChange}
-                                        className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     >
                                         <option value="hotspot">Hotspot</option>
                                         <option value="pppoe">PPPoE</option>
