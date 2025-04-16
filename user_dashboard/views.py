@@ -31,7 +31,7 @@ def start_app(request):
         pakgs = Package.objects.filter(Q(
             router__isp__user=request.user.id
         )).count()
-        routers = Router.objects.filter(isp=request.user.id).count()
+        routers = Router.objects.filter(isp__user=request.user.id).count()
         return JsonResponse({
             "users": users,
             "user": user_to_dict(request.user),
