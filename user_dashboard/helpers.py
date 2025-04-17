@@ -1,7 +1,8 @@
 # serializers.py
+import random
 from typing import Dict
 
-from .models import Router, Package, User, Payment, Ticket, ISPProvider, Client
+from .models import Router, Package, User, Payment, Ticket, ISPProvider, Client, Billing
 
 
 def router_to_dict(router: Router):
@@ -87,3 +88,10 @@ def company_to_dict(company: ISPProvider):
         "phone": company.phone,
         "address": company.address
     }
+
+
+def generate_invoice_number():
+    while True:
+        number = str(random.randint(100000, 999999))
+        if not Billing.objects.filter(invoice=number).exists():
+            return number

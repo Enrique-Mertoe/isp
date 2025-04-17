@@ -1,6 +1,7 @@
 import routeros_api as r_os
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404
@@ -13,8 +14,9 @@ from rest_framework.response import Response
 from datetime import datetime, timedelta
 from django.utils import timezone
 
-from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict, company_to_dict, client_to_dict
-from user_dashboard.models import Router, Package, ISPProvider, Client
+from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict, company_to_dict, client_to_dict, \
+    generate_invoice_number
+from user_dashboard.models import Router, Package, ISPProvider, Client, Billing
 
 
 # Create your views here.
@@ -297,28 +299,54 @@ def user_list(request):
 @csrf_exempt
 def user_create(request):
     if request.method == "POST":
+        data = request.POST
         try:
-            data = request.POST
-            print(data)
-            # Create the client with the current user as isp
-            client = Client.objects.create(
-                phone=data.get('phone'),
-                full_name=data.get('full_name'),
-                isp=request.user,
-                package=Package.objects.get(id=data.get('package')),
-                router_username=data.get('username'),
-                router_password=data.get('password'),
-                due=data.get('expiry_date') or timezone.now() + timedelta(days=30),
-                # Default to 30 days if not provided
-                package_start=timezone.now()
-            )
-
-            return JsonResponse(client_to_dict(client), status=201)
+            package = Package.objects.get(id=data['package_id'])
+            router = Router.objects.get(id=data['router_id'])
         except Package.DoesNotExist:
-            return JsonResponse({'error': 'Package not found'}, status=404)
+            return JsonResponse({'error': 'Package not found'}, status=400)
+        except Router.DoesNotExist:
+            return JsonResponse({'error': 'Router not found'}, status=400)
+
+        try:
+            api = router.connection()
+
+            api.get_resource('/ppp/secret').add(
+                name=data['name'],
+                password=data['router_password'],
+                service='any',
+                profile=package.name
+            )
         except Exception as e:
             print(e)
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': "MikroTik connection failed"}, status=400)
+
+        try:
+            with transaction.atomic():
+                Client.objects.create(
+                    phone=data.get('phone'),
+                    full_name=data.get('full_name'),
+                    isp=request.user,
+                    package=package,
+                    router_username=data.get('username'),
+                    router_password=data.get('password'),
+                    due=data.get('expiry_date') or timezone.now() + timedelta(days=30),
+                    # Default to 30 days if not provided
+                    package_start=timezone.now()
+                )
+
+                Billing.objects.create(
+                    invoice=generate_invoice_number(),
+                    package_name=package.name,
+                    package_price=package.price,
+                    package_start=timezone.now().date(),
+                    user=request.user
+                )
+                return JsonResponse({'error': "User created successfully"}, status=201)
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({'error': "Error creating client"}, status=400)
     return HttpResponseBadRequest()
 
 
