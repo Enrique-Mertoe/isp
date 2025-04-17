@@ -1,14 +1,14 @@
 import {FormEvent, useCallback, useState, useEffect} from "react";
 import OffCanvas from "./OffCanvas";
-import request from "../../build/request.ts";
+import request, {$} from "../../build/request.ts";
 import GIcon from "../components/Icons.tsx";
 // import bootstrap from "bootstrap";
 
 export default function AddClient() {
     const [showPassword, setShowPassword] = useState(true);
     const [loading, setLoading] = useState(false);
-    const [packages, setPackages] = useState<{ id: number, name: string }[]>([]);
-
+    const [packages, setPackages] = useState<NetPackage[]>([]);
+    const [msg, setMsg] = useState('');
     const fetchPackages = async () => {
         try {
             const response = await request.post("/api/pkgs/");
@@ -25,17 +25,23 @@ export default function AddClient() {
         fetchPackages().then();
     }, []);
 
+    const validate = (obj: Record<string, unknown>) => {
+        for (const e in obj) {
+            if (!obj[e]) return false
+        }
+        return true
+    }
+
     const onSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            setLoading(true);
+
             const formData = new FormData(e.target as HTMLFormElement);
 
             // Create the client data object
             const clientData = {
                 user_type: formData.get('user_type'),
-                first_name: formData.get('first_name'),
-                last_name: formData.get('last_name'),
+                full_name: formData.get('full_name'),
                 username: formData.get('username'),
                 password: formData.get('password'),
                 package: formData.get('package'),
@@ -43,31 +49,45 @@ export default function AddClient() {
                 phone: formData.get('phone'),
                 email: formData.get('email'),
                 address: formData.get('address'),
-                comment: formData.get('comment')
+                comment: formData.get('comment') || `${formData.get('user_type')} client`
             };
-
-            const response = await request.post("/api/user/create/", clientData);
-            setLoading(false);
-
-            if (response.status === 201) {
-                alert("Client added successfully!");
-                // Close the offcanvas
-                // const offcanvas = document.getElementById('drawer-add-package');
-                // if (offcanvas) {
-                //     const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
-                //     if (bsOffcanvas) {
-                //         bsOffcanvas.hide();
-                //     }
-                // }
-                // Reset the form
+            if (!validate(clientData))
+                return setMsg("All fields required");
+            setLoading(true);
+            $.post<object>({
+                url: "/api/user/create/",
+                data: clientData
+            }).done(() => {
+                setLoading(false);
+            }).then(() => {
+                setMsg("Client added successfully!");
                 (e.target as HTMLFormElement).reset();
-            } else if (response.data.error) {
-                alert(response.data.error);
-            }
-        } catch (error: unknown) {
-            console.error("Error creating client:", error);
-            alert("Failed to create client.");
+            }).catch(err => {
+                setMsg(err.message)
+            })
+
+            // const response = await request.post("/api/user/create/", clientData);
+            // setLoading(false);
+            //
+            // if (response.status === 201) {
+            //     alert("Client added successfully!");
+            //     // Close the offcanvas
+            //     // const offcanvas = document.getElementById('drawer-add-package');
+            //     // if (offcanvas) {
+            //     //     const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
+            //     //     if (bsOffcanvas) {
+            //     //         bsOffcanvas.hide();
+            //     //     }
+            //     // }
+            //     // Reset the form
+            //     (e.target as HTMLFormElement).reset();
+            // } else if (response.data.error) {
+            //     alert(response.data.error);
+            // }
+        } catch (error: any) {
+            const msg = error?.response?.data?.error | error?.essage || "Failed to create client.";
             setLoading(false);
+            alert(msg);
         }
     }, []);
     const togglePassword = () => setShowPassword(!showPassword);
@@ -164,7 +184,7 @@ export default function AddClient() {
                                         <option value="">Select an option</option>
                                         {packages.map((pkg) => (
                                             <option key={pkg.id} value={pkg.id}>
-                                                {pkg.name}
+                                                {pkg.name} ({pkg.router.name})
                                             </option>
                                         ))}
                                     </select>
@@ -247,12 +267,14 @@ export default function AddClient() {
                                     placeholder="Optional comment"
                                 />
                             </div>
-
+                            {
+                                msg && <span className="text-red-500 text-sm">{msg}</span>
+                            }
                             {/* Buttons */}
                             <div className="flex justify-between pt-4">
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                    className="px-4 hstack gap-2 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                                 >
                                     Create User
                                     {loading && <GIcon name={"g-loader"} color={"fill-amber-500"}/>}

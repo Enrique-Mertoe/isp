@@ -202,8 +202,12 @@ def pkg_create(request):
             try:
                 rate_limit = f"{data.get('upload_speed')}/{data.get('download_speed')}"
                 api = router.connection()
-                api.get_resource("ppp/profile").add(name=data.get('name'), rate_limit=rate_limit)
+                api.get_resource("ppp/profile").add(name=data.get('name'),
+                                                    dns_server="8.8.8.8,8.8.4.4",
+                                                    only_one='yes',
+                                                    rate_limit=rate_limit)
             except Exception as e:
+                print(e)
                 return JsonResponse({'error': "Router connection failed"}, status=400)
 
             pkg = Package.objects.create(
@@ -300,25 +304,29 @@ def user_list(request):
 def user_create(request):
     if request.method == "POST":
         data = request.POST
+        print(data)
         try:
-            package = Package.objects.get(id=data['package_id'])
-            router = Router.objects.get(id=data['router_id'])
+            package = Package.objects.get(id=data['package'])
+            router = package.router
         except Package.DoesNotExist:
             return JsonResponse({'error': 'Package not found'}, status=400)
         except Router.DoesNotExist:
             return JsonResponse({'error': 'Router not found'}, status=400)
+        if Client.objects.filter(router_username=data['username']).exists():
+            return JsonResponse(
+                {'error': f"Client: {data['username']} already in use for router {package.router.name}"},
+                status=400)
 
         try:
             api = router.connection()
 
             api.get_resource('/ppp/secret').add(
-                name=data['name'],
-                password=data['router_password'],
-                service='any',
+                name=data['username'],
+                password=data['password'],
+                service=data.get('user_type', 'any'),
                 profile=package.name
             )
         except Exception as e:
-            print(e)
             return JsonResponse({'error': "MikroTik connection failed"}, status=400)
 
         try:
