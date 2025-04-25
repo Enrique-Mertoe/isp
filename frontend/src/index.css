@@ -176,6 +176,7 @@ body {
     min-height: calc(100% - var(--bs-dialog-margin) * 2);
 }
 
+
 .dialog-content {
     position: relative;
     display: -webkit-box;
@@ -491,4 +492,50 @@ body {
 
 .sdb-backdrop.show {
     opacity: 1;
+}
+
+/* HTML: <div class="loader"></div> */
+.dot-loader {
+    width: 5px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    animation: l5 1s infinite linear alternate;
+}
+
+@keyframes l5 {
+    0% {
+        box-shadow: 20px 0 #000, -20px 0 #0002;
+        background: #000
+    }
+    33% {
+        box-shadow: 20px 0 #000, -20px 0 #0002;
+        background: #0002
+    }
+    66% {
+        box-shadow: 20px 0 #0002, -20px 0 #000;
+        background: #0002
+    }
+    100% {
+        box-shadow: 20px 0 #0002, -20px 0 #000;
+        background: #000
+    }
+}
+
+.spinner_S1WN {
+    animation: spinner_MGfb .8s linear infinite;
+    animation-delay: -.8s
+}
+
+.spinner_Km9P {
+    animation-delay: -.65s
+}
+
+.spinner_JApP {
+    animation-delay: -.5s
+}
+
+@keyframes spinner_MGfb {
+    93.75%, 100% {
+        opacity: .2
+    }
 }

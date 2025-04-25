@@ -3,15 +3,16 @@ import GIcon from "../ui/components/Icons.tsx";
 import React, {useEffect, useState} from "react";
 import request from "../build/request.ts";
 import Config from "../assets/config.ts";
-import AddMikrotik from "../ui/offcanvas/AddMikrotik.tsx";
+// import AddMikrotik from "../ui/offcanvas/AddMikrotik.tsx";
 import {Inbox, Plus, RotateCw, Wifi, WifiOff} from "lucide-react";
 import {useDialog} from "../ui/providers/DialogProvider.tsx";
 import Signal from "../lib/Signal.ts";
 import {useNavigate} from "react-router-dom";
+import AddMikrotikModal from "../ui/providers/AddMikrotikModal.tsx";
 
 
 export default function RoutersPage() {
-
+    const dialog = useDialog();
     const [loading, setLoading] = useState(true)
     const [items, setItems] = useState<Mikrotik[]>([])
     const [activeTab, setActiveTab] = useState<string>("all");
@@ -69,15 +70,22 @@ export default function RoutersPage() {
                                 <RotateCw className="text-lg"/>
                                 Refresh
                             </button>
-                            <a
-                                href="#drawer-link-mikrotik"
+                            <button
+                                onClick={() => {
+                                    dialog.create({
+                                        content: <AddMikrotikModal/>,
+                                        cancelable: false,
+                                        size: "lg",
+                                        design:['xl-down','scrollable']
+                                    })
+                                }}
                                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
                                 data-bs-toggle="offcanvas"
                             >
                                 <Plus className="text-lg"/>
                                 Link Router
-                            </a>
-                            <AddMikrotik/>
+                            </button>
+                            {/*<AddMikrotik/>*/}
                         </div>
                     </div>
 

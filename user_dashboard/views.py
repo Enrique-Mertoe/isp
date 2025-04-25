@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import routeros_api as r_os
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -5,14 +7,12 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
 from django.views import View
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
-from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from datetime import datetime, timedelta
-from django.utils import timezone
 
 from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict, company_to_dict, client_to_dict, \
     generate_invoice_number

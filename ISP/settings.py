@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 
 import pymysql
+from decouple import config
 from django.contrib import staticfiles
 
 pymysql.install_as_MySQLdb()
@@ -24,12 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--5x*ro(qbxct79zrhl8n*oc05l&g+(f0#nh9vv@pf&qv66q+=r'
-
+SECRET_KEY = config('DJANGO_SECRET_KEY')
+FERNET_KEY = config('FERNET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'isp.coolify.kaigates.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1','192.168.56.1','192.168.88.100', 'isp.coolify.kaigates.com']
 
 # Application definition
 
@@ -62,7 +63,8 @@ CSRF_COOKIE_HTTPONLY = False
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'frontend', 'dist')],
+        'DIRS': [os.path.join(BASE_DIR, 'frontend', 'dist'),
+                 os.path.join(BASE_DIR, 'user_dashboard', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -143,13 +145,23 @@ LOGIN_URL = '/auth/login/'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    'http://192.168.56.1:3700',
+    'http://192.168.88.100:3700'
 
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    'https://isp.coolify.kaigates.com'
+    'https://isp.coolify.kaigates.com',
+    'http://192.168.56.1:3700',
+    'http://192.168.88.100:3700'
 ]
 AUTH_USER_MODEL = 'user_dashboard.User'
 
 CORS_ALLOW_CREDENTIALS = True
+
+# API_URL = "http://35.226.234.138:8100"
+API_URL = "https://isp2.lomtechnology.com"
+RSC_FILE = "lom_tech_config.rsc"
+
+MTK_USERNAME = "lom_tech_user"

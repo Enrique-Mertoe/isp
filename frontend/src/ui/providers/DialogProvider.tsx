@@ -6,7 +6,8 @@ import DialogStack from "./DialogStack.ts";
 interface DialogOptions {
     content: ReactNode;
     cancelable?: boolean;
-    design?: boolean;
+    design?: ("md-down" | "sm-down" | "lg-down" | "xl-down" | "xxl-down" | "scrollable")[];
+    size?: "sm" | "md" | "lg" | "xl" | "xxl";
     onOpen?: () => void;
     onClose?: () => void;
     persist?: boolean;
@@ -30,7 +31,7 @@ const DialogContext = createContext<DialogContextType | undefined>(undefined);
 
 
 const Dialog = ({
-                    cancelable, content, onOpen, onClose, persist
+                    cancelable, content, onOpen, onClose, persist, size, design
                 }: DialogOptions): DialogInstance => {
     console.log(onClose, persist)
     const closeHandler: Closure[] = [];
@@ -84,6 +85,8 @@ const Dialog = ({
                 tp?.()
             }}
             onClose={dismiss}
+            size={size}
+            design={design}
             cancelable={cancelable ?? true}/>,
         id: generateUUID(),
         handler: h,
@@ -167,7 +170,8 @@ interface DialogComponentProps {
     tPrevious: Closure;
     handler: DialogComponentHandler
     cancelable: boolean;
-    design?: "md-down" | "sm-down" | "lg-down" | "xl-down";
+    design?: DialogOptions["design"];
+    size: DialogOptions["size"];
 }
 
 interface DialogComponentHandler {
@@ -185,7 +189,8 @@ const DialogComponent:
          tPrevious,
          design,
          onClose,
-         cancelable
+         cancelable,
+         size
      }) => {
         const [visible, setVisible] = useState(false);
         const [s, setS] = useState(false);
@@ -215,15 +220,25 @@ const DialogComponent:
             "lg-down": "dialog-fullscreen-lg-down",
             "xl-down": "dialog-fullscreen-xl-down",
             "xxl-down": "dialog-fullscreen-xxl-down",
+            "scrollable": "dialog-dialog-scrollable",
+        }
+        const sizes = {
+            "md": "dialog-md",
+            "sm": "dialog-sm",
+            "lg": "dialog-lg",
+            "xl": "dialog-xl",
+            "xxl": "dialog-xxl",
         }
         return (
             <div
                 onClick={handleOutsideClick}
-                className={`modal fade ${
+                className={`modal ${sizes[size ?? 'md']} fade ${
                     s ? "show" : "!opacity-0"
                 }`}>
-                <div className={`dialog-dialog dialog-dialog-centered ${designs[design ?? 'sm-down']}`}>
-                    <div className={`dialog-content rounded-sm ${design}`}>
+                <div className={`dialog-dialog dialog-dialog-centered ${
+                    design?.map(d => designs[d ?? 'sm-down']).join(' ')
+                }`}>
+                    <div className={`dialog-content rounded-sm`}>
                         {content}
                     </div>
                 </div>

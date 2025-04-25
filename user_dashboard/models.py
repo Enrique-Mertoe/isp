@@ -47,7 +47,9 @@ class ISPProvider(models.Model):
 
 class Router(models.Model):
     name = models.CharField(max_length=255)
-    location = models.CharField(max_length=255)
+    identity = models.CharField(max_length=255)
+    secrete = models.CharField(max_length=255)
+    location = models.CharField(max_length=255,null=True)
     ip_address = models.GenericIPAddressField()
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255)

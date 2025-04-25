@@ -1,5 +1,6 @@
 # serializers.py
 import random
+import string
 from typing import Dict
 
 from .models import Router, Package, User, Payment, Ticket, ISPProvider, Client, Billing
@@ -95,3 +96,27 @@ def generate_invoice_number():
         number = str(random.randint(100000, 999999))
         if not Billing.objects.filter(invoice=number).exists():
             return number
+
+
+def get_client_provisioning_data(info, server_url):
+    return {
+        "info": info,
+        'server_url': f'{server_url}/provision_content'
+    }
+
+
+def get_host(request):
+    host = request.get_host()
+    # For production domains, don't add a port
+    if '.com' in host or '.org' in host or '.net' in host or '.io' in host:
+        return f"{request.scheme}://{host}"
+
+    if ':' not in host:
+        host = f"{host}:5000"
+
+    return f"{request.scheme}://{host}"
+
+
+def generate_key(length=16):
+    chars = string.ascii_letters + string.digits  # a-zA-Z0-9
+    return ''.join(random.choices(chars, k=length))

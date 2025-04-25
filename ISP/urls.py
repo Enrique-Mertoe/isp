@@ -15,16 +15,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, URLResolver, URLPattern
 from django.views.generic import TemplateView
 
-from user_dashboard import views, dash_view
+from user_dashboard import views, dash_view, mtk_views
 from user_dashboard.views import set_csrf
 
 router_url_patterns = [
     path('routers/page/', views.router_page, name='router_page'),  # Normal page for React app maybe
     path('api/routers/', views.router_list, name='router_list'),  # GET all
     path('api/routers/create/', views.router_create, name='router_create'),  # POST
+    path('api/routers/provision/', mtk_views.gen_mtk_provision, name='router_provison'),  # POST
+    path('provision_content/<encoded_payload>/', mtk_views.provision_content, name='provision_content'),  # POST
+    path('provision_content/<encoded_payload>/ovpn/<int:version>/', mtk_views.provision_version_content, name='provision_version_content'),  # POST
     path('api/routers/<int:pk>/', views.router_detail, name='router_detail'),  # GET one
     path('api/routers/<int:pk>/update/', views.router_update, name='router_update'),  # PUT/PATCH
     path('api/routers/<int:pk>/delete/', views.router_delete, name='router_delete'),  # DELETE
@@ -39,7 +42,7 @@ pkg_url_patterns = [
     path('api/pkgs/<int:pk>/delete/', views.pkg_delete, name='pkg_delete'),  # DELETE
 ]
 
-user_url_patterns = [
+user_urlpatterns: list[URLResolver | URLPattern] = [
     path('user/page/', views.user_page, name='user_page'),  # Normal page for React app maybe
     path('api/user/', views.user_list, name='user_list'),  # GET all
     path('api/user/create/', views.user_create, name='user_create'),  # POST
@@ -58,7 +61,7 @@ urlpatterns = [
     path('auth/', include("user_dashboard.auth.urls")),
     *router_url_patterns,
     *pkg_url_patterns,
-    *user_url_patterns,
+    *user_urlpatterns,
     path("api/start-up/", views.start_app, name="start-up"),
     path("api/dash/", dash_view.dashboard_view, name="dash-view-api"),
     path('isp/', views.CompanyEditView.as_view(), name='company_edit'),
