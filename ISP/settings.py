@@ -30,7 +30,7 @@ FERNET_KEY = config('FERNET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1','192.168.56.1','192.168.88.100', 'isp.coolify.kaigates.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1','192.168.56.1',"192.168.88.99",'192.168.88.100', 'isp.coolify.kaigates.com']
 
 # Application definition
 
@@ -146,7 +146,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     'http://192.168.56.1:3700',
-    'http://192.168.88.100:3700'
+    'http://192.168.88.100:3700',
+    
 
 ]
 CSRF_TRUSTED_ORIGINS = [
@@ -161,7 +162,8 @@ AUTH_USER_MODEL = 'user_dashboard.User'
 CORS_ALLOW_CREDENTIALS = True
 
 # API_URL = "http://35.226.234.138:8100"
-API_URL = "https://isp2.lomtechnology.com"
+API_URL = "https://isp3.lomtechnology.com"
+DEV_URL = "http://192.168.88.99:8000"
 RSC_FILE = "lom_tech_config.rsc"
 
 MTK_USERNAME = "lom_tech_user"
