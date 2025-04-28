@@ -1,18 +1,29 @@
 import {useState, useEffect} from "react";
-// import {useNavigate} from "react-router-dom";
-// import {useApp} from "../ui/AppContext.tsx";
 import Layout from "./home-components/Layout.tsx";
+import { $, request } from "../build/request.ts";
 
 interface Package {
     id: number;
     name: string;
     price: number;
     speed: string;
-    duration: number;
+    duration: number; 
     subscribers: number;
     isPopular: boolean;
     status: "active" | "inactive";
     created: string;
+    router_id?: number;
+    router_identity?: string;
+}
+
+interface Router {
+    id: number;
+    name: string;
+    ip_address: string;
+    location: string;
+    username: string;
+    password: string;
+    identity:string
 }
 
 interface NewPackage {
@@ -22,12 +33,13 @@ interface NewPackage {
     duration: string;
     isPopular: boolean;
     status: "active" | "inactive";
+    router_id: number | null;
+    router_identity?: string;
 }
 
 export default function PackagesPage() {
-    // const navigate = useNavigate();
-    // const {packageCount} = useApp();
     const [packages, setPackages] = useState<Package[]>([]);
+    const [routers, setRouters] = useState<Router[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [showAddModal, setShowAddModal] = useState(false);
@@ -38,7 +50,9 @@ export default function PackagesPage() {
         speed: "",
         duration: "30",
         isPopular: false,
-        status: "active"
+        status: "active",
+        router_id: null,
+        router_identity:""
     });
 
     // Mock data - replace with actual API call
@@ -106,11 +120,87 @@ export default function PackagesPage() {
         }, 800);
     }, []);
 
-    const handleAddPackage = (e: React.FormEvent<HTMLFormElement>) => {
+    // Fetch routers
+    useEffect(() => {
+        (async() => {
+            try {
+                const res = await request.post('/api/routers/')
+                console.log(res.data)
+                if (res.data && res.data.routers) {
+                    setRouters(res.data.routers);
+                }
+            } catch(error) {
+                console.log(error)
+            }
+        })()
+    }, [])
+
+    const handleRouterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const routerId = parseInt(e.target.value);
+        if (routerId) {
+            const selectedRouter = routers.find(router => router.id === routerId);
+            console.log(selectedRouter)
+            if (selectedRouter) {
+                setNewPackage({
+                    ...newPackage,
+                    router_id: routerId,
+                    router_identity: selectedRouter.identity,
+                });
+            }
+        } else {
+            setNewPackage({
+                ...newPackage,
+                router_id: null,
+                router_identity:''
+            });
+        }
+    };
+
+    const handleAddPackage = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // Implementation would call API to add package
-        setShowAddModal(false);
-        // Add success notification
+        
+        // Cast newPackage to Record<string, unknown> to satisfy the type requirement
+        const packageData: Record<string, unknown> = {
+            ...newPackage
+        };
+        
+        try {
+            const response = await fetch('http://localhost:8000/api/pkgs/create/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(packageData),
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const data: Package = await response.json();
+            console.log(data);
+            
+            // Add the new package to the existing packages list
+            // setPackages(prevPackages => [...prevPackages, data]);
+            
+            // Close the modal
+            setShowAddModal(false);
+            
+            // Reset the form data
+            setNewPackage({
+                name: "",
+                price: "",
+                speed: "",
+                duration: "30",
+                isPopular: false,
+                status: "active",
+                router_id: null,
+                router_identity:""
+            });
+        } catch (error) {
+            console.error("Failed to add package:", error instanceof Error ? error.message : String(error));
+            // You could add error state handling here
+        }
     };
 
     const filteredPackages = packages.filter((pkg: Package) => {
@@ -229,15 +319,15 @@ export default function PackagesPage() {
                                                 : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                                         }`}
                                     >
-                  {pkg.status === "active" ? "Active" : "Inactive"}
-                </span>
+                                        {pkg.status === "active" ? "Active" : "Inactive"}
+                                    </span>
                                 </div>
 
                                 {pkg.isPopular && (
                                     <span
                                         className="inline-block mt-2 bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full dark:bg-amber-900 dark:text-amber-200">
-                  <i className="bi bi-star-fill mr-1"></i> Popular
-                </span>
+                                        <i className="bi bi-star-fill mr-1"></i> Popular
+                                    </span>
                                 )}
 
                                 <div className="mt-4 space-y-2">
@@ -258,6 +348,12 @@ export default function PackagesPage() {
                                         <i className="bi bi-people mr-2"></i>
                                         <span>{pkg.subscribers} subscribers</span>
                                     </div>
+                                    {pkg.router_identity && (
+                                        <div className="flex items-center text-gray-700 dark:text-gray-300">
+                                            <i className="bi bi-router mr-2"></i>
+                                            <span>{pkg.router_identity}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="mt-6 flex justify-between items-center">
@@ -298,8 +394,7 @@ export default function PackagesPage() {
                                 className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-lg">
                                 <div className="bg-white dark:bg-gray-800 px-6 py-4">
                                     <div className="flex justify-between items-center border-b pb-3">
-                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add New
-                                            Package</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add New Package</h3>
                                         <button
                                             onClick={() => setShowAddModal(false)}
                                             className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
@@ -360,24 +455,45 @@ export default function PackagesPage() {
                                             </div>
                                         </div>
 
-                                        <div className="mb-4">
-                                            <label
-                                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                Duration (days)
-                                            </label>
-                                            <select
-                                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                value={newPackage.duration}
-                                                onChange={(e) => setNewPackage({
-                                                    ...newPackage,
-                                                    duration: e.target.value
-                                                })}
-                                            >
-                                                <option value="30">30 days</option>
-                                                <option value="90">90 days</option>
-                                                <option value="180">180 days</option>
-                                                <option value="365">365 days</option>
-                                            </select>
+                                        <div className="grid grid-cols-2 gap-4 mb-4">
+                                            <div>
+                                                <label
+                                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    Duration (days)
+                                                </label>
+                                                <select
+                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                    value={newPackage.duration}
+                                                    onChange={(e) => setNewPackage({
+                                                        ...newPackage,
+                                                        duration: e.target.value
+                                                    })}
+                                                >
+                                                    <option value="30">30 days</option>
+                                                    <option value="90">90 days</option>
+                                                    <option value="180">180 days</option>
+                                                    <option value="365">365 days</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label
+                                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    Router
+                                                </label>
+                                                <select
+                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                    value={newPackage.router_id || ""}
+                                                    onChange={handleRouterChange}
+                                                    required
+                                                >
+                                                    <option value="">Select a router</option>
+                                                    {routers.map(router => (
+                                                        <option key={router.id} value={router.id}>
+                                                            {router.name} ({router.ip_address})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
                                         </div>
 
                                         <div className="flex items-center mb-4">

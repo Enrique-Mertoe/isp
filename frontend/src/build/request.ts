@@ -13,7 +13,7 @@ function toFormData(obj: Record<string, any>): FormData {
     return formData;
 }
 
-const request = axios.create({
+export const request = axios.create({
     baseURL: Config.baseURL,
     withCredentials: true,
     headers: {

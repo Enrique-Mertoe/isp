@@ -14,6 +14,7 @@ def router_to_dict(router: Router):
         "location": router.location,
         "username": router.username,
         "ip_address": router.ip_address,
+         "identity":router.identity,
     }
 
 

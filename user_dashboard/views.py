@@ -14,11 +14,12 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
+import json,re
 from ISP import settings
 from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict, company_to_dict, client_to_dict, \
     generate_invoice_number
 from user_dashboard.models import Router, Package, ISPProvider, Client, Billing
+from mtk_command_api.mtk import MikroManager
 
 
 # Create your views here.
@@ -74,6 +75,14 @@ def router_list(request):
             routers = user_router.filter(active=False)
         else:
             routers = user_router.all()
+
+        if(routers.count() == 0):
+            return JsonResponse({
+                "routers": [],
+                "all_count": 0,
+                "active_count": 0,
+                "inactive_count": 0,
+            }, safe=False)
 
         routers_data = [router_to_dict(router) for router in routers]
 
@@ -209,38 +218,55 @@ def pkg_list(request):
             "hotspot_count": h_count,
         }, safe=False)
 
-
+def format_data(data: str) -> str:
+    match = re.match(r'(\d+)', data)
+    print(data)
+    if match:
+        number = match.group(1)
+        return f"{number}M"
+    return "0M"  # or raise an error if you prefer
 @csrf_exempt
 def pkg_create(request):
     if request.method == "POST":
         try:
-            data = request.POST
-            router = Router.objects.get(id=data.get('router'))
+            data = json.loads(request.body)
+            print(data)
+            print(request.user)
+            router = Router.objects.get(id=data['router_id'],identity=data['router_identity'])
+            print('hbh',router)
             if not router:
+                print('unrecognized ')
                 return JsonResponse({'error': "Unrecognised router."}, status=400)
 
             try:
-                rate_limit = f"{data.get('upload_speed')}/{data.get('download_speed')}"
-                api = router.connection()
-                api.get_resource("ppp/profile").add(name=data.get('name'),
-                                                    dns_server="8.8.8.8,8.8.4.4",
-                                                    only_one='yes',
-                                                    rate_limit=rate_limit)
+                # rate_limit = f"{data['speed']}/{data.get('speed')}"
+                # api = router.connection()
+                # api.get_resource("ppp/profile").add(name=data.get('name'),
+                #                                     dns_server="8.8.8.8,8.8.4.4",
+                #                                     only_one='yes',
+                #       
+                print(data['speed'],'im here')                            
+                ratelimit=format_data(data['speed'])+"/"+format_data(data['speed'])
+                print(ratelimit)
+                res=MikroManager.connect_router(router.identity,router.username,router.password)
+                    # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
+                print(res,'bbbhbhbh')
+                res.create_profile(nanme=router.name,rate_limit=ratelimit,session_timeout=data.get("duration"),service="pppoe")
             except Exception as e:
-                print(e)
+                print(str(e))
                 return JsonResponse({'error': "Router connection failed"}, status=400)
 
             pkg = Package.objects.create(
-                name=data.get('name'),
-                type=data.get('type'),
-                upload_speed=data.get('upload_speed'),
-                download_speed=data.get('download_speed'),
-                price=data.get('price'),
+                name=data['name'],
+                type=data['type'],
+                upload_speed=data['speed'],
+                download_speed=data['speed'],
+                price=data['price'],
                 router=router
             )
             return JsonResponse(pkg_to_dict(pkg), status=201)
         except Exception as e:
-            print(e)
+            print(str(e))
             return JsonResponse({'error': str(e)}, status=400)
     return HttpResponseBadRequest()
 

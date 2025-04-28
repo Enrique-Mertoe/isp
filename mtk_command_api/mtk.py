@@ -6,6 +6,7 @@ class MikroManager:
 
     def connect_router(self, host, username, password):
         """Create a router connection instance"""
+        print('making connection')
         return RouterConnection(self.api_key, self.server_url, host, username, password,
                                 self.server_id)
 
@@ -24,6 +25,7 @@ class RouterConnection:
     def _send_request(self, action, params=None):
         """Internal method to send requests to the Flask server"""
         import requests
+        print('sending ',action)
 
         data = {
             "api_key": self.api_key,

@@ -15,6 +15,8 @@ from pathlib import Path
 import pymysql
 from decouple import config
 from django.contrib import staticfiles
+from mtk_command_api.mtk import MikroManager
+
 
 pymysql.install_as_MySQLdb()
 
@@ -177,3 +179,14 @@ HOSTNAME = "isp3.lomtechnology.com"  # Your server's hostname
 
 # VPN settings
 VPN_SERVER_IP = "142.93.39.55"
+
+# Initialize the singleton instance
+mikrotik_manager = MikroManager(
+    api_key="test-api-key",
+    server_id="LomTech",
+    server_url="{API_URL}/mtk/console"
+)
+
+router_conn = mikrotik_manager.connect_router("192.168.1.1", "admin", "password")
+
+
