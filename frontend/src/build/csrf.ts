@@ -1,6 +1,6 @@
 // csrf.js
 
-import {getCookie} from "../hooks/useCrf.ts";
+import {getCookie} from "../hooks/useCsrf.ts";
 import request from "./request.ts";
 import Config from "../assets/config.ts";
 

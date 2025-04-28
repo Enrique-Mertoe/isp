@@ -11,7 +11,7 @@ import {AppProvider} from "./ui/AppContext.tsx";
 import ISPPage from "./pages/ISPPage.tsx";
 import SignUpPage from "./pages/auth/SignUpPage.tsx";
 import RouterView from "./pages/RouterView.tsx";
-import PaymentAndBillingPage from "./pages/PaymentAndBillingPage.tsx";
+// import PaymentAndBillingPage from "./pages/PaymentAndBillingPage.tsx";
 import PaymentsPage from "./pages/PaymentsPage.tsx";
 import ManagementPage from "./pages/ManagementPage.tsx";
 

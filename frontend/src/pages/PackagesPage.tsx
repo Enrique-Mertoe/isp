@@ -1,17 +1,38 @@
-import React, {useState, useEffect} from "react";
-import {useNavigate} from "react-router-dom";
-import {useApp} from "../ui/AppContext.tsx";
+import {useState, useEffect} from "react";
+// import {useNavigate} from "react-router-dom";
+// import {useApp} from "../ui/AppContext.tsx";
 import Layout from "./home-components/Layout.tsx";
 
+interface Package {
+    id: number;
+    name: string;
+    price: number;
+    speed: string;
+    duration: number;
+    subscribers: number;
+    isPopular: boolean;
+    status: "active" | "inactive";
+    created: string;
+}
+
+interface NewPackage {
+    name: string;
+    price: string;
+    speed: string;
+    duration: string;
+    isPopular: boolean;
+    status: "active" | "inactive";
+}
+
 export default function PackagesPage() {
-    const navigate = useNavigate();
-    const {packageCount} = useApp();
-    const [packages, setPackages] = useState<any>([]);
+    // const navigate = useNavigate();
+    // const {packageCount} = useApp();
+    const [packages, setPackages] = useState<Package[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [showAddModal, setShowAddModal] = useState(false);
     const [activeFilter, setActiveFilter] = useState("all");
-    const [newPackage, setNewPackage] = useState({
+    const [newPackage, setNewPackage] = useState<NewPackage>({
         name: "",
         price: "",
         speed: "",
@@ -85,20 +106,20 @@ export default function PackagesPage() {
         }, 800);
     }, []);
 
-    const handleAddPackage = (e) => {
+    const handleAddPackage = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // Implementation would call API to add package
         setShowAddModal(false);
         // Add success notification
     };
 
-    const filteredPackages = packages.filter(pkg => {
+    const filteredPackages = packages.filter((pkg: Package) => {
         const matchesSearch = pkg.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesFilter = activeFilter === "all" || pkg.status === activeFilter;
         return matchesSearch && matchesFilter;
     });
 
-    const handleFilterChange = (filter) => {
+    const handleFilterChange = (filter: string) => {
         setActiveFilter(filter);
     };
 
@@ -194,7 +215,7 @@ export default function PackagesPage() {
                     </div>
                 ) : filteredPackages.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredPackages.map((pkg) => (
+                        {filteredPackages.map((pkg: Package) => (
                             <div
                                 key={pkg.id}
                                 className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-t-4 border-blue-500 hover:shadow-lg transition-shadow duration-300"

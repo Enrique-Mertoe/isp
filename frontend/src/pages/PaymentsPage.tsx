@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from "react";
-import {useApp} from "../ui/AppContext.tsx";
+import {useState, useEffect} from "react";
+// import {useApp} from "../ui/AppContext.tsx";
 import {
     CreditCard,
     Download,
@@ -51,17 +51,17 @@ const generateMockPayments = (count: number): Payment[] => {
         id: `PAY-${100000 + i}`,
         amount: Math.floor(Math.random() * 50000) + 500,
         currency: "KES",
-        clientName: clients[Math.floor(Math.random() * clients.length)],
+        clientName: clients[Math.floor(Math.random() * clients.length)] || "Unknown Client",
         clientId: `CLI-${20000 + Math.floor(Math.random() * 1000)}`,
         date: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
-        method: methods[Math.floor(Math.random() * methods.length)],
-        status: statuses[Math.floor(Math.random() * statuses.length)],
+        method: methods[Math.floor(Math.random() * methods.length)] || "Other",
+        status: statuses[Math.floor(Math.random() * statuses.length)] || "Pending",
         reference: `REF-${Math.random().toString(36).substring(2, 10).toUpperCase()}`
     }));
 };
 
 export default function PaymentsPage() {
-    const {page} = useApp();
+    // const {page} = useApp();
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -97,7 +97,7 @@ export default function PaymentsPage() {
             setLoading(false);
 
             // Calculate stats
-            const totalAmount = mockData.reduce((sum, payment) => sum + payment.amount, 0);
+            // const totalAmount = mockData.reduce((sum, payment) => sum + payment.amount, 0);
             const pendingAmount = mockData.filter(p => p.status === "Pending").reduce((sum, payment) => sum + payment.amount, 0);
             const completedAmount = mockData.filter(p => p.status === "Completed").reduce((sum, payment) => sum + payment.amount, 0);
             const failedAmount = mockData.filter(p => p.status === "Failed").reduce((sum, payment) => sum + payment.amount, 0);

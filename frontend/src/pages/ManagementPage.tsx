@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from "react";
+import {useState, useEffect} from "react";
 import {
-    BarChart3,
+    // BarChart3,
     Bell,
     ShieldCheck,
     Zap,
@@ -23,13 +23,13 @@ import {useApp} from "../ui/AppContext.tsx";
 import Layout from "./home-components/Layout.tsx";
 
 export default function ManagementPage() {
-    const {usersCount, packageCount, routerCount, activeUsersCount} = useApp();
+    const { routerCount, activeUsersCount} = useApp();
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("overview");
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Mock data for network health
-    const [networkHealth, setNetworkHealth] = useState({
+    const [networkHealth, _setNetworkHealth] = useState({
         uptime: "99.98%",
         bandwidth: "8.2 Gbps",
         alerts: 3,
@@ -39,7 +39,7 @@ export default function ManagementPage() {
     });
 
     // Mock data for alerts
-    const [alerts, setAlerts] = useState([
+    const [alerts, _setAlerts] = useState([
         {
             id: 1,
             type: "error",
@@ -64,7 +64,7 @@ export default function ManagementPage() {
     ]);
 
     // Mock data for active servers
-    const [servers, setServers] = useState([
+    const [servers, _setServers] = useState([
         {
             id: "srv-001",
             name: "Primary DNS",
@@ -108,7 +108,7 @@ export default function ManagementPage() {
     ]);
 
     // Mock bandwidth data for the chart
-    const [bandwidthData, setBandwidthData] = useState([
+    const [bandwidthData, _setBandwidthData] = useState([
         {time: "00:00", download: 4.2, upload: 2.1},
         {time: "04:00", download: 2.3, upload: 1.2},
         {time: "08:00", download: 5.3, upload: 2.5},
@@ -151,7 +151,7 @@ export default function ManagementPage() {
     };
 
     // This function would handle the alert icon and color
-    const getAlertIcon = (type) => {
+    const getAlertIcon = (type:string) => {
         switch (type) {
             case "error":
                 return {

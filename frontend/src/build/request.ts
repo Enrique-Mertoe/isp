@@ -1,6 +1,6 @@
 // axiosConfig.js
 import axios, {AxiosRequestConfig} from 'axios';
-import {getCookie} from "../hooks/useCrf.ts";
+import {getCookie} from "../hooks/useCsrf.ts";
 import Config from "../assets/config.ts";
 
 function toFormData(obj: Record<string, any>): FormData {

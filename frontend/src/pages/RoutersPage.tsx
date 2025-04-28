@@ -95,16 +95,17 @@ export default function RoutersPage() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => {
-                                dialog.create({
-                                    content: <AddMikrotikModal />,
+                                const d = dialog.create({
+                                    content: <AddMikrotikModal onClose={() => d.dismiss()} />,
                                     cancelable: false,
                                     size: "lg",
-                                    design: ["xl-down", "scrollable"],
+                                    design: ['xl-down','scrollable']
                                 });
                             }}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 transition-colors shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+                            data-bs-toggle="offcanvas"
                         >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="text-lg"/>
                             Link Router
                         </motion.button>
                     </div>
@@ -281,14 +282,6 @@ const RouterCard: React.FC<{ router: Mikrotik; index: number }> = ({ router, ind
                         <div className="w-24 flex-shrink-0 font-medium">IP Address:</div>
                         <div className="font-mono">{router.ip_address}</div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-24 flex-shrink-0 font-medium">Username:</div>
-                        <div>{router.username}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-24 flex-shrink-0 font-medium">Password:</div>
-                        <div className="font-mono">••••••••</div>
-                    </div>
                 </div>
 
                 <div className="mt-5 flex space-x-2">
@@ -405,36 +398,6 @@ const RouterEdit = ({ router, dismiss }: { router: Mikrotik; dismiss: Closure })
                             name="ip_address"
                             type="text"
                             value={data.ip_address}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1" htmlFor="username">
-                            Router username
-                        </label>
-                        <input
-                            className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-amber-500 focus:border-amber-500 rounded-md shadow-sm w-full transition-colors"
-                            id="username"
-                            name="username"
-                            type="text"
-                            value={data.username}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block font-medium text-sm text-gray-700 dark:text-gray-300 mb-1" htmlFor="password">
-                            Router password
-                        </label>
-                        <input
-                            className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:ring-amber-500 focus:border-amber-500 rounded-md shadow-sm w-full transition-colors"
-                            id="password"
-                            name="password"
-                            type="text"
-                            value={data.password}
                             onChange={handleChange}
                             required
                         />
