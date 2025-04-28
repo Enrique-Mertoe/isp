@@ -19,6 +19,7 @@ from django.urls import path, include, URLResolver, URLPattern
 from django.views.generic import TemplateView
 
 from user_dashboard import views, dash_view, mtk_views
+from user_dashboard.mtk_views import serve_hotspot_file
 from user_dashboard.views import set_csrf
 
 router_url_patterns = [
@@ -27,7 +28,8 @@ router_url_patterns = [
     path('api/routers/create/', views.router_create, name='router_create'),  # POST
     path('api/routers/provision/', mtk_views.gen_mtk_provision, name='router_provison'),  # POST
     path('provision_content/<encoded_payload>/', mtk_views.provision_content, name='provision_content'),  # POST
-    path('provision_content/<encoded_payload>/ovpn/<int:version>/', mtk_views.provision_version_content, name='provision_version_content'),  # POST
+    path('provision_content/<encoded_payload>/ovpn/<int:version>/', mtk_views.provision_version_content,
+         name='provision_version_content'),  # POST
     path('api/routers/<int:pk>/', views.router_detail, name='router_detail'),  # GET one
     path('api/routers/<int:pk>/update/', views.router_update, name='router_update'),  # PUT/PATCH
     path('api/routers/<int:pk>/delete/', views.router_delete, name='router_delete'),  # DELETE
@@ -65,5 +67,9 @@ urlpatterns = [
     path("api/start-up/", views.start_app, name="start-up"),
     path("api/dash/", dash_view.dashboard_view, name="dash-view-api"),
     path('isp/', views.CompanyEditView.as_view(), name='company_edit'),
+
+    # Add these new patterns
+    path('mikrotik/hotspot/<str:router_identity>/<str:file_name>', serve_hotspot_file, name='hotspot_file'),
+    path("hotspot/", include("user_dashboard.urls"))
 
 ]

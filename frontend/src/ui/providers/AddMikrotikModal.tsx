@@ -110,7 +110,7 @@ export default function AddMikrotikModal() {
                 rsc_file?: string;
             }>({
                 url: "/api/routers/provision/",
-                data: {}
+                data: {router_name:form.mtkName}
             }).done(() => {
                 setLoading(false)
             }).catch(err => {

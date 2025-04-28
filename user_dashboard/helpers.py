@@ -112,7 +112,7 @@ def get_host(request):
         return f"{request.scheme}://{host}"
 
     if ':' not in host:
-        host = f"{host}:5000"
+        host = f"{host}:3700"
 
     return f"{request.scheme}://{host}"
 
@@ -120,3 +120,10 @@ def get_host(request):
 def generate_key(length=16):
     chars = string.ascii_letters + string.digits  # a-zA-Z0-9
     return ''.join(random.choices(chars, k=length))
+
+
+def get_mode_from_url(url):
+    if url.startswith('https://'):
+        return 'https'
+    else:
+        return 'http'

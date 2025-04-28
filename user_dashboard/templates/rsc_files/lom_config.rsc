@@ -34,7 +34,6 @@
 
     :put "Applying OpenVPN configuration...";
     /import openvpn_config.rsc;
-
     :put "Configuration completed successfully.";
 } on-error={
     :put "Error occurred during configuration:";

@@ -1,0 +1,2365 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <title>LomTech ISP - WiFi Portal</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root {
+            --primary: #f3884f;
+            --primary-dark: #0055b3;
+            --secondary: #ff9500;
+            --text: #333;
+            --light-text: #777;
+            --background: #f4f4f4;
+            --white: #ffffff;
+            --border: #ddd;
+            --success: #28a745;
+            --error: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --dark-mode-bg: #222;
+            --dark-mode-card: #333;
+            --dark-mode-text: #f0f0f0;
+            --dark-mode-border: #444;
+            --dark-mode-light-text: #aaa;
+        }
+
+        [data-theme="dark"] {
+            --text: #f0f0f0;
+            --light-text: #aaa;
+            --background: #222;
+            --white: #333;
+            --border: #444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 580px;
+            margin: 20px auto;
+            padding: 0 15px;
+            flex: 1;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .logo {
+            max-width: 100px;
+            max-height: 100px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .header p {
+            opacity: 0.9;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .header-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .language-selector {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 15px;
+            padding: 5px 10px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .signal-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .signal-bars {
+            display: flex;
+            align-items: flex-end;
+            height: 20px;
+            gap: 2px;
+        }
+
+        .signal-bar {
+            width: 4px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 2px;
+        }
+
+        .signal-bar:nth-child(1) {
+            height: 5px;
+        }
+
+        .signal-bar:nth-child(2) {
+            height: 10px;
+        }
+
+        .signal-bar:nth-child(3) {
+            height: 15px;
+        }
+
+        .signal-bar:nth-child(4) {
+            height: 20px;
+        }
+
+        .signal-text {
+            font-size: 10px;
+            margin-top: 3px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .welcome-text h2 {
+            color: var(--primary);
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .welcome-text p {
+            color: var(--light-text);
+            font-size: 14px;
+        }
+
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .tab-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-button {
+            flex: 1;
+            min-width: max-content;
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--light-text);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab-button.active {
+            color: var(--primary);
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .packages {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .package-card {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .package-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .package-card.selected {
+            border-color: var(--primary);
+            background-color: rgba(0, 102, 204, 0.05);
+        }
+
+        .package-name {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .package-price {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .package-duration {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+
+        .package-speed {
+            font-size: 12px;
+            background-color: var(--primary);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border 0.3s;
+            background-color: var(--white);
+            color: var(--text);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(0, 102, 204, 0.1);
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        .spacer {
+            margin: 15px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .spacer::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background-color: var(--border);
+        }
+
+        .spacer span {
+            background-color: var(--white);
+            padding: 0 10px;
+            position: relative;
+            color: var(--light-text);
+            font-size: 14px;
+        }
+
+        .voucher-container {
+            margin-top: 20px;
+        }
+
+        .input-group {
+            display: flex;
+        }
+
+        .input-group .form-control {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: none;
+        }
+
+        .input-group .btn {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            width: auto;
+        }
+
+        .subscription-details {
+            background-color: rgba(0, 102, 204, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+            font-weight: 600;
+        }
+
+        .status-container {
+            background-color: rgba(40, 167, 69, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .status-icon {
+            font-size: 40px;
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+
+        .status-text {
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 5px;
+        }
+
+        .status-details {
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .timer {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
+
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+        }
+
+        .alert-info {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+            border: 1px solid rgba(23, 162, 184, 0.2);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px 15px;
+            background-color: var(--white);
+            color: var(--light-text);
+            font-size: 12px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s;
+        }
+
+        .footer p {
+            margin-bottom: 5px;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .social-icon {
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* New Styles for Enhanced Features */
+
+        /* Network Diagnostics */
+        .diagnostics-container {
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background-color: var(--border);
+            border-radius: 3px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+
+        .pill-label {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 5px;
+        }
+
+        .pill-good {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .pill-warn {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+        }
+
+        .pill-bad {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--error);
+        }
+
+        /* Data Visualization */
+        .chart-container {
+            margin: 20px 0;
+            height: 200px;
+            position: relative;
+        }
+
+        /* Authentication Methods */
+        .auth-methods {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .auth-method {
+            flex: 1;
+            min-width: 70px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .auth-method:hover {
+            background-color: rgba(0, 102, 204, 0.05);
+            border-color: var(--primary);
+        }
+
+        .auth-method.selected {
+            background-color: rgba(0, 102, 204, 0.1);
+            border-color: var(--primary);
+        }
+
+        .auth-method-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .auth-method-label {
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        /* Bandwidth Management */
+        .slider-container {
+            margin: 15px 0;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 12px;
+            color: var(--light-text);
+        }
+
+        /* Payment Methods */
+        .payment-methods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .payment-method {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .payment-method:hover {
+            background-color: rgba(0, 102, 204, 0.05);
+            border-color: var(--primary);
+        }
+
+        .payment-method.selected {
+            background-color: rgba(0, 102, 204, 0.1);
+            border-color: var(--primary);
+        }
+
+        .payment-method-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .payment-method-label {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+
+        /* Security Verification */
+        .security-code {
+            text-align: center;
+            font-size: 24px;
+            letter-spacing: 8px;
+            font-weight: 700;
+            margin: 15px 0;
+            color: var(--primary);
+        }
+
+        .security-instructions {
+            text-align: center;
+            font-size: 13px;
+            color: var(--light-text);
+            margin-bottom: 20px;
+        }
+
+        /* QR Code */
+        .qr-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .qr-code {
+            max-width: 200px;
+            height: auto;
+            border: 1px solid var(--border);
+            padding: 10px;
+            background-color: white;
+            border-radius: 8px;
+        }
+
+        /* 2FA */
+        .otp-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .otp-input {
+            width: 40px;
+            height: 50px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        /* Content Portal */
+        .local-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .content-item {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            background-color: var(--white);
+        }
+
+        .content-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .content-thumb {
+            width: 100%;
+            height: 80px;
+            background-color: #f0f0f0;
+        }
+
+        .content-info {
+            padding: 10px;
+        }
+
+        .content-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text);
+        }
+
+        .content-meta {
+            font-size: 10px;
+            color: var(--light-text);
+        }
+
+        /* Notifications */
+        .notification-center {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            max-width: 90%;
+            z-index: 200;
+        }
+
+        .notification {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 15px;
+            margin-bottom: 10px;
+            transform: translateX(120%);
+            transition: transform 0.5s;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+
+        .notification-text {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+
+        .notification-close {
+            font-size: 16px;
+            color: var(--light-text);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            background-color: var(--error);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            line-height: 18px;
+            text-align: center;
+            padding: 0 5px;
+        }
+
+        /* Speed Test */
+        .speedometer {
+            width: 200px;
+            height: 100px;
+            margin: 20px auto;
+            position: relative;
+            background-color: transparent;
+            overflow: hidden;
+        }
+
+        .speedometer-arc {
+            width: 200px;
+            height: 100px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-top-left-radius: 100px;
+            border-top-right-radius: 100px;
+            border: 6px solid var(--border);
+            border-bottom: none;
+            box-sizing: border-box;
+        }
+
+        .speedometer-needle {
+            position: absolute;
+            width: 80px;
+            height: 4px;
+            background-color: var(--error);
+            bottom: 0;
+            left: 100px;
+            transform-origin: left center;
+            transform: rotate(-90deg);
+            transition: transform 1s ease-out;
+        }
+
+        .speedometer-value {
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            right: 0;
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .speedometer-unit {
+            font-size: 12px;
+            font-weight: normal;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 10px;
+                margin: 10px auto;
+            }
+
+            .header {
+                padding: 15px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .packages {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+                gap: 10px;
+            }
+
+            .auth-methods {
+                gap: 5px;
+            }
+
+            .auth-method {
+                padding: 8px 5px;
+            }
+
+            .otp-input {
+                width: 35px;
+                height: 45px;
+                font-size: 20px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+</head>
+<body>
+<div class="notification-center" id="notification-center"></div>
+
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <img src="{% static 'fav.png' %}" alt="LomTech ISP Logo" class="logo">
+            <h1 id="portal-title">WiFi Hotspot</h1>
+            <p id="portal-subtitle">Fast & Reliable Internet</p>
+            <div class="signal-indicator">
+                <div class="signal-bars">
+                    <div class="signal-bar"></div>
+                    <div class="signal-bar"></div>
+                    <div class="signal-bar"></div>
+                    <div class="signal-bar"></div>
+                </div>
+                <div class="signal-text" id="signal-text">Strong</div>
+            </div>
+            <div class="header-controls">
+                <select id="language-selector" class="language-selector">
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="zh">中文</option>
+                    <option value="ar">العربية</option>
+                </select>
+                <button id="theme-toggle" class="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="welcome-text">
+                <h2 id="welcome-heading">Welcome to LomTech WiFi</h2>
+                <p id="welcome-text">Select a package to access high-speed internet</p>
+            </div>
+            <style>
+                .tab-wrapper {
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .tab-nav {
+                    display: flex;
+                    overflow-x: auto;
+                    white-space: nowrap;
+                    scrollbar-width: none; /* Firefox */
+                    scroll-behavior: smooth;
+                }
+
+                .tab-nav::-webkit-scrollbar {
+                    display: none; /* Chrome/Safari */
+                }
+
+                /* Buttons inside nav */
+                .tab-button {
+                    flex: 0 0 auto;
+                    padding: 10px 20px;
+                    border: none;
+                    background: transparent;
+                    cursor: pointer;
+                }
+
+                /* Scroll arrows */
+                .scroll-btn {
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: rgba(255, 255, 255, 0.8);
+                    border: none;
+                    padding: 10px;
+                    font-size: 20px;
+                    cursor: pointer;
+                    z-index: 20;
+                    opacity: 0;
+                    transition: opacity 0.3s;
+                    pointer-events: none;
+                }
+
+                /* Left button */
+                .scroll-btn.left {
+                    left: 0;
+                }
+
+                /* Right button */
+                .scroll-btn.right {
+                    right: 0;
+                }
+
+                /* Show arrows on hover */
+                .tab-wrapper:hover .scroll-btn {
+                    opacity: 1;
+                    pointer-events: all;
+                }
+
+            </style>
+            <div class="tab-wrapper">
+                <button class="scroll-btn left">&lt;</button> <!-- &lt; is < -->
+                <div class="tab-nav">
+                    <button class="tab-button active" data-tab="packages" id="tab-packages">Packages</button>
+                    <button class="tab-button" data-tab="voucher" id="tab-voucher">Redeem Voucher</button>
+                    <button class="tab-button" data-tab="status" id="tab-status">Connection Status</button>
+                    <button class="tab-button" data-tab="diagnostics" id="tab-diagnostics">Diagnostics</button>
+                    <button class="tab-button" data-tab="content" id="tab-content">Local Content</button>
+                </div>
+                <button class="scroll-btn right">&gt;</button> <!-- &gt; is > -->
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const tabNav = document.querySelector('.tab-nav');
+                    const btnLeft = document.querySelector('.scroll-btn.left');
+                    const btnRight = document.querySelector('.scroll-btn.right');
+
+                    const scrollAmount = 150; // pixels to scroll
+
+                    btnLeft.addEventListener('click', () => {
+                        tabNav.scrollBy({left: -scrollAmount, behavior: 'smooth'});
+                    });
+
+                    btnRight.addEventListener('click', () => {
+                        tabNav.scrollBy({left: scrollAmount, behavior: 'smooth'});
+                    });
+                });
+            </script>
+
+
+            <!-- Packages Tab -->
+            <div class="tab-content active" id="tab-packages-content">
+                <div class="packages">
+                    <div class="package-card" data-package="hourly">
+                        <div class="package-name">Quick</div>
+                        <div class="package-price">$1.99</div>
+                        <div class="package-duration">1 Hour</div>
+                        <div class="package-speed">10 Mbps</div>
+                    </div>
+                    <div class="package-card" data-package="daily">
+                        <div class="package-name">Daily</div>
+                        <div class="package-price">$4.99</div>
+                        <div class="package-duration">24 Hours</div>
+                        <div class="package-speed">25 Mbps</div>
+                    </div>
+                    <div class="package-card" data-package="weekly">
+                        <div class="package-name">Weekly</div>
+                        <div class="package-price">$19.99</div>
+                        <div class="package-duration">7 Days</div>
+                        <div class="package-speed">50 Mbps</div>
+                    </div>
+                    <div class="package-card" data-package="monthly">
+                        <div class="package-name">Monthly</div>
+                        <div class="package-price">$49.99</div>
+                        <div class="package-duration">30 Days</div>
+                        <div class="package-speed">100 Mbps</div>
+                    </div>
+                </div>
+
+                <form id="login-form">
+                                       
+
+                    <div id="auth-method-content">                      
+
+                        <!-- Phone Authentication -->
+                        <div class="auth-content" id="auth-phone">
+                            <div class="form-group">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" id="phone" class="form-control" placeholder="+1 123 456 7890"
+                                       required>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline" id="send-code-btn">Send Code</button>
+
+                            <div class="otp-inputs" style="display: none;" id="otp-container">
+                                <input type="text" maxlength="1" class="otp-input" id="otp-1">
+                                <input type="text" maxlength="1" class="otp-input" id="otp-2">
+                                <input type="text" maxlength="1" class="otp-input" id="otp-3">
+                                <input type="text" maxlength="1" class="otp-input" id="otp-4">
+                            </div>
+                        </div>
+
+                        <!-- Social Authentication -->
+                        <div class="auth-content" id="auth-social">
+                            <div class="payment-methods">
+                                <div class="payment-method" data-social="google">
+                                    <div class="payment-method-icon"><i class="fab fa-google"></i></div>
+                                    <div class="payment-method-label">Google</div>
+                                </div>
+                                <div class="payment-method" data-social="facebook">
+                                    <div class="payment-method-icon"><i class="fab fa-facebook-f"></i></div>
+                                    <div class="payment-method-label">Facebook</div>
+                                </div>
+                                <div class="payment-method" data-social="apple">
+                                    <div class="payment-method-icon"><i class="fab fa-apple"></i></div>
+                                    <div class="payment-method-label">Apple</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QR Authentication -->
+                        <div class="auth-content" id="auth-qr">
+                            <div class="security-instructions">Scan this QR code with the LomTech WiFi app to login
+                                instantly
+                            </div>
+                            <div class="qr-container">
+                                <img src="/api/placeholder/200/200" alt="QR Code" class="qr-code" id="login-qr-code">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subscription-details">
+                        <div class="detail-row">
+                            <span>Selected Package:</span>
+                            <span id="selected-package">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Duration:</span>
+                            <span id="selected-duration">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Speed Limit:</span>
+                            <span id="selected-speed">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Total Amount:</span>
+                            <span id="selected-price">-</span>
+                        </div>
+                    </div>
+
+                    <div class="bandwidth-controls">
+                        <div class="form-group">
+                            <label for="bandwidth-slider" class="form-label">Bandwidth Priority</label>
+                            <div class="slider-container">
+                                <input type="range" min="1" max="3" value="2" class="slider" id="bandwidth-slider">
+                                <div class="slider-labels">
+                                    <span>Browsing</span>
+                                    <span>Balanced</span>
+                                    <span>Streaming</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn" id="connect-btn">Connect Now</button>
+                </form>
+            </div>
+
+            <!-- Voucher Tab -->
+            <div class="tab-content" id="tab-voucher-content">
+                <div class="form-group">
+                    <label for="voucher-code" class="form-label">Enter Voucher Code</label>
+                    <div class="input-group">
+                        <input type="text" id="voucher-code" class="form-control" placeholder="Enter your code here">
+                        <button type="button" class="btn" id="redeem-btn">Redeem</button>
+                    </div>
+                </div>
+
+                <div class="security-instructions">You can purchase vouchers from any authorized LomTech dealer</div>
+
+                <div class="qr-container">
+                    <div class="security-instructions">Or scan a voucher QR code</div>
+                    <button class="btn btn-outline" id="scan-voucher-btn">
+                        <i class="fas fa-camera"></i> Scan Voucher
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Tab -->
+            <div class="tab-content" id="tab-status-content">
+                <div class="status-container">
+                    <div class="status-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="status-text">Connected</div>
+                    <div class="status-details">You are connected to LomTech WiFi</div>
+                    <div class="timer" id="time-remaining">23:45:12 remaining</div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="stat-speed">24.5</div>
+                        <div class="stat-label">Mbps</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="stat-usage">1.2</div>
+                        <div class="stat-label">GB Used</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="stat-devices">2</div>
+                        <div class="stat-label">Devices</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="usage-chart"></canvas>
+                </div>
+
+                <button type="button" class="btn" id="speed-test-btn">Run Speed Test</button>
+
+                <div class="speedometer" style="display: none;" id="speedometer">
+                    <div class="speedometer-arc"></div>
+                    <div class="speedometer-needle"></div>
+                    <div class="speedometer-value">0 <span class="speedometer-unit">Mbps</span></div>
+                </div>
+
+                <div class="spacer">
+                    <span>Device Management</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Connected Devices</label>
+                    <div class="device-list" id="device-list">
+                        <div class="device-item">
+                            <div class="device-icon"><i class="fas fa-laptop"></i></div>
+                            <div class="device-info">
+                                <div class="device-name">MacBook Pro</div>
+                                <div class="device-ip">192.168.1.5</div>
+                            </div>
+                            <div class="device-actions">
+                                <button class="btn btn-sm btn-outline">Limit</button>
+                            </div>
+                        </div>
+                        <div class="device-item">
+                            <div class="device-icon"><i class="fas fa-mobile-alt"></i></div>
+                            <div class="device-info">
+                                <div class="device-name">iPhone 12</div>
+                                <div class="device-ip">192.168.1.6</div>
+                            </div>
+                            <div class="device-actions">
+                                <button class="btn btn-sm btn-outline">Limit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-outline" id="disconnect-btn">Disconnect</button>
+            </div>
+
+            <!-- Diagnostics Tab -->
+            <div class="tab-content" id="tab-diagnostics-content">
+                <div class="diagnostics-container">
+                    <h3>Network Diagnostics</h3>
+
+                    <div class="form-group">
+                        <label class="form-label">Signal Strength</label>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 85%;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span class="pill-label pill-good">Strong (85%)</span>
+                            <span>-48 dBm</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Connection Quality</label>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 95%;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span class="pill-label pill-good">Excellent</span>
+                            <span>95%</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Network Latency</label>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 70%;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span class="pill-label pill-good">Good</span>
+                            <span>24ms</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Channel Congestion</label>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 30%;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span class="pill-label pill-good">Low</span>
+                            <span>30%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="network-chart"></canvas>
+                </div>
+
+                <div class="form-group">
+                    <button type="button" class="btn" id="run-diagnostics-btn">Run Full Diagnostics</button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Network Information</label>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid var(--border);">SSID</td>
+                            <td style="padding: 8px 0; border-bottom: 1px solid var(--border); text-align: right;">
+                                LomTech_WiFi
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid var(--border);">Channel</td>
+                            <td style="padding: 8px 0; border-bottom: 1px solid var(--border); text-align: right;">6
+                                (2.4GHz)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid var(--border);">Security</td>
+                            <td style="padding: 8px 0; border-bottom: 1px solid var(--border); text-align: right;">
+                                WPA2-PSK
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid var(--border);">IP Address</td>
+                            <td style="padding: 8px 0; border-bottom: 1px solid var(--border); text-align: right;">
+                                192.168.1.45
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid var(--border);">MAC Address</td>
+                            <td style="padding: 8px 0; border-bottom: 1px solid var(--border); text-align: right;">
+                                AA:BB:CC:DD:EE:FF
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0;">DNS Servers</td>
+                            <td style="padding: 8px 0; text-align: right;">8.8.8.8, 8.8.4.4</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Local Content Tab -->
+            <div class="tab-content" id="tab-content-content">
+                <div class="form-group">
+                    <label class="form-label">Local Content Library</label>
+                    <div class="alert alert-info">
+                        Access free content without using your data plan!
+                    </div>
+                </div>
+
+                <div class="tab-nav" style="margin-bottom: 15px;">
+                    <button class="tab-button active" data-content-tab="videos">Videos</button>
+                    <button class="tab-button" data-content-tab="news">News</button>
+                    <button class="tab-button" data-content-tab="education">Education</button>
+                    <button class="tab-button" data-content-tab="apps">Apps</button>
+                </div>
+
+                <div class="content-tab active" id="content-videos">
+                    <div class="local-content">
+                        <div class="content-item">
+                            <div class="content-thumb"></div>
+                            <div class="content-info">
+                                <div class="content-title">Movie 1</div>
+                                <div class="content-meta">1.2 GB · HD</div>
+                            </div>
+                        </div>
+                        <div class="content-item">
+                            <div class="content-thumb"></div>
+                            <div class="content-info">
+                                <div class="content-title">TV Show</div>
+                                <div class="content-meta">450 MB · SD</div>
+                            </div>
+                        </div>
+                        <div class="content-item">
+                            <div class="content-thumb"></div>
+                            <div class="content-info">
+                                <div class="content-title">Documentary</div>
+                                <div class="content-meta">800 MB · HD</div>
+                            </div>
+                        </div>
+                        <div class="content-item">
+                            <div class="content-thumb"></div>
+                            <div class="content-info">
+                                <div class="content-title">Music Video</div>
+                                <div class="content-meta">120 MB · HD</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-tab" id="content-news">
+                    <div class="local-content">
+                        <div class="content-item">
+                            <div class="content-thumb"></div>
+                            <div class="content-info">
+                                <div class="content-title">Daily News</div>
+                                <div class="content-meta">Today · Local</div>
+                            </div>
+                        </div>
+                        <div class="content-item">
+                            <div class="content-thumb"></div>
+                            <div class="content-info">
+                                <div class="content-title">Sports Update</div>
+                                <div class="content-meta">Today · Sports</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-tab" id="content-education">
+                    <div class="local-content">
+                        <div class="content-item">
+                            <div class="content-thumb"></div>
+                            <div class="content-info">
+                                <div class="content-title">Programming</div>
+                                <div class="content-meta">Course · 12 Videos</div>
+                            </div>
+                        </div>
+                        <div class="content-item">
+                            <div class="content-thumb"></div>
+                            <div class="content-info">
+                                <div class="content-title">Science</div>
+                                <div class="content-meta">Course · 8 Videos</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-tab" id="content-apps">
+                    <div class="local-content">
+                        <div class="content-item">
+                            <div class="content-thumb"></div>
+                            <div class="content-info">
+                                <div class="content-title">Weather App</div>
+                                <div class="content-meta">15 MB · v2.1</div>
+                            </div>
+                        </div>
+                        <div class="content-item">
+                            <div class="content-thumb"></div>
+                            <div class="content-info">
+                                <div class="content-title">Maps</div>
+                                <div class="content-meta">45 MB · v3.0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <p>© 2025 LomTech ISP. All rights reserved.</p>
+    <p>Terms and Conditions | Privacy Policy | Support</p>
+    <div class="social-links">
+        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+    </div>
+</div>
+
+<div class="loading" id="loading">
+    <div class="spinner"></div>
+</div>
+
+<script>
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function () {
+        // Tab Navigation
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.dataset.tab;
+
+                // Update active tab button
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                // Show active tab content
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `tab-${tab}-content`) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // Package Selection
+        const packageCards = document.querySelectorAll('.package-card');
+        const selectedPackage = document.getElementById('selected-package');
+        const selectedDuration = document.getElementById('selected-duration');
+        const selectedSpeed = document.getElementById('selected-speed');
+        const selectedPrice = document.getElementById('selected-price');
+
+        packageCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove selected class from all cards
+                packageCards.forEach(c => c.classList.remove('selected'));
+
+                // Add selected class to clicked card
+                card.classList.add('selected');
+
+                // Update subscription details
+                const packageName = card.querySelector('.package-name').textContent;
+                const packagePrice = card.querySelector('.package-price').textContent;
+                const packageDuration = card.querySelector('.package-duration').textContent;
+                const packageSpeed = card.querySelector('.package-speed').textContent;
+
+                selectedPackage.textContent = packageName;
+                selectedDuration.textContent = packageDuration;
+                selectedSpeed.textContent = packageSpeed;
+                selectedPrice.textContent = packagePrice;
+            });
+        });
+
+        // Auth Method Selection
+        const authMethods = document.querySelectorAll('.auth-method');
+        const authContents = document.querySelectorAll('.auth-content');
+
+        authMethods.forEach(method => {
+            method.addEventListener('click', () => {
+                const methodType = method.dataset.method;
+
+                // Update active auth method
+                authMethods.forEach(m => m.classList.remove('selected'));
+                method.classList.add('selected');
+
+                // Show active auth content
+                authContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `auth-${methodType}`) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // Payment Method Selection
+        const paymentMethods = document.querySelectorAll('.payment-method');
+        const paymentDetails = document.querySelectorAll('.payment-detail');
+
+        paymentMethods.forEach(method => {
+            method.addEventListener('click', () => {
+                const paymentType = method.dataset.payment;
+
+                // Update active payment method
+                paymentMethods.forEach(m => m.classList.remove('selected'));
+                method.classList.add('selected');
+
+                // Show active payment content
+                paymentDetails.forEach(detail => {
+                    detail.classList.remove('active');
+                    if (detail.id === `payment-${paymentType}`) {
+                        detail.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // Show/Hide OTP inputs
+        const sendCodeBtn = document.getElementById('send-code-btn');
+        const otpContainer = document.getElementById('otp-container');
+
+        if (sendCodeBtn && otpContainer) {
+            sendCodeBtn.addEventListener('click', () => {
+                otpContainer.style.display = 'flex';
+                sendCodeBtn.textContent = 'Resend Code';
+                showNotification('Verification code sent!', 'A verification code has been sent to your phone.', 'info');
+                // OTP Input Handling
+                const otpInputs = document.querySelectorAll('.otp-input');
+
+                otpInputs.forEach((input, index) => {
+                    // Auto-focus next input on entry
+                    input.addEventListener('input', () => {
+                        if (input.value.length === 1 && index < otpInputs.length - 1) {
+                            otpInputs[index + 1].focus();
+                        }
+                    });
+
+                    // Handle backspace to go to previous input
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Backspace' && index > 0 && input.value.length === 0) {
+                            otpInputs[index - 1].focus();
+                        }
+                    });
+                });
+            });
+        }
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = themeToggle.querySelector('i');
+
+        themeToggle.addEventListener('click', () => {
+            document.body.setAttribute('data-theme',
+                document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+
+            themeIcon.className = document.body.getAttribute('data-theme') === 'dark'
+                ? 'fas fa-sun'
+                : 'fas fa-moon';
+        });
+
+        // Language Selector
+        const languageSelector = document.getElementById('language-selector');
+        const portalTitle = document.getElementById('portal-title');
+        const portalSubtitle = document.getElementById('portal-subtitle');
+        const welcomeHeading = document.getElementById('welcome-heading');
+        const welcomeText = document.getElementById('welcome-text');
+        const tabPackages = document.getElementById('tab-packages');
+        const tabVoucher = document.getElementById('tab-voucher');
+        const tabStatus = document.getElementById('tab-status');
+        const tabDiagnostics = document.getElementById('tab-diagnostics');
+        const tabContent = document.getElementById('tab-content');
+
+        const translations = {
+            'en': {
+                'portalTitle': 'WiFi Hotspot',
+                'portalSubtitle': 'Fast & Reliable Internet',
+                'welcomeHeading': 'Welcome to LomTech WiFi',
+                'welcomeText': 'Select a package to access high-speed internet',
+                'tabPackages': 'Packages',
+                'tabVoucher': 'Redeem Voucher',
+                'tabStatus': 'Connection Status',
+                'tabDiagnostics': 'Diagnostics',
+                'tabContent': 'Local Content'
+            },
+            'es': {
+                'portalTitle': 'Punto de Acceso WiFi',
+                'portalSubtitle': 'Internet Rápido y Confiable',
+                'welcomeHeading': 'Bienvenido a LomTech WiFi',
+                'welcomeText': 'Seleccione un paquete para acceder a internet de alta velocidad',
+                'tabPackages': 'Paquetes',
+                'tabVoucher': 'Canjear Cupón',
+                'tabStatus': 'Estado de Conexión',
+                'tabDiagnostics': 'Diagnósticos',
+                'tabContent': 'Contenido Local'
+            },
+            'fr': {
+                'portalTitle': 'Point d\'Accès WiFi',
+                'portalSubtitle': 'Internet Rapide et Fiable',
+                'welcomeHeading': 'Bienvenue sur LomTech WiFi',
+                'welcomeText': 'Sélectionnez un forfait pour accéder à l\'internet haut débit',
+                'tabPackages': 'Forfaits',
+                'tabVoucher': 'Utiliser un Coupon',
+                'tabStatus': 'État de la Connexion',
+                'tabDiagnostics': 'Diagnostics',
+                'tabContent': 'Contenu Local'
+            },
+            'zh': {
+                'portalTitle': 'WiFi热点',
+                'portalSubtitle': '快速可靠的互联网',
+                'welcomeHeading': '欢迎使用LomTech WiFi',
+                'welcomeText': '选择一个套餐以访问高速互联网',
+                'tabPackages': '套餐',
+                'tabVoucher': '兑换代金券',
+                'tabStatus': '连接状态',
+                'tabDiagnostics': '诊断',
+                'tabContent': '本地内容'
+            },
+            'ar': {
+                'portalTitle': 'نقطة اتصال واي فاي',
+                'portalSubtitle': 'إنترنت سريع وموثوق',
+                'welcomeHeading': 'مرحبًا بك في واي فاي LomTech',
+                'welcomeText': 'اختر حزمة للوصول إلى الإنترنت عالي السرعة',
+                'tabPackages': 'الحزم',
+                'tabVoucher': 'استبدال القسيمة',
+                'tabStatus': 'حالة الاتصال',
+                'tabDiagnostics': 'التشخيص',
+                'tabContent': 'المحتوى المحلي'
+            }
+        };
+
+        languageSelector.addEventListener('change', () => {
+            const lang = languageSelector.value;
+            const langData = translations[lang];
+
+            portalTitle.textContent = langData.portalTitle;
+            portalSubtitle.textContent = langData.portalSubtitle;
+            welcomeHeading.textContent = langData.welcomeHeading;
+            welcomeText.textContent = langData.welcomeText;
+            tabPackages.textContent = langData.tabPackages;
+            tabVoucher.textContent = langData.tabVoucher;
+            tabStatus.textContent = langData.tabStatus;
+            tabDiagnostics.textContent = langData.tabDiagnostics;
+            tabContent.textContent = langData.tabContent;
+
+            // Display notification when language changes
+            showNotification('Language Changed', `Interface language changed to ${languageSelector.options[languageSelector.selectedIndex].text}`, 'info');
+
+            // Adjust RTL for Arabic
+            if (lang === 'ar') {
+                document.body.style.direction = 'rtl';
+            } else {
+                document.body.style.direction = 'ltr';
+            }
+        });
+
+        // Connect Button Action
+        const connectBtn = document.getElementById('connect-btn');
+        const loginForm = document.getElementById('login-form');
+        const loading = document.getElementById('loading');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Show loading spinner
+            loading.style.display = 'flex';
+
+            // Simulate connection process
+            setTimeout(() => {
+                loading.style.display = 'none';
+
+                // Switch to status tab
+                document.querySelector('[data-tab="status"]').click();
+
+                // Show success notification
+                showNotification('Successfully Connected', 'You are now connected to LomTech WiFi network.', 'success');
+
+                // Update usage chart
+                updateUsageChart();
+            }, 2000);
+        });
+
+        // Speed Test Function
+        const speedTestBtn = document.getElementById('speed-test-btn');
+        const speedometer = document.getElementById('speedometer');
+        const speedometerNeedle = document.querySelector('.speedometer-needle');
+        const speedometerValue = document.querySelector('.speedometer-value');
+
+        if (speedTestBtn && speedometer) {
+            speedTestBtn.addEventListener('click', () => {
+                // Hide button, show speedometer
+                speedTestBtn.style.display = 'none';
+                speedometer.style.display = 'block';
+
+                // Simulate speed test
+                let progress = 0;
+                let speed = 0;
+                const maxSpeed = 75; // Maximum speed in Mbps
+
+                const speedInterval = setInterval(() => {
+                    progress += 5;
+
+                    if (progress <= 20) {
+                        // Download starting
+                        speed = Math.random() * 10 + 5;
+                    } else if (progress <= 60) {
+                        // Download in progress
+                        speed = Math.random() * 20 + 20;
+                    } else if (progress <= 90) {
+                        // Peak download speed
+                        speed = Math.random() * 30 + 40;
+                    } else {
+                        // Test finishing
+                        speed = Math.random() * 15 + 30;
+                    }
+
+                    // Update speedometer
+                    const angle = (speed / maxSpeed) * 180 - 90;
+                    speedometerNeedle.style.transform = `rotate(${angle}deg)`;
+                    speedometerValue.innerHTML = `${speed.toFixed(1)} <span class="speedometer-unit">Mbps</span>`;
+
+                    if (progress >= 100) {
+                        clearInterval(speedInterval);
+
+                        // Show button again after a delay
+                        setTimeout(() => {
+                            speedTestBtn.style.display = 'block';
+                            speedometer.style.display = 'none';
+                            speedTestBtn.textContent = 'Run Again';
+
+                            // Show result notification
+                            showNotification('Speed Test Complete', `Download: ${speed.toFixed(1)} Mbps, Upload: ${(speed * 0.7).toFixed(1)} Mbps, Ping: ${Math.round(Math.random() * 20 + 10)} ms`, 'info');
+                        }, 2000);
+                    }
+                }, 200);
+            });
+        }
+
+        // Notification System
+        const notificationCenter = document.getElementById('notification-center');
+
+        function showNotification(title, message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+
+            // Set icon based on notification type
+            let iconClass;
+            switch (type) {
+                case 'success':
+                    iconClass = 'fas fa-check-circle';
+                    break;
+                case 'error':
+                    iconClass = 'fas fa-exclamation-circle';
+                    break;
+                case 'warning':
+                    iconClass = 'fas fa-exclamation-triangle';
+                    break;
+                default:
+                    iconClass = 'fas fa-info-circle';
+            }
+
+            notification.innerHTML = `
+                    <div class="notification-icon">
+                        <i class="${iconClass}"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-title">${title}</div>
+                        <div class="notification-text">${message}</div>
+                    </div>
+                    <button class="notification-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+
+            notificationCenter.appendChild(notification);
+
+            // Show notification with animation
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+
+            // Set up close button
+            const closeBtn = notification.querySelector('.notification-close');
+            closeBtn.addEventListener('click', () => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 500);
+            });
+
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 500);
+                }
+            }, 5000);
+        }
+
+        // Redeem Voucher Button
+        const redeemBtn = document.getElementById('redeem-btn');
+        const voucherCodeInput = document.getElementById('voucher-code');
+
+        if (redeemBtn && voucherCodeInput) {
+            redeemBtn.addEventListener('click', () => {
+                const voucherCode = voucherCodeInput.value.trim();
+
+                if (voucherCode === '') {
+                    showNotification('Error', 'Please enter a voucher code', 'error');
+                    return;
+                }
+
+                // Show loading
+                loading.style.display = 'flex';
+
+                // Simulate voucher validation
+                setTimeout(() => {
+                    loading.style.display = 'none';
+
+                    if (voucherCode === 'FREE24' || voucherCode === 'WIFI2025') {
+                        showNotification('Success', 'Voucher redeemed successfully! You have 24 hours of access.', 'success');
+                        // Switch to status tab
+                        document.querySelector('[data-tab="status"]').click();
+                        // Update chart
+                        updateUsageChart();
+                    } else {
+                        showNotification('Invalid Voucher', 'The voucher code you entered is invalid or expired.', 'error');
+                    }
+                }, 1500);
+            });
+        }
+
+        // Disconnect Button
+        const disconnectBtn = document.getElementById('disconnect-btn');
+
+        if (disconnectBtn) {
+            disconnectBtn.addEventListener('click', () => {
+                // Show loading
+                loading.style.display = 'flex';
+
+                // Simulate disconnection
+                setTimeout(() => {
+                    loading.style.display = 'none';
+
+                    // Switch to packages tab
+                    document.querySelector('[data-tab="packages"]').click();
+
+                    showNotification('Disconnected', 'You have been successfully disconnected from the network.', 'info');
+                }, 1000);
+            });
+        }
+
+        // Run Diagnostics Button
+        const runDiagnosticsBtn = document.getElementById('run-diagnostics-btn');
+
+        if (runDiagnosticsBtn) {
+            runDiagnosticsBtn.addEventListener('click', () => {
+                // Show loading
+                loading.style.display = 'flex';
+                runDiagnosticsBtn.disabled = true;
+                runDiagnosticsBtn.textContent = 'Running...';
+
+                // Simulate diagnostics
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    runDiagnosticsBtn.disabled = false;
+                    runDiagnosticsBtn.textContent = 'Run Full Diagnostics';
+
+                    showNotification('Diagnostics Complete', 'Network diagnostics completed successfully. All systems are functioning properly.', 'success');
+
+                    // Update network chart
+                    updateNetworkChart();
+                }, 3000);
+            });
+        }
+
+        // Content Tab Navigation
+        const contentTabButtons = document.querySelectorAll('[data-content-tab]');
+        const contentTabs = document.querySelectorAll('.content-tab');
+
+        contentTabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.dataset.contentTab;
+
+                // Update active content tab button
+                contentTabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                // Show active content tab
+                contentTabs.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `content-${tab}`) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // QR Code Generation
+        function generateQRCode(text, elementId) {
+            const qrElement = document.getElementById(elementId);
+
+            if (qrElement && typeof qrcode !== 'undefined') {
+                // Clear previous QR code
+                while (qrElement.firstChild) {
+                    qrElement.removeChild(qrElement.firstChild);
+                }
+
+                // Generate QR code
+                const qr = qrcode(4, 'L');
+                qr.addData(text);
+                qr.make();
+
+                qrElement.innerHTML = qr.createImgTag(5);
+            }
+        }
+
+        // Try to generate QR code if element exists
+        if (document.getElementById('login-qr-code') && typeof qrcode !== 'undefined') {
+            generateQRCode("LOMTECH:LOGIN:" + Math.random().toString(36).substr(2, 9), 'login-qr-code');
+        }
+
+        // Usage Chart Initialization
+        function updateUsageChart() {
+            const ctx = document.getElementById('usage-chart');
+
+            if (ctx && typeof Chart !== 'undefined') {
+                // Generate random data for the chart
+                const hours = Array.from({length: 12}, (_, i) => `${i * 2}:00`);
+                const usageData = Array.from({length: 12}, () => Math.random() * 200);
+
+                // Destroy existing chart if it exists
+                if (window.usageChart) {
+                    window.usageChart.destroy();
+                }
+
+                // Create new chart
+                window.usageChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: hours,
+                        datasets: [{
+                            label: 'Data Usage (MB)',
+                            data: usageData,
+                            backgroundColor: 'rgba(0, 102, 204, 0.2)',
+                            borderColor: 'rgba(0, 102, 204, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(0, 102, 204, 1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function (value) {
+                                        return value + ' MB';
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return `${context.parsed.y.toFixed(1)} MB`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Network Chart Initialization
+        function updateNetworkChart() {
+            const ctx = document.getElementById('network-chart');
+
+            if (ctx && typeof Chart !== 'undefined') {
+                // Generate random data for the chart
+                const timePoints = Array.from({length: 10}, (_, i) => `${i} min ago`).reverse();
+                const pingData = Array.from({length: 10}, () => Math.random() * 30 + 10);
+                const packetLossData = Array.from({length: 10}, () => Math.random() * 3);
+
+                // Destroy existing chart if it exists
+                if (window.networkChart) {
+                    window.networkChart.destroy();
+                }
+
+                // Create new chart
+                window.networkChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: timePoints,
+                        datasets: [
+                            {
+                                label: 'Ping (ms)',
+                                data: pingData,
+                                backgroundColor: 'rgba(0, 102, 204, 0.2)',
+                                borderColor: 'rgba(0, 102, 204, 1)',
+                                borderWidth: 2,
+                                yAxisID: 'y',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Packet Loss (%)',
+                                data: packetLossData,
+                                backgroundColor: 'rgba(255, 149, 0, 0.2)',
+                                borderColor: 'rgba(255, 149, 0, 1)',
+                                borderWidth: 2,
+                                yAxisID: 'y1',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Ping (ms)'
+                                }
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                grid: {
+                                    drawOnChartArea: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Packet Loss (%)'
+                                },
+                                max: 5
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Timer Countdown
+        function updateTimer() {
+            const timerElement = document.getElementById('time-remaining');
+
+            if (timerElement) {
+                // Set a random time remaining (between 1 and 24 hours)
+                let hours = Math.floor(Math.random() * 23) + 1;
+                let minutes = Math.floor(Math.random() * 60);
+                let seconds = Math.floor(Math.random() * 60);
+
+                const updateTimerDisplay = () => {
+                    timerElement.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} remaining`;
+
+                    seconds--;
+                    if (seconds < 0) {
+                        seconds = 59;
+                        minutes--;
+                        if (minutes < 0) {
+                            minutes = 59;
+                            hours--;
+                            if (hours < 0) {
+                                clearInterval(timerInterval);
+                                timerElement.textContent = '00:00:00 remaining';
+                                showNotification('Connection Expired', 'Your connection time has expired. Please purchase a new package to continue.', 'warning');
+                                document.querySelector('[data-tab="packages"]').click();
+                            }
+                        }
+                    }
+                };
+
+                // Initial update
+                updateTimerDisplay();
+
+                // Update every second
+                const timerInterval = setInterval(updateTimerDisplay, 1000);
+            }
+        }
+
+        // Signal Strength Update
+        function updateSignalStrength() {
+            const signalBars = document.querySelectorAll('.signal-bar');
+            const signalText = document.getElementById('signal-text');
+
+            if (signalBars.length > 0 && signalText) {
+                // Random signal strength (1-4 bars)
+                const strength = Math.floor(Math.random() * 4) + 1;
+
+                // Update signal bars
+                signalBars.forEach((bar, index) => {
+                    if (index < strength) {
+                        bar.style.opacity = '1';
+                    } else {
+                        bar.style.opacity = '0.3';
+                    }
+                });
+
+                // Update signal text
+                let signalDescription;
+                switch (strength) {
+                    case 1:
+                        signalDescription = 'Weak';
+                        break;
+                    case 2:
+                        signalDescription = 'Fair';
+                        break;
+                    case 3:
+                        signalDescription = 'Good';
+                        break;
+                    case 4:
+                        signalDescription = 'Strong';
+                        break;
+                }
+                signalText.textContent = signalDescription;
+            }
+        }
+
+        // Initialize Signal Strength
+        updateSignalStrength();
+
+        // Initialize timer if we're on the status page
+        updateTimer();
+
+        // Show welcome notification
+        setTimeout(() => {
+            showNotification('Welcome to LomTech WiFi', 'Connect to high-speed internet anywhere, anytime.', 'info');
+        }, 1000);
+
+        // Social Authentication Simulation
+        const socialMethods = document.querySelectorAll('[data-social]');
+
+        socialMethods.forEach(method => {
+            method.addEventListener('click', () => {
+                const socialType = method.dataset.social;
+
+                // Show loading
+                loading.style.display = 'flex';
+
+                // Simulate social login
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    showNotification('Social Login', `${socialType.charAt(0).toUpperCase() + socialType.slice(1)} authentication successful!`, 'success');
+                    document.querySelector('[data-tab="status"]').click();
+                    updateUsageChart();
+                }, 1500);
+            });
+        });
+
+        // Scan Voucher Button
+        const scanVoucherBtn = document.getElementById('scan-voucher-btn');
+
+        if (scanVoucherBtn) {
+            scanVoucherBtn.addEventListener('click', () => {
+                showNotification('Camera Access', 'Requesting access to your camera...', 'info');
+
+                // Simulate camera access and scanning
+                setTimeout(() => {
+                    showNotification('Voucher Found', 'Voucher code detected and applied successfully!', 'success');
+                    document.querySelector('[data-tab="status"]').click();
+                    updateUsageChart();
+                }, 2000);
+            });
+        }
+
+        // Content Item Click Handlers
+        const contentItems = document.querySelectorAll('.content-item');
+
+        contentItems.forEach(item => {
+            item.addEventListener('click', () => {
+                showNotification('Content Access', 'Opening content in the LomTech media player...', 'info');
+            });
+        });
+
+        // Bandwidth Slider
+        const bandwidthSlider = document.getElementById('bandwidth-slider');
+
+        if (bandwidthSlider) {
+            bandwidthSlider.addEventListener('input', () => {
+                const value = bandwidthSlider.value;
+                let priorityType;
+
+                switch (parseInt(value)) {
+                    case 1:
+                        priorityType = 'Web Browsing';
+                        break;
+                    case 2:
+                        priorityType = 'Balanced';
+                        break;
+                    case 3:
+                        priorityType = 'Streaming';
+                        break;
+                }
+
+                showNotification('Bandwidth Priority', `Priority set to: ${priorityType}`, 'info');
+            });
+        }
+    });
+</script>
+</body>
+</html>

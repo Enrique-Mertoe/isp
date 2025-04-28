@@ -25,6 +25,7 @@ def home(request):
     return render(request, 'index.html')
 
 
+@api_view(["POST","GET"])
 @ensure_csrf_cookie
 def set_csrf(request):
     return JsonResponse({'detail': 'CSRF cookie set'})
@@ -470,3 +471,8 @@ def get_user_packages(request):
             'status': 'error',
             'message': str(e)
         }, status=500)
+
+
+@api_view(["GET", "POST"])
+def hotspot_packages(request):
+    return render(request, "hotspot/packages.html")

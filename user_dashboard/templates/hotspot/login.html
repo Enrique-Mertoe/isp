@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>LomTech ISP - WiFi Portal</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #0055b3;
+            --secondary: #ff9500;
+            --text: #333;
+            --light-text: #777;
+            --background: #f4f4f4;
+            --white: #ffffff;
+            --border: #ddd;
+            --success: #28a745;
+            --error: #dc3545;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 480px;
+            margin: 20px auto;
+            padding: 0 15px;
+            flex: 1;
+        }
+        
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .logo {
+            max-width: 180px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        
+        .signal-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .signal-bars {
+            display: flex;
+            align-items: flex-end;
+            height: 20px;
+            gap: 2px;
+        }
+        
+        .signal-bar {
+            width: 4px;
+            background-color: rgba(255,255,255,0.7);
+            border-radius: 2px;
+        }
+        
+        .signal-bar:nth-child(1) { height: 5px; }
+        .signal-bar:nth-child(2) { height: 10px; }
+        .signal-bar:nth-child(3) { height: 15px; }
+        .signal-bar:nth-child(4) { height: 20px; }
+        
+        .signal-text {
+            font-size: 10px;
+            margin-top: 3px;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .welcome-text h2 {
+            color: var(--primary);
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-text p {
+            color: var(--light-text);
+            font-size: 14px;
+        }
+        
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--light-text);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .tab-button.active {
+            color: var(--primary);
+        }
+        
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .packages {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .package-card {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .package-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .package-card.selected {
+            border-color: var(--primary);
+            background-color: rgba(0,102,204,0.05);
+        }
+        
+        .package-name {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .package-price {
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .package-duration {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+        
+        .package-speed {
+            font-size: 12px;
+            background-color: var(--primary);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0,102,204,0.2);
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        
+        .spacer {
+            margin: 15px 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        .spacer::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background-color: var(--border);
+        }
+        
+        .spacer span {
+            background-color: white;
+            padding: 0 10px;
+            position: relative;
+            color: var(--light-text);
+            font-size: 14px;
+        }
+        
+        .voucher-container {
+            margin-top: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+        }
+        
+        .input-group .form-control {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: none;
+        }
+        
+        .input-group .btn {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            width: auto;
+        }
+        
+        .subscription-details {
+            background-color: rgba(0,102,204,0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .detail-row:last-child {
+            margin-bottom: 0;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+            font-weight: 600;
+        }
+        
+        .status-container {
+            background-color: rgba(40, 167, 69, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .status-icon {
+            font-size: 40px;
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+        
+        .status-text {
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 5px;
+        }
+        
+        .status-details {
+            font-size: 14px;
+            color: var(--text);
+        }
+        
+        .timer {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .alert-error {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
+        
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px 15px;
+            background-color: var(--white);
+            color: var(--light-text);
+            font-size: 12px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .footer p {
+            margin-bottom: 5px;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .social-icon {
+            color: var(--primary);
+            font-size: 18px;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 10px;
+                margin: 10px auto;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            .packages {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+                gap: 10px;
+            }
+        }
+        
+        /* Loading spinner */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255,255,255,0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0,102,204,0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Font Awesome Icons */
+        .fas {
+            font-family: 'Font Awesome';
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <img src="/api/placeholder/180/60" alt="LomTech ISP Logo" class="logo">
+                <h1>WiFi Hotspot</h1>
+                <p>Fast & Reliable Internet</p>
+                <div class="signal-indicator">
+                    <div class="signal-bars">
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
+                    </div>
+                    <div class="signal-text">Strong</div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="welcome-text">
+                    <h2>Welcome to LomTech WiFi</h2>
+                    <p>Select a package to access high-speed internet</p>
+                </div>
+                
+                <div class="tab-nav">
+                    <button class="tab-button active" data-tab="packages">Packages</button>
+                    <button class="tab-button" data-tab="voucher">Redeem Voucher</button>
+                    <button class="tab-button" data-tab="status">Connection Status</button>
+                </div>
+                
+                <!-- Packages Tab -->
+                <div id="packages" class="tab-content active">
+                    <div class="packages">
+                        <div class="package-card" data-package="basic" data-price="2.99" data-duration="1 day" data-speed="5 Mbps">
+                            <div class="package-name">Basic</div>
+                            <div class="package-price">$2.99</div>
+                            <div class="package-duration">1 Day</div>
+                            <div class="package-speed">5 Mbps</div>
+                        </div>
+                        <div class="package-card" data-package="standard" data-price="9.99" data-duration="7 days" data-speed="10 Mbps">
+                            <div class="package-name">Standard</div>
+                            <div class="package-price">$9.99</div>
+                            <div class="package-duration">7 Days</div>
+                            <div class="package-speed">10 Mbps</div>
+                        </div>
+                        <div class="package-card" data-package="premium" data-price="19.99" data-duration="30 days" data-speed="25 Mbps">
+                            <div class="package-name">Premium</div>
+                            <div class="package-price">$19.99</div>
+                            <div class="package-duration">30 Days</div>
+                            <div class="package-speed">25 Mbps</div>
+                        </div>
+                        <div class="package-card" data-package="unlimited" data-price="29.99" data-duration="30 days" data-speed="50 Mbps">
+                            <div class="package-name">Unlimited</div>
+                            <div class="package-price">$29.99</div>
+                            <div class="package-duration">30 Days</div>
+                            <div class="package-speed">50 Mbps</div>
+                        </div>
+                    </div>
+                    
+                    <form id="subscription-form">
+                        <div id="subscription-details" style="display: none;" class="subscription-details">
+                            <div class="detail-row">
+                                <span>Package:</span>
+                                <span id="selected-package-name">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Speed:</span>
+                                <span id="selected-package-speed">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Duration:</span>
+                                <span id="selected-package-duration">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Total:</span>
+                                <span id="selected-package-price">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="phone">Phone Number</label>
+                            <input type="tel" id="phone" class="form-control" placeholder="Enter your phone number" required>
+                        </div>
+                        
+                        <button type="submit" class="btn">Subscribe & Connect</button>
+                    </form>
+                </div>
+                
+                <!-- Voucher Tab -->
+                <div id="voucher" class="tab-content">
+                    <form id="voucher-form">
+                        <div class="form-group">
+                            <label class="form-label" for="voucher-code">Voucher Code</label>
+                            <div class="input-group">
+                                <input type="text" id="voucher-code" class="form-control" placeholder="Enter voucher code" required>
+                                <button type="submit" class="btn">Redeem</button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="spacer">
+                        <span>OR</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="login-username">Username</label>
+                        <input type="text" id="login-username" name="username" class="form-control" placeholder="Enter username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="login-password">Password</label>
+                        <input type="password" id="login-password" name="password" class="form-control" placeholder="Enter password" required>
+                    </div>
+                    
+                    <button type="button" id="login-btn" class="btn">Login</button>
+                </div>
+                
+                <!-- Status Tab -->
+                <div id="status" class="tab-content">
+                    <div id="not-connected" style="display: block;">
+                        <div class="alert alert-error">
+                            <i class="fas fa-exclamation-circle"></i> You are not connected to the internet.
+                        </div>
+                        <p style="text-align: center; margin: 20px 0;">Please subscribe to a package or redeem a voucher to connect.</p>
+                    </div>
+                    
+                    <div id="connected" style="display: none;">
+                        <div class="status-container">
+                            <div class="status-icon">
+                                <i class="fas fa-wifi"></i>
+                            </div>
+                            <div class="status-text">Connected</div>
+                            <div class="status-details">You are connected to LomTech WiFi</div>
+                            
+                            <div class="timer">
+                                Time Remaining: <span id="time-remaining">23:59:59</span>
+                            </div>
+                            
+                            <div class="stats">
+                                <div class="stat">
+                                    <div class="stat-value" id="data-used">0.25 GB</div>
+                                    <div class="stat-label">Data Used</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value" id="data-remaining">4.75 GB</div>
+                                    <div class="stat-label">Remaining</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value" id="current-speed">3.2 Mbps</div>
+                                    <div class="stat-label">Current Speed</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button id="logout-btn" class="btn">Disconnect</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>© 2025 LomTech ISP. All rights reserved.</p>
+        <p>For support, call: +1234567890</p>
+        <div class="social-links">
+            <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+        </div>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div class="loading">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Hidden Mikrotik Form -->
+    <form id="mikrotik-login-form" action="$(link-login)" method="post" style="display: none;">
+        <input type="hidden" name="dst" value="$(link-orig)">
+        <input type="hidden" name="popup" value="true">
+        <input type="hidden" name="username" id="mikrotik-username">
+        <input type="hidden" name="password" id="mikrotik-password">
+    </form>
+    
+    <script>
+        // Global variables
+        let selectedPackage = null;
+        let sessionActive = false;
+        let macAddress = "";
+        let sessionExpiry = null;
+        
+        // DOM Elements
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const packageCards = document.querySelectorAll('.package-card');
+        const subscriptionForm = document.getElementById('subscription-form');
+        const voucherForm = document.getElementById('voucher-form');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loadingSpinner = document.querySelector('.loading');
+        
+        // Tab Navigation
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all tabs
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                button.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // Package Selection
+        packageCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove selected class from all cards
+                packageCards.forEach(c => c.classList.remove('selected'));
+                
+                // Add selected class to clicked card
+                card.classList.add('selected');
+                
+                // Save selected package data
+                selectedPackage = {
+                    name: card.getAttribute('data-package'),
+                    price: card.getAttribute('data-price'),
+                    duration: card.getAttribute('data-duration'),
+                    speed: card.getAttribute('data-speed')
+                };
+                
+                // Update subscription details
+                document.getElementById('selected-package-name').textContent = selectedPackage.name.charAt(0).toUpperCase() + selectedPackage.name.slice(1);
+                document.getElementById('selected-package-speed').textContent = selectedPackage.speed;
+                document.getElementById('selected-package-duration').textContent = selectedPackage.duration;
+                document.getElementById('selected-package-price').textContent = '$' + selectedPackage.price;
+                
+                // Show subscription details
+                document.getElementById('subscription-details').style.display = 'block';
+            });
+        });
+        
+        // Subscription Form Submission
+        subscriptionForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if (!selectedPackage) {
+                alert('Please select a package first.');
+                return;
+            }
+            
+            const phoneNumber = document.getElementById('phone').value;
+            if (!phoneNumber) {
+                alert('Please enter your phone number.');
+                return;
+            }
+            
+            // Show loading spinner
+            loadingSpinner.style.display = 'flex';
+            
+            // Simulate API call to Mikrotik server (replace with actual implementation)
+            setTimeout(() => {
+                // Generate unique username based on package and phone
+                const username = `${selectedPackage.name}_${phoneNumber.replace(/[^0-9]/g, '')}`;
+                const password = generateRandomPassword();
+                
+                // Get MAC address (in production, this would come from Mikrotik)
+                macAddress = getMacAddress();
+                
+                // Set session expiry based on package duration
+                setSessionExpiry(selectedPackage.duration);
+                
+                // Set credentials in hidden form
+                document.getElementById('mikrotik-username').value = username;
+                document.getElementById('mikrotik-password').value = password;
+                
+                // Save to local storage for session management
+                saveSessionData(username, password, selectedPackage);
+                
+                // Submit the form to Mikrotik
+                loginToMikrotik(username, password);
+                
+                // Hide loading spinner
+                loadingSpinner.style.display = 'none';
+                
+                // Switch to status tab and show connected state
+                switchToConnectedState();
+            }, 2000);
+        });
+        
+        // Voucher Form Submission
+        voucherForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const voucherCode = document.getElementById('voucher-code').value;
+            if (!voucherCode) {
+                alert('Please enter a voucher code.');
+                return;
+            }
+            
+            // Show loading spinner
+            loadingSpinner.style.display = 'flex';
+            
+            // Simulate API call to validate voucher (replace with actual implementation)
+            setTimeout(() => {
+                // For demonstration, we'll assume the voucher is valid
+                // In production, you would verify this with your Mikrotik server
+                
+                // Generate credentials from voucher
+                const username = `voucher_${voucherCode}`;
+                const password = voucherCode;
+                
+                // Get MAC address
+                macAddress = getMacAddress();
+                
+                // Set session expiry (assuming vouchers are for 1 day)
+                setSessionExpiry('1 day');
+                
+                // Set credentials in hidden form
+                document.getElementById('mikrotik-username').value = username;
+                document.getElementById('mikrotik-password').value = password;
+                
+                // Create a dummy package for vouchers
+                const voucherPackage = {
+                    name: 'Voucher',
+                    price: 'N/A',
+                    duration: '1 day',
+                    speed: '10 Mbps'
+                };
+                
+                // Save to local storage
+                saveSessionData(username, password, voucherPackage);
+                
+                // Submit the form to Mikrotik
+                loginToMikrotik(username, password);
+                
+                // Hide loading spinner
+                loadingSpinner.style.display = 'none';
+                
+                // Switch to status tab and show connected state
+                switchToConnectedState();
+            }, 2000);
+        });
+        
+        // Login Button Click
+        loginBtn.addEventListener('click', () => {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!username || !password) {
+                alert('Please enter both username and password.');
+                return;
+            }
+            
+            // Show loading spinner
+            loadingSpinner.style.display = 'flex';
+            
+            // Set credentials in hidden form
+            document.getElementById('mikrotik-username').value = username;
+            document.getElementById('mikrotik-password').value = password;
+            
+            // Submit the form to Mikrotik
+            loginToMikrotik(username, password);
+            
+            // Hide loading spinner
+            loadingSpinner.style.display = 'none';
+        });
+        
+        // Logout Button Click
+        logoutBtn.addEventListener('click', () => {
+            // Show loading spinner
+            loadingSpinner.style.display = 'flex';
+            
+            // Simulate logout API call
+            setTimeout(() => {
+                // In production, redirect to Mikrotik logout URL: $(link-logout)
+                
+                // Clear session data
+                localStorage.removeItem('lomtech_session');
+                
+                // Reset UI
+                document.getElementById('not-connected').style.display = 'block';
+                document.getElementById('connected').style.display = 'none';
+                
+                // Switch to packages tab
+                tabButtons[0].click();
+                
+                // Reset form
+                subscriptionForm.reset();
+                document.getElementById('subscription-details').style.display = 'none';
+                packageCards.forEach(c => c.classList.remove('selected'));
+                selectedPackage = null;
+                
+                // Hide loading spinner
+                loadingSpinner.style.display = 'none';
+                
+                sessionActive = false;
+            }, 1000);
+        });
+        // Utility Functions
+        function generateRandomPassword() {
+            // Generate a random 8-character password
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let password = '';
+            for (let i = 0; i < 8; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return password;
+        }
+        
+        function getMacAddress() {
+            // In production, this would come from Mikrotik variables
+            // For simulation, we'll generate a random MAC
+            const hexDigits = '0123456789ABCDEF';
+            let mac = '';
+            for (let i = 0; i < 6; i++) {
+                mac += hexDigits.charAt(Math.floor(Math.random() * 16));
+                mac += hexDigits.charAt(Math.floor(Math.random() * 16));
+                if (i < 5) mac += ':';
+            }
+            return mac;
+        }
+        
+        function setSessionExpiry(duration) {
+            // Parse duration string and set expiry date
+            const now = new Date();
+            let days = 1; // Default to 1 day
+            
+            if (duration.includes('day')) {
+                days = parseInt(duration);
+            } else if (duration.includes('week') || duration.includes('7 day')) {
+                days = 7;
+            } else if (duration.includes('month') || duration.includes('30 day')) {
+                days = 30;
+            }
+            
+            // Set expiry date
+            sessionExpiry = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+            return sessionExpiry;
+        }
+        
+        function saveSessionData(username, password, packageData) {
+            const sessionData = {
+                username: username,
+                password: password,
+                package: packageData,
+                macAddress: macAddress,
+                expiry: sessionExpiry.toISOString(),
+                startTime: new Date().toISOString(),
+                dataUsed: 0,
+                dataAllocation: packageData.name.toLowerCase().includes('unlimited') ? 'Unlimited' : '5.00' // 5GB default
+            };
+            
+            localStorage.setItem('lomtech_session', JSON.stringify(sessionData));
+            sessionActive = true;
+        }
+        
+        function loginToMikrotik(username, password) {
+            // In production, this would submit the form to Mikrotik
+            // For simulation, we'll just log the credentials
+            console.log(`Logging in with: ${username} / ${password}`);
+            
+            // Actual form submission to Mikrotik
+            // Uncomment this line in production:
+            // document.getElementById('mikrotik-login-form').submit();
+            
+            // For demo purposes, we'll simulate successful login
+            return true;
+        }
+        
+        function switchToConnectedState() {
+            // Switch to status tab
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            tabButtons[2].classList.add('active');
+            document.getElementById('status').classList.add('active');
+            
+            // Show connected state
+            document.getElementById('not-connected').style.display = 'none';
+            document.getElementById('connected').style.display = 'block';
+            
+            // Update status info
+            updateConnectionStatus();
+            
+            // Start countdown timer
+            startCountdownTimer();
+        }
+        
+        function updateConnectionStatus() {
+            const sessionData = JSON.parse(localStorage.getItem('lomtech_session'));
+            if (!sessionData) return;
+            
+            // Update data usage stats (simulated)
+            const now = new Date();
+            const startTime = new Date(sessionData.startTime);
+            const hoursActive = (now - startTime) / (1000 * 60 * 60);
+            
+            // Simulate data usage based on time connected
+            const dataUsed = Math.min(sessionData.dataAllocation === 'Unlimited' ? 1.5 : parseFloat(sessionData.dataAllocation), Math.round(hoursActive * 0.25 * 100) / 100);
+            const dataRemaining = sessionData.dataAllocation === 'Unlimited' ? 'Unlimited' : (parseFloat(sessionData.dataAllocation) - dataUsed).toFixed(2);
+            
+            // Update UI
+            document.getElementById('data-used').textContent = dataUsed.toFixed(2) + ' GB';
+            document.getElementById('data-remaining').textContent = dataRemaining === 'Unlimited' ? 'Unlimited' : dataRemaining + ' GB';
+            
+            // Simulate speed fluctuation
+            const baseSpeed = parseFloat(sessionData.package.speed.split(' ')[0]);
+            const currentSpeed = (baseSpeed * (0.8 + Math.random() * 0.4)).toFixed(1);
+            document.getElementById('current-speed').textContent = currentSpeed + ' Mbps';
+        }
+        
+        function startCountdownTimer() {
+            const sessionData = JSON.parse(localStorage.getItem('lomtech_session'));
+            if (!sessionData) return;
+            
+            const expiry = new Date(sessionData.expiry);
+            
+            // Update timer every second
+            const timerInterval = setInterval(() => {
+                const now = new Date();
+                const diff = expiry - now;
+                
+                if (diff <= 0) {
+                    // Session expired
+                    clearInterval(timerInterval);
+                    document.getElementById('time-remaining').textContent = '00:00:00';
+                    alert('Your session has expired. Please purchase a new package to continue browsing.');
+                    logoutBtn.click();
+                    return;
+                }
+                
+                // Calculate remaining time
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                // Format as HH:MM:SS
+                const timeString = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                document.getElementById('time-remaining').textContent = timeString;
+                
+                // Update connection status every minute
+                if (seconds === 0) {
+                    updateConnectionStatus();
+                }
+            }, 1000);
+        }
+        
+        // Check for existing session on page load
+        function checkExistingSession() {
+            const sessionData = localStorage.getItem('lomtech_session');
+            if (sessionData) {
+                const session = JSON.parse(sessionData);
+                const expiry = new Date(session.expiry);
+                const now = new Date();
+                
+                if (expiry > now) {
+                    // Valid session exists
+                    macAddress = session.macAddress;
+                    sessionExpiry = expiry;
+                    sessionActive = true;
+                    
+                    // Restore credentials and login
+                    document.getElementById('mikrotik-username').value = session.username;
+                    document.getElementById('mikrotik-password').value = session.password;
+                    
+                    // Switch to connected state
+                    switchToConnectedState();
+                } else {
+                    // Session expired
+                    localStorage.removeItem('lomtech_session');
+                }
+            }
+        }
+        
+        // Initialize application
+        function initApp() {
+            // Check for existing session
+            checkExistingSession();
+            
+            // Add event listeners for real-time signal strength indicator
+            // In production, this would use actual signal strength from Mikrotik
+            const signalBars = document.querySelectorAll('.signal-bar');
+            const signalText = document.querySelector('.signal-text');
+            
+            // Simulate signal fluctuation
+            setInterval(() => {
+                const strength = Math.floor(Math.random() * 5);
+                let signalLabel = '';
+                
+                switch(strength) {
+                    case 0:
+                        signalLabel = 'Poor';
+                        break;
+                    case 1:
+                        signalLabel = 'Weak';
+                        break;
+                    case 2:
+                        signalLabel = 'Fair';
+                        break;
+                    case 3:
+                        signalLabel = 'Good';
+                        break;
+                    case 4:
+                        signalLabel = 'Strong';
+                        break;
+                }
+                
+                signalText.textContent = signalLabel;
+                
+                // Update signal bars
+                signalBars.forEach((bar, index) => {
+                    if (index <= strength) {
+                        bar.style.backgroundColor = 'rgba(255,255,255,0.9)';
+                    } else {
+                        bar.style.backgroundColor = 'rgba(255,255,255,0.3)';
+                    }
+                });
+            }, 5000);
+            
+            // Mikrotik error handling
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            if (error) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-error';
+                alertDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> Error: ${error}`;
+                
+                const content = document.querySelector('.content');
+                content.insertBefore(alertDiv, content.firstChild);
+            }
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>

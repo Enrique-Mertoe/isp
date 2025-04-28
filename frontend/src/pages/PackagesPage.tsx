@@ -1,259 +1,403 @@
+import React, {useState, useEffect} from "react";
+import {useNavigate} from "react-router-dom";
+import {useApp} from "../ui/AppContext.tsx";
 import Layout from "./home-components/Layout.tsx";
-import {Cable, Gauge, Inbox, Plus, RotateCw, Wifi} from "lucide-react";
-import GIcon from "../ui/components/Icons.tsx";
-import React, {useEffect, useState} from "react";
-import request from "../build/request.ts";
-import Config from "../assets/config.ts";
-import AddPackage from "../ui/offcanvas/AddPackage.tsx";
-
-type PkgResponse = {
-    pkgs: NetPackage[];
-    all_count: number;
-    pppoe_count: number;
-    hotspot_count: number;
-};
-
 
 export default function PackagesPage() {
-    const [loading, setLoading] = useState(true)
-    const [items, setItems] = useState<NetPackage[]>([])
-    const [activeTab, setActiveTab] = useState<string>("all");
-    const [allCount, setAllCount] = useState(0);
-    const [hotspotCount, setHotspotCount] = useState(0);
-    const [pppoeCount, setPppoeCount] = useState(0);
+    const navigate = useNavigate();
+    const {packageCount} = useApp();
+    const [packages, setPackages] = useState<any>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [activeFilter, setActiveFilter] = useState("all");
+    const [newPackage, setNewPackage] = useState({
+        name: "",
+        price: "",
+        speed: "",
+        duration: "30",
+        isPopular: false,
+        status: "active"
+    });
 
+    // Mock data - replace with actual API call
     useEffect(() => {
-        fetchItems(activeTab);
-    }, [activeTab]);
-    const fetchItems = (tab: string) => {
-        setLoading(true);
-        const fd = new FormData();
-        fd.append("load_type", tab)
-        request.post(Config.baseURL + "/api/pkgs/", fd)
-            .then(res => {
-                const data = res.data as PkgResponse;
-                setLoading(false);
-                setItems(data.pkgs);
-                setAllCount(data.all_count);
-                setHotspotCount(data.hotspot_count);
-                setPppoeCount(data.pppoe_count);
-            }).catch(err => {
-            console.log(err);
-            setLoading(false);
-        });
+        // Simulate API fetch
+        setTimeout(() => {
+            setPackages([
+                {
+                    id: 1,
+                    name: "Basic Internet",
+                    price: 29.99,
+                    speed: "25 Mbps",
+                    duration: 30,
+                    subscribers: 124,
+                    isPopular: false,
+                    status: "active",
+                    created: "2024-12-10"
+                },
+                {
+                    id: 2,
+                    name: "Premium Internet",
+                    price: 59.99,
+                    speed: "100 Mbps",
+                    duration: 30,
+                    subscribers: 312,
+                    isPopular: true,
+                    status: "active",
+                    created: "2024-11-05"
+                },
+                {
+                    id: 3,
+                    name: "Business Internet",
+                    price: 99.99,
+                    speed: "500 Mbps",
+                    duration: 30,
+                    subscribers: 87,
+                    isPopular: false,
+                    status: "active",
+                    created: "2024-10-20"
+                },
+                {
+                    id: 4,
+                    name: "Summer Special",
+                    price: 39.99,
+                    speed: "50 Mbps",
+                    duration: 90,
+                    subscribers: 45,
+                    isPopular: false,
+                    status: "inactive",
+                    created: "2024-09-15"
+                },
+                {
+                    id: 5,
+                    name: "Fiber Optic Ultra",
+                    price: 129.99,
+                    speed: "1 Gbps",
+                    duration: 30,
+                    subscribers: 76,
+                    isPopular: false,
+                    status: "active",
+                    created: "2024-10-01"
+                }
+            ]);
+            setIsLoading(false);
+        }, 800);
+    }, []);
+
+    const handleAddPackage = (e) => {
+        e.preventDefault();
+        // Implementation would call API to add package
+        setShowAddModal(false);
+        // Add success notification
     };
-    const handleTabChange = (tab: string) => {
-        setActiveTab(tab);
+
+    const filteredPackages = packages.filter(pkg => {
+        const matchesSearch = pkg.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesFilter = activeFilter === "all" || pkg.status === activeFilter;
+        return matchesSearch && matchesFilter;
+    });
+
+    const handleFilterChange = (filter) => {
+        setActiveFilter(filter);
     };
+
     return (
         <Layout>
-            <div className="bg-white rounded-lg shadow p-4 pb-0 mx-1">
-                {/* Card Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4">
-                    <div className="flex flex-col gap-2">
-                        <h3 className="text-amber-600 text-2xl font-semibold mb-0">Packages</h3>
-                        <p className="text-gray-600 text-sm">
-                            All packages available to clients including hotspot, PPPoE and Data Plan packages
-                        </p>
-                    </div>
-                    <div className="flex gap-2 mt-4 md:mt-0">
-                        <button
-                            onClick={() => fetchItems(activeTab)}
-
-                            className="flex items-center cursor-pointer gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
-                            data-bs-toggle="offcanvas"
-                        >
-                            <RotateCw className="text-lg"/>
-                            Refresh
-                        </button>
-                        <a
-                            href="#drawer-add-package"
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
-                            data-bs-toggle="offcanvas"
-                        >
-                            <Plus className="text-lg"/>
-                            Create Package
-                        </a>
-                        <AddPackage/>
-                    </div>
-                </div>
-
-                {/* Tabs */}
-                <div className="mt-6">
-                    <div aria-label="Package categories">
-
-
-                        <div className="border-b border-gray-200 dark:border-gray-700">
-                            <ul className="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
-                                <li className="me-2">
-                                    <button
-                                        onClick={() => handleTabChange('all')}
-                                        className={`inline-flex cursor-pointer gap-2 items-center justify-center p-4 border-b-2 ${
-                                            activeTab === 'all'
-                                                ? 'text-blue-600 border-blue-600'
-                                                : 'border-transparent hover:text-gray-600 hover:border-gray-300'
-                                        } rounded-t-lg group`}>
-                                        <svg width="16" height="16"
-                                             className="stroke-1 fi-tabs-item-icon h-5 w-5 shrink-0 transition duration-75 text-primary-600 dark:text-primary-400"
-                                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
-                                             fill="currentColor">
-                                            <path
-                                                d="M216,42H40A14,14,0,0,0,26,56V200a14,14,0,0,0,14,14H216a14,14,0,0,0,14-14V56A14,14,0,0,0,216,42Zm2,158a2,2,0,0,1-2,2H40a2,2,0,0,1-2-2V56a2,2,0,0,1,2-2H216a2,2,0,0,1,2,2ZM174,88a46,46,0,0,1-92,0,6,6,0,0,1,12,0,34,34,0,0,0,68,0,6,6,0,0,1,12,0Z"></path>
-                                        </svg>
-                                        All
-                                        <span
-                                            className="ms-auto h-6 w-6 flex justify-center items-center text-xs text-white rounded bg-amber-400">
-                                              {allCount}
-                                            </span>
-                                    </button>
-                                </li>
-                                <li className="me-2">
-                                    <button
-                                        onClick={() => handleTabChange('hotspot')}
-                                        className={`inline-flex cursor-pointer gap-2 items-center justify-center p-4 border-b-2 ${
-                                            activeTab === 'hotspot'
-                                                ? 'text-blue-600 border-blue-600'
-                                                : 'border-transparent hover:text-gray-600 hover:border-gray-300'
-                                        } rounded-t-lg group`}
-                                    >
-                                        <Wifi size={16}/>
-                                        Hotspot
-                                        <span
-                                            className="ms-auto h-6 w-6 flex justify-center items-center text-xs text-white rounded bg-amber-400">
-                                              {hotspotCount}
-                                            </span>
-                                    </button>
-                                </li>
-                                <li className="me-2">
-                                    <button
-                                        onClick={() => handleTabChange('pppoe')}
-                                        className={`inline-flex cursor-pointer gap-2 items-center justify-center p-4 border-b-2 ${
-                                            activeTab === 'pppoe'
-                                                ? 'text-blue-600 border-blue-600'
-                                                : 'border-transparent hover:text-gray-600 hover:border-gray-300'
-                                        } rounded-t-lg group`}
-                                    >
-                                        <Cable size={16} className="wtext-gray-500"/>
-                                        PPPOE
-
-                                        <span
-                                            className="ms-auto h-6 w-6 flex justify-center items-center text-xs text-white rounded bg-amber-400">
-                                              {pppoeCount}
-                                            </span>
-                                    </button>
-                                </li>
-                                <li className="me-2">
-                                    <a href="#"
-                                       className="inline-flex items-center gap-2 justify-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 group">
-                                        <Gauge size={16} className="text-gray-500"/>
-                                        Data Plans
-                                    </a>
-                                </li>
-                            </ul>
+            <div className="p-4 md:p-6 lg:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
+                {/* Page Header */}
+                <div className="mb-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Packages</h1>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Manage your internet service packages and pricing
+                            </p>
+                        </div>
+                        <div className="mt-4 md:mt-0">
+                            <button
+                                onClick={() => setShowAddModal(true)}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+                            >
+                                <i className="bi bi-plus-circle mr-2"></i>
+                                Add Package
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div className="bg-white mt-2 rounded-lg shadow p-4 pb-0 mx-1">
-                {loading ? <div className="h-[5rem] justify-center items-center w-full flex">
-                        <GIcon color={"fill-amber-500 | fill-gray-800"} name={"g-loader"} size={64}/>
+
+                {/* Filters and Search */}
+                <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => handleFilterChange("all")}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                                    activeFilter === "all"
+                                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                        : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                }`}
+                            >
+                                All
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange("active")}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                                    activeFilter === "active"
+                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                        : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                }`}
+                            >
+                                Active
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange("inactive")}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                                    activeFilter === "inactive"
+                                        ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                        : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                }`}
+                            >
+                                Inactive
+                            </button>
+                        </div>
+                        <div className="relative w-full md:w-64">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <i className="bi bi-search text-gray-400"></i>
+                            </div>
+                            <input
+                                type="text"
+                                className="w-full p-2 pl-10 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                placeholder="Search packages..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
-                    : <ItemList items={items}/>
-                }
+                </div>
+
+                {/* Package Cards */}
+                {isLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse">
+                                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2"></div>
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
+                                <div className="flex justify-between items-center mt-6">
+                                    <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                                    <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : filteredPackages.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredPackages.map((pkg) => (
+                            <div
+                                key={pkg.id}
+                                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-t-4 border-blue-500 hover:shadow-lg transition-shadow duration-300"
+                            >
+                                <div className="flex justify-between items-start">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{pkg.name}</h3>
+                                    <span
+                                        className={`text-xs font-medium px-2 py-1 rounded-full ${
+                                            pkg.status === "active"
+                                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                                : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                        }`}
+                                    >
+                  {pkg.status === "active" ? "Active" : "Inactive"}
+                </span>
+                                </div>
+
+                                {pkg.isPopular && (
+                                    <span
+                                        className="inline-block mt-2 bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full dark:bg-amber-900 dark:text-amber-200">
+                  <i className="bi bi-star-fill mr-1"></i> Popular
+                </span>
+                                )}
+
+                                <div className="mt-4 space-y-2">
+                                    <div className="flex items-center text-gray-700 dark:text-gray-300">
+                                        <i className="bi bi-cash-coin mr-2"></i>
+                                        <span className="text-lg font-semibold">${pkg.price}</span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">/ month</span>
+                                    </div>
+                                    <div className="flex items-center text-gray-700 dark:text-gray-300">
+                                        <i className="bi bi-speedometer2 mr-2"></i>
+                                        <span>{pkg.speed}</span>
+                                    </div>
+                                    <div className="flex items-center text-gray-700 dark:text-gray-300">
+                                        <i className="bi bi-calendar-event mr-2"></i>
+                                        <span>{pkg.duration} days</span>
+                                    </div>
+                                    <div className="flex items-center text-gray-700 dark:text-gray-300">
+                                        <i className="bi bi-people mr-2"></i>
+                                        <span>{pkg.subscribers} subscribers</span>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 flex justify-between items-center">
+                                    <button
+                                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+                                        <i className="bi bi-pencil-square mr-1"></i> Edit
+                                    </button>
+                                    <button
+                                        className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300">
+                                        <i className="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+                        <div
+                            className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+                            <i className="bi bi-search text-gray-500 dark:text-gray-400 text-2xl"></i>
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No packages found</h3>
+                        <p className="text-gray-500 dark:text-gray-400">
+                            {searchTerm
+                                ? `No packages matching "${searchTerm}"`
+                                : "No packages match the selected filters"}
+                        </p>
+                    </div>
+                )}
+
+                {/* Add Package Modal */}
+                {showAddModal && (
+                    <div className="fixed inset-0 z-50 overflow-y-auto">
+                        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+                            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                                 onClick={() => setShowAddModal(false)}></div>
+                            <div
+                                className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-lg">
+                                <div className="bg-white dark:bg-gray-800 px-6 py-4">
+                                    <div className="flex justify-between items-center border-b pb-3">
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add New
+                                            Package</h3>
+                                        <button
+                                            onClick={() => setShowAddModal(false)}
+                                            className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                                        >
+                                            <i className="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+
+                                    <form onSubmit={handleAddPackage} className="mt-4">
+                                        <div className="mb-4">
+                                            <label
+                                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                Package Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                value={newPackage.name}
+                                                onChange={(e) => setNewPackage({...newPackage, name: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4 mb-4">
+                                            <div>
+                                                <label
+                                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    Price ($/month)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                    value={newPackage.price}
+                                                    onChange={(e) => setNewPackage({
+                                                        ...newPackage,
+                                                        price: e.target.value
+                                                    })}
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label
+                                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    Speed
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g., 100 Mbps"
+                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                    value={newPackage.speed}
+                                                    onChange={(e) => setNewPackage({
+                                                        ...newPackage,
+                                                        speed: e.target.value
+                                                    })}
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-4">
+                                            <label
+                                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                Duration (days)
+                                            </label>
+                                            <select
+                                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                value={newPackage.duration}
+                                                onChange={(e) => setNewPackage({
+                                                    ...newPackage,
+                                                    duration: e.target.value
+                                                })}
+                                            >
+                                                <option value="30">30 days</option>
+                                                <option value="90">90 days</option>
+                                                <option value="180">180 days</option>
+                                                <option value="365">365 days</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="flex items-center mb-4">
+                                            <input
+                                                type="checkbox"
+                                                id="isPopular"
+                                                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+                                                checked={newPackage.isPopular}
+                                                onChange={(e) => setNewPackage({
+                                                    ...newPackage,
+                                                    isPopular: e.target.checked
+                                                })}
+                                            />
+                                            <label htmlFor="isPopular"
+                                                   className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Mark as popular
+                                            </label>
+                                        </div>
+
+                                        <div className="mt-6 flex justify-end">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowAddModal(false)}
+                                                className="mr-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                            >
+                                                Add Package
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </Layout>
-    )
-}
-
-interface ItemListProps {
-    items: NetPackage[]
-}
-
-function ItemList({items}: ItemListProps) {
-    return (
-        <>
-            {items?.length > 0 ?
-                <PKGTable items={items}/>
-                :
-                <div className="min-h-[5rem] py-10 justify-center gap-2 flex-col items-center w-full flex">
-                    <Inbox size={64}/>
-                    <strong> No packages</strong>
-                    <p className={"text-gray-500"}>
-                        Add packages by clicking the button above
-                    </p>
-                </div>
-            }
-        </>
-    )
-}
-
-
-const PKGTable: React.FC<{
-    items: NetPackage[];
-}> = ({ items }) => {
-    const [searchText, setSearchText] = useState("");
-
-    const filteredPackages = items.filter(pkg =>
-        pkg.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        pkg.type.toLowerCase().includes(searchText.toLowerCase()) ||
-        pkg.upload_speed.toLowerCase().includes(searchText.toLowerCase()) ||
-        pkg.download_speed.toLowerCase().includes(searchText.toLowerCase())
     );
-
-    return (
-        <>
-            <div className="mb-4">
-                <label htmlFor="table-search" className="sr-only">Search</label>
-                <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <svg className="w-4 h-4 text-gray-500" aria-hidden="true"
-                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                  d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                        </svg>
-                    </div>
-                    <input
-                        type="text"
-                        id="table-search"
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        className="block pt-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Search packages..."
-                    />
-                </div>
-            </div>
-
-            <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-                <table className="w-full text-sm text-left text-gray-800">
-                    <thead className="text-xs text-white uppercase bg-gray-400 border-b border-blue-400">
-                        <tr>
-                            <th className="px-6 py-3">Name</th>
-                            <th className="px-6 py-3">Type</th>
-                            <th className="px-6 py-3">Upload Speed</th>
-                            <th className="px-6 py-3">Download Speed</th>
-                            <th className="px-6 py-3">Price</th>
-                            <th className="px-6 py-3">Router</th>
-                            <th className="px-6 py-3">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredPackages.map((pkg, index) => (
-                            <tr key={index} className="border-b border-gray-200 hover:bg-gray-200">
-                                <td className="px-6 py-4 font-medium text-amber-900 whitespace-nowrap">{pkg.name}</td>
-                                <td className="px-6 py-4">{pkg.type}</td>
-                                <td className="px-6 py-4">{pkg.upload_speed}</td>
-                                <td className="px-6 py-4">{pkg.download_speed}</td>
-                                <td className="px-6 py-4">Ksh {pkg.price}</td>
-                                <td className="px-6 py-4">{pkg.router.name}</td>
-                                <td className="px-6 py-4 flex gap-2">
-                                    <a href="#" className="font-medium p-2 bg-gray-300 rounded hover:bg-gray-400">Edit</a>
-                                    <a href="#" className="font-medium p-2 bg-gray-300 rounded hover:bg-gray-400">View</a>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </>
-    );
-};
+}

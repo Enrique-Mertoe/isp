@@ -12,6 +12,8 @@ import ISPPage from "./pages/ISPPage.tsx";
 import SignUpPage from "./pages/auth/SignUpPage.tsx";
 import RouterView from "./pages/RouterView.tsx";
 import PaymentAndBillingPage from "./pages/PaymentAndBillingPage.tsx";
+import PaymentsPage from "./pages/PaymentsPage.tsx";
+import ManagementPage from "./pages/ManagementPage.tsx";
 
 function RouterAwareApp() {
     const location = useLocation();
@@ -28,7 +30,8 @@ function RouterAwareApp() {
                 <Route path="/users/" element={<ClientsPage/>}/>
                 <Route path="/isp/" element={<ISPPage/>}/>
                 <Route path="/packages/" element={<PackagesPage/>}/>
-                <Route path="/payments/" element={<PaymentAndBillingPage/>}/>
+                <Route path="/payments/" element={<PaymentsPage/>}/>
+                <Route path="/management/" element={<ManagementPage/>}/>
                 <Route path="/mikrotiks/" element={<RoutersPage/>}/>
                 <Route path="/mikrotiks/:pk/" element={<RouterView/>}/>
                 <Route path="/auth/login/" element={<SignInPage/>}/>
