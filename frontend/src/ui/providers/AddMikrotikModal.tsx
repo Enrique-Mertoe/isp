@@ -2,6 +2,8 @@ import React, {useRef, useState} from "react";
 import GIcon from "../components/Icons.tsx";
 import {usePolling} from "../../hooks/usePolling.ts";
 import {$} from "../../build/request.ts";
+import { X } from "lucide-react";
+// import { useDialog } from "../../ui/providers/DialogProvider.tsx";
 
 type RouterForm = {
     mtkName: string;
@@ -10,7 +12,12 @@ type RouterForm = {
     username: string;
     password: string;
 };
-export default function AddMikrotikModal() {
+
+interface AddMikrotikModalProps {
+    onClose: () => void;
+}
+
+export default function AddMikrotikModal({ onClose }: AddMikrotikModalProps) {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [form, setForm] = useState<RouterForm>({
@@ -141,85 +148,93 @@ export default function AddMikrotikModal() {
 
     return (
         <div className={"max-h-[100rem] h-full overflow-y-auto overflow-x-hidden"}>
-            <div className="vstack  p-5">
-            <h2 className="font-bold text-xl mb-4">Add Mikrotik Device</h2>
-            <p>
-                To proceed with the onboarding, connect your Mikrotik router to enable automated provisioning and
-                management.
-            </p>
-
-            {/* Stepper */}
-            <ol className="flex mt-4 items-center justify-between shadow-sm px-2 py-3 rounded w-full mb-4 sm:mb-5">
-                {[
-                    {icon: "bi-wifi", label: "Connection", desc: "Basic device information"},
-                    {icon: "bi-cpu", label: "Device Details", desc: "Provisioning command"},
-                    {icon: "bi-router", label: "Service Setup", desc: "Configure PPPoE and Hotspot"},
-                ].map((stepItem, index) => {
-                    const isCompleted = step > index + 1;
-                    const isCurrent = step === index + 1;
-                    // const isFuture = step < index + 1;
-
-                    return (
-                        <li
-                            key={index}
-                            className={`relative flex w-full items-center gap-2 ${index < 2 ? 'after:content-[\'\'] after:w-full after:mx-3 after:h-1 after:border-b after:border-4 after:inline-block ' : ''} 
-                    ${isCompleted ? 'text-green-600 after:border-green-200 dark:after:border-green-700'
-                                : isCurrent ? 'text-blue-600 after:border-blue-200 dark:after:border-blue-700'
-                                    : 'text-gray-500 after:border-gray-100 dark:after:border-gray-700'}`}
-                        >
-                            <div
-                                className={`relative flex items-center justify-center w-10 h-10 rounded-full lg:h-12 lg:w-12 shrink-0 
-                        ${isCompleted ? 'bg-green-100 dark:bg-green-800'
-                                    : isCurrent ? 'bg-blue-100 dark:bg-blue-800'
-                                        : 'bg-gray-100 dark:bg-gray-700'}`}
-                            >
-                                <i className={`${stepItem.icon} text-lg lg:text-2xl ${isCompleted ? 'text-green-600 dark:text-green-300' : isCurrent ? 'text-blue-600 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`}/>
-
-                                {/* ✅ Floating check for completed steps */}
-                                {isCompleted && (
-                                    <span
-                                        className="absolute -bottom-[.5px] -right-1 bi-check bg-green-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs ring-2 ring-white dark:ring-gray-800">
-                        </span>
-                                )}
-                            </div>
-                            <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                                <div className="font-semibold whitespace-nowrap">{stepItem.label}</div>
-                                <div className="text-xs">{stepItem.desc}</div>
-                            </div>
-                        </li>
-                    );
-                })}
-            </ol>
-
-
-            {/* Form Content */}
-            <form onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmit()
-            }}>
-                {renderStepContent()}
-
-                {/* Buttons */}
-                <div className="flex justify-between mt-6">
+            <div className="vstack p-5">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="font-bold text-xl">Add Mikrotik Device</h2>
                     <button
-                        type="button"
-                        onClick={prevStep}
-                        disabled={step === 1}
-                        className="text-gray-700 border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700 rounded-lg text-sm px-5 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={onClose}
+                        className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
-                        Go Back
-                    </button>
-
-                    <button
-                        type="submit"
-                        className="text-white bg-blue-700 hstack gap-2 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    >
-                        {step < 3 ? 'Next Step' : 'Finish Setup'}
-                        {loading && <GIcon name={"g-loader"} color={"fill-amber-500"}/>}
+                        <X className="w-5 h-5 text-gray-500" />
                     </button>
                 </div>
-            </form>
-        </div>
+                <p>
+                    To proceed with the onboarding, connect your Mikrotik router to enable automated provisioning and
+                    management.
+                </p>
+
+                {/* Stepper */}
+                <ol className="flex mt-4 items-center justify-between shadow-sm px-2 py-3 rounded w-full mb-4 sm:mb-5">
+                    {[
+                        {icon: "bi-wifi", label: "Connection", desc: "Basic device information"},
+                        {icon: "bi-cpu", label: "Device Details", desc: "Provisioning command"},
+                        {icon: "bi-router", label: "Service Setup", desc: "Configure PPPoE and Hotspot"},
+                    ].map((stepItem, index) => {
+                        const isCompleted = step > index + 1;
+                        const isCurrent = step === index + 1;
+                        // const isFuture = step < index + 1;
+
+                        return (
+                            <li
+                                key={index}
+                                className={`relative flex w-full items-center gap-2 ${index < 2 ? 'after:content-[\'\'] after:w-full after:mx-3 after:h-1 after:border-b after:border-4 after:inline-block ' : ''} 
+                        ${isCompleted ? 'text-green-600 after:border-green-200 dark:after:border-green-700'
+                                    : isCurrent ? 'text-blue-600 after:border-blue-200 dark:after:border-blue-700'
+                                        : 'text-gray-500 after:border-gray-100 dark:after:border-gray-700'}`}
+                            >
+                                <div
+                                    className={`relative flex items-center justify-center w-10 h-10 rounded-full lg:h-12 lg:w-12 shrink-0 
+                            ${isCompleted ? 'bg-green-100 dark:bg-green-800'
+                                        : isCurrent ? 'bg-blue-100 dark:bg-blue-800'
+                                            : 'bg-gray-100 dark:bg-gray-700'}`}
+                                >
+                                    <i className={`${stepItem.icon} text-lg lg:text-2xl ${isCompleted ? 'text-green-600 dark:text-green-300' : isCurrent ? 'text-blue-600 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`}/>
+
+                                    {/* ✅ Floating check for completed steps */}
+                                    {isCompleted && (
+                                        <span
+                                            className="absolute -bottom-[.5px] -right-1 bi-check bg-green-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs ring-2 ring-white dark:ring-gray-800">
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                                    <div className="font-semibold whitespace-nowrap">{stepItem.label}</div>
+                                    <div className="text-xs">{stepItem.desc}</div>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ol>
+
+
+                {/* Form Content */}
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmit()
+                }}>
+                    {renderStepContent()}
+
+                    {/* Buttons */}
+                    <div className="flex justify-between mt-6">
+                        <button
+                            type="button"
+                            onClick={prevStep}
+                            disabled={step === 1}
+                            className="text-gray-700 border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700 rounded-lg text-sm px-5 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Go Back
+                        </button>
+
+                        <button
+                            type="submit"
+                            className="text-white bg-blue-700 hstack gap-2 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                        >
+                            {step < 3 ? 'Next Step' : 'Finish Setup'}
+                            {loading && <GIcon name={"g-loader"} color={"fill-amber-500"}/>}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }

@@ -158,6 +158,11 @@ interface Tab {
   icon?: string;
 }
 
+// Add type for tabRefs
+type TabRefs = {
+  [key: string]: HTMLButtonElement | null;
+};
+
 interface TabsProps {
   tabs: Tab[];
   defaultTab?: string;
@@ -217,7 +222,7 @@ export default function TabManager({
   const [selectedTabStyle, setSelectedTabStyle] = useState(tabStyle);
   const [selectedIndicatorStyle, setSelectedIndicatorStyle] = useState(indicatorStyle);
 
-  const tabRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  const tabRefs = useRef<TabRefs>({});
   const indicatorRef = useRef<HTMLDivElement>(null);
   const tabListRef = useRef<HTMLDivElement>(null);
 
@@ -255,7 +260,7 @@ export default function TabManager({
 
   // Get indicator styles based on selected indicator style
   const getIndicatorStyles = () => {
-    if (!tabRefs.current[activeTab]) return {};
+    if (!activeTab || !tabRefs.current[activeTab]) return {};
 
     const tabElement = tabRefs.current[activeTab];
     if (!tabElement) return {};
@@ -342,7 +347,7 @@ export default function TabManager({
   }, [activeTab, visibleTabs, selectedIndicatorAnimation, selectedIndicatorStyle]);
 
   const updateIndicatorPosition = () => {
-    if (!indicatorRef.current || !tabRefs.current[activeTab]) return;
+    if (!indicatorRef.current || !activeTab || !tabRefs.current[activeTab]) return;
 
     const styles = getIndicatorStyles();
     Object.assign(indicatorRef.current.style, styles);
@@ -488,7 +493,11 @@ export default function TabManager({
               {visibleTabs.map((tab) => (
                 <button
                   key={tab.id}
-                  ref={(el) => (tabRefs.current[tab.id] = el)}
+                  ref={(el: HTMLButtonElement | null) => {
+                    if (el) {
+                      tabRefs.current[tab.id] = el;
+                    }
+                  }}
                   className={getTabStyles(activeTab === tab.id)}
                   onClick={() => handleTabClick(tab.id)}
                 >

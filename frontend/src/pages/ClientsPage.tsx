@@ -1,12 +1,39 @@
-import React, {useState, useEffect} from "react";
-import {useNavigate} from "react-router-dom";
-import {useApp} from "../ui/AppContext.tsx";
+import  {useState, useEffect} from "react";
+// import {useNavigate} from "react-router-dom";
+// import {useApp} from "../ui/AppContext.tsx";
 import Layout from "./home-components/Layout.tsx";
 
+interface Client {
+    id: number;
+    fullName: string;
+    email: string;
+    phone: string;
+    address: string;
+    package: string;
+    status: string;
+    dateJoined: string;
+    lastPayment: string;
+    avatar: string;
+    dueAmount: number;
+}
+
+type SortType = "newest" | "oldest" | "name";
+
+function compareClients(sortType: SortType, first: any, second: any): number {
+    if (sortType === "newest") {
+        return new Date(second.dateJoined).getTime() - new Date(first.dateJoined).getTime();
+    } else if (sortType === "oldest") {
+        return new Date(first.dateJoined).getTime() - new Date(second.dateJoined).getTime();
+    } else if (sortType === "name") {
+        return first.fullName.localeCompare(second.fullName);
+    }
+    return 0;
+}
+
 export default function ClientsPage() {
-    const navigate = useNavigate();
-    const {usersCount} = useApp();
-    const [clients, setClients] = useState<any>([]);
+    // const navigate = useNavigate();
+    // const {usersCount} = useApp();
+    const [clients, setClients] = useState<Client[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [showAddModal, setShowAddModal] = useState(false);
@@ -116,14 +143,21 @@ export default function ClientsPage() {
         }, 800);
     }, []);
 
-    const handleAddClient = (e) => {
-        e.preventDefault();
-        // Implementation would call API to add client
-        setShowAddModal(false);
-        // Add success notification
+    const handleAddClient = () => {
+        if (newClient.fullName && newClient.email && newClient.phone && newClient.address && newClient.package) {
+            setShowAddModal(false);
+            setNewClient({
+                fullName: "",
+                email: "",
+                phone: "",
+                address: "",
+                package: "",
+                status: "active"
+            });
+        }
     };
 
-    const getStatusColor = (status) => {
+    const getStatusColor = (status:string) => {
         switch (status) {
             case "active":
                 return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
@@ -138,7 +172,7 @@ export default function ClientsPage() {
         }
     };
 
-    const getStatusText = (status) => {
+    const getStatusText = (status:string) => {
         switch (status) {
             case "active":
                 return "Active";
@@ -167,16 +201,7 @@ export default function ClientsPage() {
         return matchesSearch && matchesStatusFilter && matchesPackageFilter;
     });
 
-    const sortedClients = [...filteredClients].sort((a, b) => {
-        if (sort === "newest") {
-            return new Date(b.dateJoined) - new Date(a.dateJoined);
-        } else if (sort === "oldest") {
-            return new Date(a.dateJoined) - new Date(b.dateJoined);
-        } else if (sort === "name") {
-            return a.fullName.localeCompare(b.fullName);
-        }
-        return 0;
-    });
+    const sortedClients = [...filteredClients].sort((a, b) => compareClients(sort as SortType, a, b));
 
     const uniquePackages = [...new Set(clients.map(c => c.package))];
 
@@ -645,7 +670,7 @@ export default function ClientsPage() {
                                 <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</h4>
                                 <select
                                     value={sort}
-                                    onChange={(e) => setSort(e.target.value)}
+                                    onChange={(e) => setSort(e.target.value as SortType)}
                                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                 >
                                     <option value="newest">Newest First</option>
@@ -699,7 +724,7 @@ export default function ClientsPage() {
                                         </button>
                                     </div>
 
-                                    <form onSubmit={handleAddClient} className="mt-4">
+                                    <div className="mt-4">
                                         <div className="mb-4">
                                             <label
                                                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -724,10 +749,7 @@ export default function ClientsPage() {
                                                     type="email"
                                                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                                     value={newClient.email}
-                                                    onChange={(e) => setNewClient({
-                                                        ...newClient,
-                                                        email: e.target.value
-                                                    })}
+                                                    onChange={(e) => setNewClient({...newClient, email: e.target.value})}
                                                     required
                                                 />
                                             </div>
@@ -740,10 +762,7 @@ export default function ClientsPage() {
                                                     type="tel"
                                                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                                     value={newClient.phone}
-                                                    onChange={(e) => setNewClient({
-                                                        ...newClient,
-                                                        phone: e.target.value
-                                                    })}
+                                                    onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
                                                     required
                                                 />
                                             </div>
@@ -805,13 +824,14 @@ export default function ClientsPage() {
                                                 Cancel
                                             </button>
                                             <button
-                                                type="submit"
+                                                type="button"
+                                                onClick={() => handleAddClient()}
                                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                                             >
                                                 Add Client
                                             </button>
                                         </div>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>

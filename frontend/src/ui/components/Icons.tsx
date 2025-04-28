@@ -54,19 +54,20 @@ const GLoader: LucideIcon = forwardRef<SVGSVGElement, LucideProps>(function GLoa
     props, ref
 ) {
     const { size = 24, className, ...rest } = props;
-    let c1: string = "";
-    let c2: string;
-    [c1, c2] = (className || "fill-amber-400").split("|", 2);
-    c2 = c2 ? c2 : "fill-gray-100";
+    const [c1, c2] = (className || "fill-amber-400").split("|", 2);
+    const defaultC1 = "fill-amber-400";
+    const defaultC2 = "fill-gray-100";
+    const finalC1 = c1 || defaultC1;
+    const finalC2 = c2 || defaultC2;
     return (
         <svg ref={ref} width={size ?? "24"} height={size ?? "24"} viewBox="0 0 24 24"
              {...rest}
              xmlns="http://www.w3.org/2000/svg">
-            <rect className={`spinner_jCIR ${c1}`} x="1" y="6" width="2.8" height="12"/>
-            <rect className={`spinner_jCIR spinner_upm8 ${c2}`} x="5.8" y="6" width="2.8" height="12"/>
-            <rect className={`spinner_jCIR ${c1} spinner_2eL5`} x="10.6" y="6" width="2.8" height="12"/>
-            <rect className={`spinner_jCIR spinner_Rp9l ${c2}`} x="15.4" y="6" width="2.8" height="12"/>
-            <rect className={`spinner_jCIR ${c1} spinner_dy3W`} x="20.2" y="6" width="2.8" height="12"/>
+            <rect className={`spinner_jCIR ${finalC1}`} x="1" y="6" width="2.8" height="12"/>
+            <rect className={`spinner_jCIR spinner_upm8 ${finalC2}`} x="5.8" y="6" width="2.8" height="12"/>
+            <rect className={`spinner_jCIR ${finalC1} spinner_2eL5`} x="10.6" y="6" width="2.8" height="12"/>
+            <rect className={`spinner_jCIR spinner_Rp9l ${finalC2}`} x="15.4" y="6" width="2.8" height="12"/>
+            <rect className={`spinner_jCIR ${finalC1} spinner_dy3W`} x="20.2" y="6" width="2.8" height="12"/>
         </svg>
     )
 });

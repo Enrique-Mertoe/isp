@@ -10,7 +10,7 @@ import {
     Tooltip,
     Legend
 } from 'chart.js';
-import {getCookie} from "../hooks/useCrf.ts";
+import {getCookie} from "../hooks/useCsrf.ts";
 import GIcon from "../ui/components/Icons.tsx";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
