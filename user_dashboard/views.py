@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import requests
 import routeros_api as r_os
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -14,6 +15,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from ISP import settings
 from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict, company_to_dict, client_to_dict, \
     generate_invoice_number
 from user_dashboard.models import Router, Package, ISPProvider, Client, Billing
@@ -25,7 +27,7 @@ def home(request):
     return render(request, 'index.html')
 
 
-@api_view(["POST","GET"])
+@api_view(["POST", "GET"])
 @ensure_csrf_cookie
 def set_csrf(request):
     return JsonResponse({'detail': 'CSRF cookie set'})
@@ -156,6 +158,23 @@ def router_delete(request, pk):
         router.delete()
         return JsonResponse({'message': 'Router deleted successfully.'})
     return HttpResponseBadRequest()
+
+
+# @csrf_exempt
+def router_count(request):
+    count = Router.objects.filter(isp__user=request.user).count()
+    return JsonResponse({'ok': True, "count": count})
+
+
+@api_view(["GET"])
+def check_connection(request, mtk):
+    user = request.user
+    router_identity = f"{user.username}_{mtk}"
+    get_object_or_404(Router, identity=router_identity)
+    ip = requests.get(settings.API_URL + f"/mikrotik/openvpn/client_ip/{router_identity}").text.strip()
+    if ip.startswith("10.8.0"):
+        return JsonResponse({'ok': True, "ip": ip, "status": "connected"})
+    return JsonResponse({'ok': False})
 
 
 # packages views

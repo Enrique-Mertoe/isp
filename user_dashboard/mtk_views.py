@@ -38,10 +38,6 @@ def gen_mtk_provision(request):
     if request.method == 'POST':
         try:
             user = request.user
-            count = Router.objects.filter(
-                isp__user=user
-            ).count()
-            print(request.POST)
             router_name = request.POST.get('router_name', 'MTK1')
 
             # Create a unique identifier using username and a unique number
@@ -123,7 +119,7 @@ def gen_mtk_provision(request):
 def provision_content(request, encoded_payload):
     # server_url = get_host(request)
     server_url = settings.API_URL
-    provisioning_url = f"{settings.DEV_URL}/provision_content/{encoded_payload}"
+    provisioning_url = f"{get_host(request)}/provision_content/{encoded_payload}"
     # Render the .rsc file using Django template
     script = render_to_string('rsc_files/lom_config.rsc', {'url': provisioning_url})
 

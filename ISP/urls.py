@@ -33,6 +33,8 @@ router_url_patterns = [
     path('api/routers/<int:pk>/', views.router_detail, name='router_detail'),  # GET one
     path('api/routers/<int:pk>/update/', views.router_update, name='router_update'),  # PUT/PATCH
     path('api/routers/<int:pk>/delete/', views.router_delete, name='router_delete'),  # DELETE
+    path('api/routers/count/', views.router_count, name='router_count'),  # DELETE
+    path('api/routers/check-connection/<mtk>/', views.check_connection, name='router_conn'),  # DELETE
 ]
 
 pkg_url_patterns = [

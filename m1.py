@@ -1,29 +1,32 @@
+import requests
+
+from ISP import settings
 from ISP.settings import API_URL
 from easy_client import MikrotikClient, SpeedLimit
 from easy_client.server import SiteSetup
 from mtk_command_api.mtk import MikroManager
 
-client = MikrotikClient(
-    api_url=API_URL,
-    username="lom_tech_user",
-    host="Lom_Technology_MikroTik12",
-    password="111",
-    api_key="your_api_key"  # Optional if API key is not required
-)
+# client = MikrotikClient(
+#     api_url=API_URL,
+#     username="lom_tech_user",
+#     host="Lom_Technology_MikroTik12",
+#     password="111",
+#     api_key="your_api_key"  # Optional if API key is not required
+# )
 
 # Initialize the manager with your API key and server URL
-mikrotik = MikroManager(
-    api_key="test-api-key",
-    server_id="LomTech",
-    server_url=f"{API_URL}/mtk/console"
-)
+# mikrotik = MikroManager(
+#     api_key="test-api-key",
+#     server_id="LomTech",
+#     server_url=f"{API_URL}/mtk/console"
+# )
 
 # Connect to a specific router
-router = mikrotik.connect_router(
-    host="Lom_Technology_MikroTik12",
-    username="lom_tech_user",
-    password="Q8P8Kpd1VJNYKgfg"
-)
+# router = mikrotik.connect_router(
+#     host="Lom_Technology_MikroTik12",
+#     username="lom_tech_user",
+#     password="Q8P8Kpd1VJNYKgfg"
+# )
 # print(router)
 #
 # # Set up a hotspot server
@@ -34,11 +37,11 @@ router = mikrotik.connect_router(
 #     ip_pool="192.168.10.10-192.168.10.254"
 # )
 # print(c)
-d = router.setup_pppoe_server(
-    "bridge", "ip_pool_1", "192.168.10.2-192.168.10.254",
-
-)
-print(d)
+# d = router.setup_pppoe_server(
+#     "bridge", "ip_pool_1", "192.168.10.2-192.168.10.254",
+#
+# )
+# print(d)
 #
 # # Create a hotspot profile
 # router.create_hotspot_profile(
@@ -261,3 +264,5 @@ print(d)
 # # # create_internet_packages()
 # # # manage_customers()
 # # setup_hotspot()
+# ip = requests.get(settings.API_URL + "/mikrotik/openvpn/client_ip/router_identity").text.strip()
+# print(ip)

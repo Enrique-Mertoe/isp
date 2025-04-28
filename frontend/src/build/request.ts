@@ -117,8 +117,66 @@ function post<T>(
         }
     };
 }
+function get<T>(
+    options: RequestInterface<T>
+) {
+    const h = {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        then_cb: (_: RequestResponse<T>) => {
 
+        },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        catch_cb: (_: RequestError) => {
+        },
+        done_cb: () => {
+        }
+    };
+
+    (async () => {
+        try {
+            const response = await request.get<T>(options.url, {
+                ...options.config,
+                params: options.data, // For GET requests, data is passed as query parameters
+                headers: {
+                    ...options.config?.headers,
+                },
+            });
+
+            const res: RequestResponse<T> = {data: response.data};
+
+            options.success?.(res);
+            h.then_cb(res);
+        } catch (error: any) {
+            const err: RequestError = {
+                message: error?.response?.data?.error || error.message || 'Request failed.',
+                status: error?.response?.status,
+            };
+            options.error?.(err);
+            h.catch_cb?.(err);
+        } finally {
+            options.complete?.();
+            h.done_cb?.();
+        }
+    })();
+    return {
+        then(fn: (response: RequestResponse<T>) => void) {
+            h.then_cb = fn;
+            return this;
+        },
+        catch(fn: (error: RequestError) => void) {
+            h.catch_cb = fn;
+            return this;
+        },
+        done(fn: () => void) {
+            h.done_cb = fn;
+            return this;
+        }
+    };
+}
+
+// Update the exported object to include the get function
 export const $ = {
-    post
+    post,
+    get
 }
 export default request;
