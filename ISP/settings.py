@@ -35,7 +35,7 @@ FERNET_KEY = config('FERNET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '192.168.10.1', '192.168.56.1', "192.168.88.99","192.168.0.111","127.0.0.1", '192.168.88.100',
+ALLOWED_HOSTS = ['localhost', '192.168.10.3', '192.168.56.1', "192.168.88.99","192.168.0.111","127.0.0.1", '192.168.88.100',
                  'isp.coolify.kaigates.com']
 
 # Application definition
@@ -150,7 +150,7 @@ LOGIN_URL = '/auth/login/'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    'http://192.168.10.1:5173',
+    'http://192.168.10.3:5173',
     "http://127.0.0.1:5173",
     'http://192.168.10.2:5000'
 
@@ -160,7 +160,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5173",
     'https://isp.coolify.kaigates.com',
     'http://192.168.10.2:5000',
-    'http://192.168.10.1:5173'
+    'http://192.168.10.3:5173'
 ]
 AUTH_USER_MODEL = 'user_dashboard.User'
 
@@ -192,12 +192,14 @@ MikroManager.initialise(
     server_url=API_URL
 )
 
+
 # Initialize the singleton instance
 mikrotik_manager = MikroManager(
     api_key="test-api-key",
     server_id="LomTech",
     server_url="{API_URL}/mtk/console"
 )
+mikrotik_manager.connect_router().create_profile()
 
 router_conn = mikrotik_manager.connect_router("192.168.1.1", "admin", "password")
 

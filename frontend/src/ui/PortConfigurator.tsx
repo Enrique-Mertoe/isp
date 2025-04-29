@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import {EthernetPort, Wifi, Server, AlertCircle, Check} from 'lucide-react';
 import {motion} from 'framer-motion';
 import {$} from "../build/request.ts";
@@ -13,9 +13,13 @@ interface Port {
     mode: 'wan' | 'lan' | null;
 }
 
-const PortConfigurator = ({router}: { router: string }) => {
+export type PortProp = {
+    setOnValidate: Closure
+    setInfoCallback: Closure;
+}
+const PortConfigurator = ({router, props}: { router: string; props: PortProp }) => {
     const [ports, setPorts] = useState<Port[]>([]);
-    const [theme, ] = useState<'light' | 'dark'>('light');
+    const [theme,] = useState<'light' | 'dark'>('light');
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -53,7 +57,6 @@ const PortConfigurator = ({router}: { router: string }) => {
     const togglePortMode = (id: string) => {
         setError(null);
         setSuccess(false);
-
         const updatedPorts = [...ports];
 
         const clickedPortIndex = updatedPorts.findIndex(port => port.id === id);
@@ -84,7 +87,7 @@ const PortConfigurator = ({router}: { router: string }) => {
 
         setPorts(updatedPorts);
     };
-    const fetchInterfaces = () => {
+    const fetchInterfaces = useCallback(() => {
         setLoading(true);
         $.post<{ ports: Port[] }>({
             url: "/api/routers/interface/", data: {router}
@@ -96,10 +99,10 @@ const PortConfigurator = ({router}: { router: string }) => {
         }).done(() => {
             setLoading(false);
         });
-    };
+    }, [router]);
     useEffect(() => {
         fetchInterfaces();
-    }, []);
+    }, [fetchInterfaces]);
 
     // Validate configuration before submission
     const validateConfiguration = () => {
@@ -120,7 +123,7 @@ const PortConfigurator = ({router}: { router: string }) => {
         return true;
     };
 
-    // Handle form submission
+    const [out, setOut] = useState<any>({})
     const handleSubmit = () => {
         setIsSubmitting(true);
         setError(null);
@@ -130,7 +133,7 @@ const PortConfigurator = ({router}: { router: string }) => {
             const wanPorts = ports.filter(port => port.mode === 'wan').map(port => port.name);
             const lanPorts = ports.filter(port => port.mode === 'lan').map(port => port.name);
 
-            const configOutput = {
+            setOut({
                 wan_interface: wanPorts,
                 lan_interface: lanPorts,
                 bridge_configuration: {
@@ -141,9 +144,7 @@ const PortConfigurator = ({router}: { router: string }) => {
                     name: "wan",
                     ports: wanPorts
                 }
-            };
-
-            console.log("Configuration Output:", JSON.stringify(configOutput, null, 2));
+            })
             setSuccess(true);
 
             // Mock API submission with timeout
@@ -154,6 +155,8 @@ const PortConfigurator = ({router}: { router: string }) => {
             setIsSubmitting(false);
         }
     };
+    props.setOnValidate(handleSubmit)
+    props.setInfoCallback(() => out)
 
     // Get port count by mode
     const getPortCountByMode = (mode: 'wan' | 'lan' | null) => {
