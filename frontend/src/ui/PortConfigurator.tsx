@@ -1,5 +1,5 @@
-import {useState, useEffect} from 'react';
-import {EthernetPort, Wifi, Server, AlertCircle, Check} from 'lucide-react';
+import {useState, useEffect, useCallback} from 'react';
+import {EthernetPort, Wifi, Server, AlertCircle} from 'lucide-react';
 import {motion} from 'framer-motion';
 import {$} from "../build/request.ts";
 
@@ -13,12 +13,16 @@ interface Port {
     mode: 'wan' | 'lan' | null;
 }
 
-const PortConfigurator = ({router}: { router: string }) => {
+export type PortProp = {
+    setOnValidate: Closure
+    setInfoCallback: Closure;
+}
+const PortConfigurator = ({router, props}: { router: string; props: PortProp }) => {
     const [ports, setPorts] = useState<Port[]>([]);
-    const [theme, ] = useState<'light' | 'dark'>('light');
+    const [theme,] = useState<'light' | 'dark'>('light');
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<boolean>(false);
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [, setSuccess] = useState<boolean>(false);
+    const [, setIsSubmitting] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     // Set first ethernet port to LAN by default
     useEffect(() => {
@@ -53,7 +57,6 @@ const PortConfigurator = ({router}: { router: string }) => {
     const togglePortMode = (id: string) => {
         setError(null);
         setSuccess(false);
-
         const updatedPorts = [...ports];
 
         const clickedPortIndex = updatedPorts.findIndex(port => port.id === id);
@@ -84,7 +87,7 @@ const PortConfigurator = ({router}: { router: string }) => {
 
         setPorts(updatedPorts);
     };
-    const fetchInterfaces = () => {
+    const fetchInterfaces = useCallback(() => {
         setLoading(true);
         $.post<{ ports: Port[] }>({
             url: "/api/routers/interface/", data: {router}
@@ -96,10 +99,10 @@ const PortConfigurator = ({router}: { router: string }) => {
         }).done(() => {
             setLoading(false);
         });
-    };
+    }, [router]);
     useEffect(() => {
         fetchInterfaces();
-    }, []);
+    }, [fetchInterfaces]);
 
     // Validate configuration before submission
     const validateConfiguration = () => {
@@ -120,8 +123,8 @@ const PortConfigurator = ({router}: { router: string }) => {
         return true;
     };
 
-    // Handle form submission
-    const handleSubmit = () => {
+    const [out, setOut] = useState<any>({})
+    const handleSubmit = useCallback(() => {
         setIsSubmitting(true);
         setError(null);
 
@@ -130,7 +133,7 @@ const PortConfigurator = ({router}: { router: string }) => {
             const wanPorts = ports.filter(port => port.mode === 'wan').map(port => port.name);
             const lanPorts = ports.filter(port => port.mode === 'lan').map(port => port.name);
 
-            const configOutput = {
+            setOut({
                 wan_interface: wanPorts,
                 lan_interface: lanPorts,
                 bridge_configuration: {
@@ -141,19 +144,23 @@ const PortConfigurator = ({router}: { router: string }) => {
                     name: "wan",
                     ports: wanPorts
                 }
-            };
-
-            console.log("Configuration Output:", JSON.stringify(configOutput, null, 2));
+            })
             setSuccess(true);
 
             // Mock API submission with timeout
             setTimeout(() => {
                 setIsSubmitting(false);
             }, 1000);
+            return !0;
         } else {
             setIsSubmitting(false);
         }
-    };
+        return
+    }, [ports, validateConfiguration])
+    useEffect(() => {
+        props.setOnValidate(() => handleSubmit)
+        props.setInfoCallback(() => out)
+    }, [handleSubmit, out, props])
 
     // Get port count by mode
     const getPortCountByMode = (mode: 'wan' | 'lan' | null) => {
@@ -247,18 +254,6 @@ const PortConfigurator = ({router}: { router: string }) => {
                                 <span className="text-sm">LAN (Local network)</span>
                             </div>
                         </div>
-                        <button
-                            onClick={handleSubmit}
-                            disabled={isSubmitting}
-                            className={`px-6 py-2 rounded-md font-medium transition-colors duration-300
-                ${isSubmitting ?
-                                (theme === 'light' ? 'bg-gray-400 text-gray-700' : 'bg-gray-600 text-gray-300') :
-                                (theme === 'light' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-400 text-white')
-                            }
-              `}
-                        >
-                            {isSubmitting ? 'Processing...' : 'Apply Configuration'}
-                        </button>
                     </div>
 
                     {error && (
@@ -266,14 +261,6 @@ const PortConfigurator = ({router}: { router: string }) => {
                             className={`mt-4 p-3 rounded-md flex items-center gap-2 bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200`}>
                             <AlertCircle size={20}/>
                             <span>{error}</span>
-                        </div>
-                    )}
-
-                    {success && (
-                        <div
-                            className={`mt-4 p-3 rounded-md flex items-center gap-2 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200`}>
-                            <Check size={20}/>
-                            <span>Configuration successfully generated! Check console for output.</span>
                         </div>
                     )}
                 </div>

@@ -2,7 +2,7 @@ import React, {useRef, useState, useEffect} from "react";
 import {$} from "../../build/request.ts";
 import {ChevronRight, X, Wifi, CheckCircle, Loader2, RefreshCw, Copy, AlertCircle} from "lucide-react";
 import {motion, AnimatePresence} from "framer-motion";
-import PortConfigurator from "../PortConfigurator.tsx";
+import PortConfigurator, {PortProp} from "../PortConfigurator.tsx";
 
 type RouterForm = {
     mtkName: string;
@@ -335,6 +335,10 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
 
     // Fetch available mikrotik names on mount
     useEffect(() => {
+        setForm(prev => ({
+            ...prev,
+            mtkName: `MikroTik44`
+        }));
         const fetchRouterCount = async () => {
             $.get<{ count: number }>({url: "/api/routers/count/", data: {}}).then(
                 response => {
@@ -348,7 +352,7 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                 console.error("Failed to fetch router count:", error);
                 setForm(prev => ({
                     ...prev,
-                    mtkName: "MikroTik1"
+                    mtkName: "MikroTik44"
                 }));
             });
         };
@@ -419,15 +423,18 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
             if (intervalId) clearInterval(intervalId);
         };
     }, [connectionStatus, checkingAttempts, form.mtkName, maxCheckAttempts]);
-    // const [phCheck, setPCheck] = useState<Closure | null>(null)
-    // const ph: {
-    //     setOnCheck: Closure
-    // } = {
-    //     setOnCheck: (fn: Closure) => {
-    //         setPCheck(fn)
-    //
-    //     }
-    // }
+    const [phCheck, setPCheck] = useState<Closure | null>(null)
+    const [infoCallback, setInfoCallback] = useState<Closure | null>(null)
+    const ph: PortProp = {
+        setOnValidate: (fn: Closure) => {
+            if (!phCheck)
+                setPCheck(fn)
+
+        }, setInfoCallback: (fn: Closure) => {
+            if (!infoCallback)
+                setInfoCallback(fn)
+        }
+    }
     const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         setLoading(true);
@@ -435,8 +442,10 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
 
         try {
             if (step === 1) {
-                if (connectionStatus == "connected")
+                if (connectionStatus == "connected") {
+                    setNextStepEnabled(true)
                     return setStep(step => step + 1)
+                }
                 setTerminal(prev => ({...prev, status: 'processing', error: undefined}));
 
                 $.post<{
@@ -475,8 +484,10 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
 
 
             } else if (step === 2) {
-                // const check = phCheck?.()
-                setNextStepEnabled(false);
+                if (phCheck?.())
+                    return nextStep()
+                setNextStepEnabled(true);
+
             } else if (step === 3) {
                 // Submit the selected interfaces
                 await $.post({
@@ -633,7 +644,7 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                         <h3 className="font-medium text-lg mb-3">Network Interface Configuration</h3>
                         <p className="text-gray-600 dark:text-gray-400 mb-4">Select which interfaces to use for WAN
                             (Internet) and LAN (Local Network)</p>
-                        <PortConfigurator router={form.mtkName}/>
+                        <PortConfigurator props={ph} router={form.mtkName || "MikroTik38"}/>
                     </motion.div>
                 );
             case 4:

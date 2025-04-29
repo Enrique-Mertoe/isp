@@ -150,7 +150,7 @@ LOGIN_URL = '/auth/login/'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    'http://192.168.10.1:5173',
+    'http://192.168.10.3:5173',
     "http://127.0.0.1:5173",
     'http://192.168.10.2:5000'
 
@@ -160,7 +160,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5173",
     'https://isp.coolify.kaigates.com',
     'http://192.168.10.2:5000',
-    'http://192.168.10.1:5173'
+    'http://192.168.10.3:5173'
 ]
 AUTH_USER_MODEL = 'user_dashboard.User'
 
@@ -191,6 +191,7 @@ MikroManager.initialise(
     server_id="LomTech",
     server_url=API_URL
 )
+
 
 # Initialize the singleton instance
 mikrotik_manager = MikroManager.mikrotik
