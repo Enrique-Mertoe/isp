@@ -14,7 +14,7 @@ def router_to_dict(router: Router):
         "location": router.location,
         "username": router.username,
         "ip_address": router.ip_address,
-         "identity":router.identity,
+        "identity": router.identity,
     }
 
 
@@ -128,3 +128,41 @@ def get_mode_from_url(url):
         return 'https'
     else:
         return 'http'
+
+
+def transform_ports(data):
+    """
+       Transform RouterOS API data into a format suitable for UI
+       Returns data in the format matching the Port interface
+       """
+    ports = []
+    port_data = data
+    for port in port_data:
+        port_id = port.get('.id', '').replace('*', '')
+        port_name = port.get('name', '')
+
+        # Determine port type
+        port_type = 'ethernet'
+        if 'sfp' in port_name.lower():
+            port_type = 'sfp' if '+' not in port_name else 'sfp+'
+        elif 'wlan' in port_name.lower():
+            port_type = 'wireless'
+
+        # Determine port mode (WAN or LAN)
+        port_mode = None
+        if port.get('running') == True and (
+                int(port.get('rx-bytes', 0)) > 0 or
+                int(port.get('tx-bytes', 0)) > 0
+        ):
+            port_mode = 'wan'
+        elif port.get('running') == True:
+            port_mode = 'lan'
+
+        ports.append({
+            'id': port_id,
+            'name': port_name,
+            'type': port_type,
+            'mode': port_mode
+        })
+
+    return ports

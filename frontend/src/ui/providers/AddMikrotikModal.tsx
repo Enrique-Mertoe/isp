@@ -1,7 +1,8 @@
 import React, {useRef, useState, useEffect} from "react";
 import {$} from "../../build/request.ts";
-import {ChevronRight, X, Wifi, Server, CheckCircle, Loader2, RefreshCw, Copy, AlertCircle} from "lucide-react";
+import {ChevronRight, X, Wifi, CheckCircle, Loader2, RefreshCw, Copy, AlertCircle} from "lucide-react";
 import {motion, AnimatePresence} from "framer-motion";
+import PortConfigurator from "../PortConfigurator.tsx";
 
 type RouterForm = {
     mtkName: string;
@@ -30,19 +31,21 @@ interface TerminalViewProps {
     info: {
         txt: string; display: string; status: '' | 'processing' | 'complete';
         error?: string;
-        conn: {
-            connectionStatus: string,
-            setConnectionStatus: any,
-            setCheckingAttempts: any,
-            checkingAttempts: any,
-            maxCheckAttempts: any
-        };
+
         form: any
     };
+    conn: {
+        connectionStatus: string,
+        setConnectionStatus: any,
+        setCheckingAttempts: any,
+        checkingAttempts: any,
+        maxCheckAttempts: any
+    };
+    form: any
 }
 
 // Complete the TerminalView component that was cut off
-const TerminalView: React.FC<TerminalViewProps> = ({info}) => {
+const TerminalView: React.FC<TerminalViewProps> = ({info, form, conn}) => {
     const [copied, setCopied] = useState(false);
 
     const copyToClipboard = () => {
@@ -183,14 +186,14 @@ const TerminalView: React.FC<TerminalViewProps> = ({info}) => {
                         <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                             <h3 className="font-medium text-lg mb-2">Connection Status</h3>
                             <div className="flex items-center space-x-3">
-                                {info.conn.connectionStatus === "idle" && (
+                                {conn.connectionStatus === "idle" && (
                                     <>
                                         <Wifi className="text-gray-400" size={24}/>
                                         <span>Waiting to check connection...</span>
                                     </>
                                 )}
 
-                                {info.conn.connectionStatus === "connecting" && (
+                                {conn.connectionStatus === "connecting" && (
                                     <>
                                         <Loader2 className="text-blue-500 animate-spin" size={24}/>
                                         <div className="w-full">
@@ -199,22 +202,22 @@ const TerminalView: React.FC<TerminalViewProps> = ({info}) => {
                                                 className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2">
                                                 <div
                                                     className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-                                                    style={{width: `${(info.conn.checkingAttempts / info.conn.maxCheckAttempts) * 100}%`}}
+                                                    style={{width: `${(conn.checkingAttempts / conn.maxCheckAttempts) * 100}%`}}
                                                 ></div>
                                             </div>
-                                            <p className="text-xs mt-1 text-gray-500">Attempt {info.conn.checkingAttempts} of {info.conn.maxCheckAttempts}</p>
+                                            <p className="text-xs mt-1 text-gray-500">Attempt {conn.checkingAttempts} of {conn.maxCheckAttempts}</p>
                                         </div>
                                     </>
                                 )}
 
-                                {info.conn.connectionStatus === "connected" && (
+                                {conn.connectionStatus === "connected" && (
                                     <>
                                         <CheckCircle className="text-green-500" size={24}/>
                                         <span className="text-green-600 dark:text-green-400">Successfully connected to MikroTik!</span>
                                     </>
                                 )}
 
-                                {info.conn.connectionStatus === "failed" && (
+                                {conn.connectionStatus === "failed" && (
                                     <>
                                         <AlertCircle className="text-red-500" size={24}/>
                                         <div>
@@ -224,8 +227,8 @@ const TerminalView: React.FC<TerminalViewProps> = ({info}) => {
                                                 command was run correctly on your MikroTik device.</p>
                                             <button
                                                 onClick={() => {
-                                                    info.conn.setConnectionStatus("connecting");
-                                                    info.conn.setCheckingAttempts(0);
+                                                    conn.setConnectionStatus("connecting");
+                                                    conn.setCheckingAttempts(0);
                                                 }}
                                                 className="flex items-center text-blue-600 dark:text-blue-400 text-sm mt-2"
                                             >
@@ -237,7 +240,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({info}) => {
                             </div>
                         </div>
 
-                        {info.conn.connectionStatus === "connected" && (
+                        {conn.connectionStatus === "connected" && (
                             <motion.div
                                 initial={{opacity: 0, y: 10}}
                                 animate={{opacity: 1, y: 0}}
@@ -248,16 +251,16 @@ const TerminalView: React.FC<TerminalViewProps> = ({info}) => {
                                 <div className="space-y-2">
                                     <div className="flex justify-between border-b pb-2 dark:border-gray-700">
                                         <span className="text-gray-600 dark:text-gray-400">Device Name:</span>
-                                        <span className="font-medium">{info.form.mtkName}</span>
+                                        <span className="font-medium">{form.mtkName}</span>
                                     </div>
                                     <div className="flex justify-between border-b pb-2 dark:border-gray-700">
                                         <span className="text-gray-600 dark:text-gray-400">IP Address:</span>
-                                        <span className="font-medium">{info.form.ip || "10.8.0.X"}</span>
+                                        <span className="font-medium">{form.ip}</span>
                                     </div>
-                                    <div className="flex justify-between border-b pb-2 dark:border-gray-700">
-                                        <span className="text-gray-600 dark:text-gray-400">RouterOS Version:</span>
-                                        <span className="font-medium">7.10.2</span>
-                                    </div>
+                                    {/*<div className="flex justify-between border-b pb-2 dark:border-gray-700">*/}
+                                    {/*    <span className="text-gray-600 dark:text-gray-400">RouterOS Version:</span>*/}
+                                    {/*    <span className="font-medium">7.10.2</span>*/}
+                                    {/*</div>*/}
                                     <div className="flex justify-between">
                                         <span className="text-gray-600 dark:text-gray-400">Status:</span>
                                         <span className="font-medium text-green-600">Online</span>
@@ -290,7 +293,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({info}) => {
 };
 
 export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState(2);
     const [loading, setLoading] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState<"idle" | "connecting" | "connected" | "failed">("idle");
     const [checkingAttempts, setCheckingAttempts] = useState(0);
@@ -311,9 +314,12 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
 
     const [terminal, setTerminal] = useState<{
         txt: string; error?: string, display: string; status: '' | 'processing' | 'complete',
-        conn: any, form: any
+        form: any
     }>({
-        txt: '', display: '', status: '', conn: {connectionStatus,setConnectionStatus,maxCheckAttempts,checkingAttempts}, form
+        txt: '',
+        display: '',
+        status: '',
+        form
     });
 
     // Service configuration state
@@ -346,7 +352,8 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                 }));
             });
         };
-        fetchRouterCount().then();
+        if (step === 1)
+            fetchRouterCount().then();
     }, []);
 
     const nextStep = () => {
@@ -372,18 +379,21 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
     // For checking connection to MikroTik after script is applied
     useEffect(() => {
         let intervalId: NodeJS.Timeout;
+        let isChecking = false;
 
         const checkConnection = async () => {
+            if (isChecking) return;
+            isChecking = true;
             if (connectionStatus === "connecting" && checkingAttempts < maxCheckAttempts) {
-                $.get<{ status: string; interfaces?: Interface[] }>({
+                $.get<{ status: string; ip?: string }>({
                     url: `/api/routers/check-connection/${form.mtkName}`, data: {}
                 }).then(response => {
+                    console.log(response.data)
                     if (response.data.status === "connected") {
                         setConnectionStatus("connected");
                         setForm(prev => ({
                             ...prev,
-                            interfaces: response.data.interfaces || [],
-                            ip: (response.data as any).ip || "10.8.0.X" // Add IP from response
+                            ip: response.data.ip ?? "10.8.0.X"
                         }));
                         setNextStepEnabled(true);
                         clearInterval(intervalId);
@@ -392,8 +402,9 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                     }
                 }).catch(() => {
                     setCheckingAttempts(prev => prev + 1);
+                }).done(() => {
+                    isChecking = false;
                 });
-
             } else if (checkingAttempts >= maxCheckAttempts) {
                 setConnectionStatus("failed");
                 clearInterval(intervalId);
@@ -408,13 +419,24 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
             if (intervalId) clearInterval(intervalId);
         };
     }, [connectionStatus, checkingAttempts, form.mtkName, maxCheckAttempts]);
-
+    // const [phCheck, setPCheck] = useState<Closure | null>(null)
+    // const ph: {
+    //     setOnCheck: Closure
+    // } = {
+    //     setOnCheck: (fn: Closure) => {
+    //         setPCheck(fn)
+    //
+    //     }
+    // }
     const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         setLoading(true);
+        setNextStepEnabled(false);
 
         try {
             if (step === 1) {
+                if (connectionStatus == "connected")
+                    return setStep(step => step + 1)
                 setTerminal(prev => ({...prev, status: 'processing', error: undefined}));
 
                 $.post<{
@@ -444,18 +466,16 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                             display: disp,
                             error: undefined,
                             status: "complete",
-                            conn: {connectionStatus,setConnectionStatus,maxCheckAttempts,checkingAttempts},
                             form
                         });
                         setConnectionStatus("connecting")
-                        // setNextStepEnabled(true);
+
                     }
                 });
 
 
             } else if (step === 2) {
-                // Start checking connection
-                setConnectionStatus("connecting");
+                // const check = phCheck?.()
                 setNextStepEnabled(false);
             } else if (step === 3) {
                 // Submit the selected interfaces
@@ -534,28 +554,11 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
         }
     };
 
-    // For interfaces selection
-    const handleInterfaceSelection = (type: 'wan' | 'lan', interfaceName: string) => {
-        setForm(prev => ({
-            ...prev,
-            [type === 'wan' ? 'selectedWanInterface' : 'selectedLanInterface']: interfaceName
-        }));
-
-        // Enable next button if both interfaces are selected
-        if (
-            (type === 'wan' && form.selectedLanInterface) ||
-            (type === 'lan' && form.selectedWanInterface) ||
-            (type === 'wan' && interfaceName && form.selectedLanInterface) ||
-            (type === 'lan' && interfaceName && form.selectedWanInterface)
-        ) {
-            setNextStepEnabled(true);
-        }
-    };
-
     // Handle service type selection
     const handleServiceTypeChange = (type: "pppoe" | "hotspot") => {
         setServiceType(type);
     };
+
 
     const renderStepContent = () => {
         switch (step) {
@@ -567,44 +570,55 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                         exit={{opacity: 0, y: -20}}
                         transition={{duration: 0.3}}
                     >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label htmlFor="mtk-name"
-                                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    MikroTik Name <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="mtkName"
-                                    id="mtk-name"
-                                    value={form.mtkName}
-                                    onChange={handleChange}
-                                    className="bg-gray-50 border-2 border-gray-300 outline-0 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                    placeholder="MikroTik1"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="location"
-                                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Location
-                                </label>
-                                <input
-                                    type="text"
-                                    name="location"
-                                    id="location"
-                                    value={form.location}
-                                    onChange={handleChange}
-                                    className="bg-gray-50 border-2 border-gray-300 outline-0 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                    placeholder="Server Room, HQ"
-                                />
-                            </div>
-                        </div>
-                        <p className="text-gray-500 my-4">The identity name of your MikroTik device will be used for
-                            identification and connection. The name should be unique within your ISP system.</p>
 
-                        {terminal.status !== '' && (
-                            <TerminalView info={terminal}/>
+
+                        {terminal.status === '' ? <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="mtk-name"
+                                           className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        MikroTik Name <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="mtkName"
+                                        id="mtk-name"
+                                        value={form.mtkName}
+                                        onChange={handleChange}
+                                        className="bg-gray-50 border-2 border-gray-300 outline-0 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                        placeholder="MikroTik1"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="location"
+                                           className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Location
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="location"
+                                        id="location"
+                                        value={form.location}
+                                        onChange={handleChange}
+                                        className="bg-gray-50 border-2 border-gray-300 outline-0 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                        placeholder="Server Room, HQ"
+                                    />
+                                </div>
+                            </div>
+                            <p className="text-gray-500 my-4">The identity name of your MikroTik device will be used for
+                                identification and connection. The name should be unique within your ISP system.</p>
+                        </> : (
+                            <TerminalView
+                                conn={{
+                                    connectionStatus,
+                                    setCheckingAttempts,
+                                    setConnectionStatus,
+                                    maxCheckAttempts,
+                                    checkingAttempts
+                                }}
+                                form={form}
+                                info={terminal}/>
                         )}
                     </motion.div>
                 );
@@ -615,271 +629,11 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                         animate={{opacity: 1, y: 0}}
                         exit={{opacity: 0, y: -20}}
                         transition={{duration: 0.3}}
-                        className="space-y-4"
-                    >
-                        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                            <h3 className="font-medium text-lg mb-2">Connection Status</h3>
-                            <div className="flex items-center space-x-3">
-                                {connectionStatus === "idle" && (
-                                    <>
-                                        <Wifi className="text-gray-400" size={24}/>
-                                        <span>Waiting to check connection...</span>
-                                    </>
-                                )}
-
-                                {connectionStatus === "connecting" && (
-                                    <>
-                                        <Loader2 className="text-blue-500 animate-spin" size={24}/>
-                                        <div className="w-full">
-                                            <p>Checking connection to your MikroTik device...</p>
-                                            <div
-                                                className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2">
-                                                <div
-                                                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-                                                    style={{width: `${(checkingAttempts / maxCheckAttempts) * 100}%`}}
-                                                ></div>
-                                            </div>
-                                            <p className="text-xs mt-1 text-gray-500">Attempt {checkingAttempts} of {maxCheckAttempts}</p>
-                                        </div>
-                                    </>
-                                )}
-
-                                {connectionStatus === "connected" && (
-                                    <>
-                                        <CheckCircle className="text-green-500" size={24}/>
-                                        <span className="text-green-600 dark:text-green-400">Successfully connected to MikroTik!</span>
-                                    </>
-                                )}
-
-                                {connectionStatus === "failed" && (
-                                    <>
-                                        <AlertCircle className="text-red-500" size={24}/>
-                                        <div>
-                                            <p className="text-red-600 dark:text-red-400">Failed to establish
-                                                connection</p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">Make sure the
-                                                command was run correctly on your MikroTik device.</p>
-                                            <button
-                                                onClick={() => {
-                                                    setConnectionStatus("connecting");
-                                                    setCheckingAttempts(0);
-                                                }}
-                                                className="flex items-center text-blue-600 dark:text-blue-400 text-sm mt-2"
-                                            >
-                                                <RefreshCw size={14} className="mr-1"/> Try again
-                                            </button>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                        {connectionStatus === "connected" && (
-                            <motion.div
-                                initial={{opacity: 0, y: 10}}
-                                animate={{opacity: 1, y: 0}}
-                                transition={{duration: 0.5, delay: 0.2}}
-                                className="mt-4 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700"
-                            >
-                                <h3 className="font-medium text-lg mb-3">Device Information</h3>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between border-b pb-2 dark:border-gray-700">
-                                        <span className="text-gray-600 dark:text-gray-400">Device Name:</span>
-                                        <span className="font-medium">{form.mtkName}</span>
-                                    </div>
-                                    <div className="flex justify-between border-b pb-2 dark:border-gray-700">
-                                        <span className="text-gray-600 dark:text-gray-400">IP Address:</span>
-                                        <span className="font-medium">{form.ip || "10.8.0.X"}</span>
-                                    </div>
-                                    <div className="flex justify-between border-b pb-2 dark:border-gray-700">
-                                        <span className="text-gray-600 dark:text-gray-400">RouterOS Version:</span>
-                                        <span className="font-medium">7.10.2</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600 dark:text-gray-400">Status:</span>
-                                        <span className="font-medium text-green-600">Online</span>
-                                    </div>
-                                </div>
-
-                                <div
-                                    className="mt-4 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                                    <div className="flex items-start">
-                                        <svg className="text-blue-600 dark:text-blue-400 mr-2 mt-0.5" width="18"
-                                             height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <circle cx="12" cy="12" r="10"/>
-                                            <line x1="12" y1="16" x2="12" y2="12"/>
-                                            <line x1="12" y1="8" x2="12.01" y2="8"/>
-                                        </svg>
-                                        <p className="text-sm text-blue-800 dark:text-blue-400">
-                                            Your MikroTik is now connected to the VPN network. You can now proceed to
-                                            configure network interfaces for WAN and LAN connectivity.
-                                        </p>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </motion.div>
-                );
-            case 3:
-                return (
-                    <motion.div
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        exit={{opacity: 0, y: -20}}
-                        transition={{duration: 0.3}}
                     >
                         <h3 className="font-medium text-lg mb-3">Network Interface Configuration</h3>
                         <p className="text-gray-600 dark:text-gray-400 mb-4">Select which interfaces to use for WAN
                             (Internet) and LAN (Local Network)</p>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <h4 className="font-medium flex items-center mb-3">
-                                    <svg className="mr-2 text-blue-600 dark:text-blue-400" width="18" height="18"
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                                         strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A8 8 0 1 0 4 16.2"/>
-                                        <path d="m23 16-4 4-4-4"/>
-                                    </svg>
-                                    WAN Interface
-                                </h4>
-                                <div className="space-y-2 max-h-60 overflow-y-auto">
-                                    {form.interfaces.map((iface) => (
-                                        <motion.div
-                                            key={`wan-${iface.name}`}
-                                            initial={{opacity: 0, scale: 0.95}}
-                                            animate={{opacity: 1, scale: 1}}
-                                            transition={{duration: 0.2}}
-                                            className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                                                form.selectedWanInterface === iface.name
-                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-700'
-                                                    : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
-                                            }`}
-                                            onClick={() => handleInterfaceSelection('wan', iface.name)}
-                                        >
-                                            <div className="flex justify-between items-center">
-                                                <div>
-                                                    <p className="font-medium">{iface.name}</p>
-                                                    <div
-                                                        className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                                                        <span className="mr-2">{iface.mac}</span>
-                                                        <span
-                                                            className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">{iface.type}</span>
-                                                    </div>
-                                                </div>
-                                                <div className={`text-xs px-2 py-1 rounded ${
-                                                    iface.status === 'up'
-                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
-                                                }`}>
-                                                    {iface.status === 'up' ? 'UP' : 'DOWN'}
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 className="font-medium flex items-center mb-3">
-                                    <svg className="mr-2 text-green-600 dark:text-green-400" width="18" height="18"
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                                         strokeLinecap="round" strokeLinejoin="round">
-                                        <rect width="20" height="14" x="2" y="5" rx="2"/>
-                                        <line x1="2" y1="10" x2="22" y2="10"/>
-                                    </svg>
-                                    LAN Interface
-                                </h4>
-                                <div className="space-y-2 max-h-60 overflow-y-auto">
-                                    {form.interfaces.map((iface) => (
-                                        <motion.div
-                                            key={`lan-${iface.name}`}
-                                            initial={{opacity: 0, scale: 0.95}}
-                                            animate={{opacity: 1, scale: 1}}
-                                            transition={{duration: 0.2, delay: 0.1}}
-                                            className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                                                form.selectedLanInterface === iface.name
-                                                    ? 'border-green-500 bg-green-50 dark:bg-green-900/30 dark:border-green-700'
-                                                    : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
-                                            }`}
-                                            onClick={() => handleInterfaceSelection('lan', iface.name)}
-                                        >
-                                            <div className="flex justify-between items-center">
-                                                <div>
-                                                    <p className="font-medium">{iface.name}</p>
-                                                    <div
-                                                        className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                                                        <span className="mr-2">{iface.mac}</span>
-                                                        <span
-                                                            className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">{iface.type}</span>
-                                                    </div>
-                                                </div>
-                                                <div className={`text-xs px-2 py-1 rounded ${
-                                                    iface.status === 'up'
-                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
-                                                }`}>
-                                                    {iface.status === 'up' ? 'UP' : 'DOWN'}
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        {form.selectedWanInterface && form.selectedLanInterface && (
-                            <motion.div
-                                initial={{opacity: 0, y: 10}}
-                                animate={{opacity: 1, y: 0}}
-                                transition={{duration: 0.3}}
-                                className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg"
-                            >
-                                <div className="flex items-start">
-                                    <CheckCircle className="text-green-600 dark:text-green-400 mr-2 mt-0.5" size={18}/>
-                                    <div>
-                                        <p className="font-medium text-green-800 dark:text-green-400">Interface
-                                            Selection Complete</p>
-                                        <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div
-                                                className="flex items-center justify-between p-2 rounded-lg bg-green-100 dark:bg-green-900/40">
-                                                <div className="flex items-center">
-                                                    <svg className="mr-2 text-green-700 dark:text-green-500" width="16"
-                                                         height="16" viewBox="0 0 24 24" fill="none"
-                                                         stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-                                                         strokeLinejoin="round">
-                                                        <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A8 8 0 1 0 4 16.2"/>
-                                                        <path d="m23 16-4 4-4-4"/>
-                                                    </svg>
-                                                    <span className="text-sm text-green-800 dark:text-green-500">WAN Interface:</span>
-                                                </div>
-                                                <span
-                                                    className="font-medium text-sm text-green-800 dark:text-green-500">{form.selectedWanInterface}</span>
-                                            </div>
-                                            <div
-                                                className="flex items-center justify-between p-2 rounded-lg bg-green-100 dark:bg-green-900/40">
-                                                <div className="flex items-center">
-                                                    <svg className="mr-2 text-green-700 dark:text-green-500" width="16"
-                                                         height="16" viewBox="0 0 24 24" fill="none"
-                                                         stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-                                                         strokeLinejoin="round">
-                                                        <rect width="20" height="14" x="2" y="5" rx="2"/>
-                                                        <line x1="2" y1="10" x2="22" y2="10"/>
-                                                    </svg>
-                                                    <span className="text-sm text-green-800 dark:text-green-500">LAN Interface:</span>
-                                                </div>
-                                                <span
-                                                    className="font-medium text-sm text-green-800 dark:text-green-500">{form.selectedLanInterface}</span>
-                                            </div>
-                                        </div>
-                                        <p className="text-sm text-green-700 dark:text-green-500 mt-2">
-                                            Click "Next" to proceed with service configuration
-                                        </p>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
+                        <PortConfigurator router={form.mtkName}/>
                     </motion.div>
                 );
             case 4:
@@ -1140,11 +894,10 @@ add action=accept chain=forward in-interface=bridge-lan out-interface=${form.sel
                 </p>
 
                 {/* Stepper */}
-                <div className="relative mb-12">
+                <div className="relative mx-7 mb-12">
                     <div className="flex justify-between">
                         {[
                             {icon: <Wifi size={18}/>, label: "Connection", desc: "Device Setup"},
-                            {icon: <Server size={18}/>, label: "Connection Check", desc: "Verify Connectivity"},
                             {
                                 icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

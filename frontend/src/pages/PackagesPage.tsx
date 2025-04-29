@@ -1,6 +1,6 @@
 import {useState, useEffect} from "react";
 import Layout from "./home-components/Layout.tsx";
-import { $, request } from "../build/request.ts";
+import { request } from "../build/request.ts";
 
 interface Package {
     id: number;

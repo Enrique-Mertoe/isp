@@ -18,7 +18,10 @@ from django.contrib import staticfiles
 from mtk_command_api.mtk import MikroManager
 
 
+from mtk_command_api.mtk import MikroManager
+
 pymysql.install_as_MySQLdb()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -147,6 +150,7 @@ LOGIN_URL = '/auth/login/'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    'http://192.168.10.1:5173',
     "http://127.0.0.1:5173",
     'http://192.168.10.2:5000'
 
@@ -155,7 +159,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     'https://isp.coolify.kaigates.com',
-    'http://192.168.10.2:5000'
+    'http://192.168.10.2:5000',
+    'http://192.168.10.1:5173'
 ]
 AUTH_USER_MODEL = 'user_dashboard.User'
 
@@ -179,6 +184,13 @@ HOSTNAME = "isp3.lomtechnology.com"  # Your server's hostname
 
 # VPN settings
 VPN_SERVER_IP = "142.93.39.55"
+
+
+MikroManager.initialise(
+    api_key="test-api-key",
+    server_id="LomTech",
+    server_url=API_URL
+)
 
 # Initialize the singleton instance
 mikrotik_manager = MikroManager(

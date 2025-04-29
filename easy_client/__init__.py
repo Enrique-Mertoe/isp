@@ -11,7 +11,7 @@ from typing import Dict, List, Any, Optional, Union
 from dataclasses import dataclass
 from enum import Enum
 
-from easy_client.context import  ServerContext
+from easy_client.context import ServerContext
 
 
 @dataclass
@@ -111,11 +111,10 @@ class MikrotikClient:
 
         if self.api_key:
             payload["api_key"] = self.api_key
-        print(payload)
 
         try:
             response = requests.post(f"{self.api_url}/api/routeros", json=payload)
-            print(Response.from_dict(response.json()))
+            print(response.text)
             return Response.from_dict(response.json())
         except Exception as e:
             return Response(
@@ -472,6 +471,15 @@ class Network:
             Response with list of all interfaces
         """
         return self.client._send_request("/interface/print")
+
+    def list_ports(self) -> Response:
+        """
+        List all network ports
+
+        Returns:
+            Response with list of all ports e.g ether1,ether2 sfp
+        """
+        return self.client._send_request("/interface/ethernet/print")
 
     def list_ip_addresses(self) -> Response:
         """
