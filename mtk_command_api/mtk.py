@@ -34,6 +34,7 @@ class RouterConnection:
             "action": action,
             "params": params or {}
         }
+        print(self.server_url,data)
 
         response = requests.post(self.server_url, json=data)
         print(response.text)

@@ -19,7 +19,7 @@ from ISP import settings
 from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict, company_to_dict, client_to_dict, \
     generate_invoice_number
 from user_dashboard.models import Router, Package, ISPProvider, Client, Billing
-from mtk_command_api.mtk import MikroManager
+from ISP.settings import mikrotik_manager
 
 
 # Create your views here.
@@ -248,10 +248,10 @@ def pkg_create(request):
                 print(data['speed'],'im here')                            
                 ratelimit=format_data(data['speed'])+"/"+format_data(data['speed'])
                 print(ratelimit)
-                res=MikroManager.connect_router(router.identity,router.username,router.password)
+                res=mikrotik_manager.connect_router(host=router.identity,username=router.username,password=router.password)
                     # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
                 print(res,'bbbhbhbh')
-                res.create_profile(nanme=router.name,rate_limit=ratelimit,session_timeout=data.get("duration"),service="pppoe")
+                res.create_profile(name=router.name,rate_limit=ratelimit,session_timeout=data.get("duration"),service="pppoe")
             except Exception as e:
                 print(str(e))
                 return JsonResponse({'error': "Router connection failed"}, status=400)
