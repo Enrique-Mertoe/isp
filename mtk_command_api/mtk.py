@@ -1,14 +1,33 @@
+import requests
+
+from easy_client import Network, MikrotikClient
+
+
+class MTKClient:
+    def __init__(self, server_url, host, username, password):
+        client = MikrotikClient(server_url, username, password, host=host)
+        self.network = Network(client)
+
+
 class MikroManager:
+    mikrotik: "MikroManager" = None
+
     def __init__(self, api_key, server_id, server_url):
         self.api_key = api_key
         self.server_url = server_url
         self.server_id = server_id
 
-    def connect_router(self, host, username, password):
+    @classmethod
+    def initialise(cls, api_key, server_id, server_url) -> None:
+        cls.mikrotik = MikroManager(api_key, server_id, server_url)
+
+    def connect_router(self, host, username, password) -> 'RouterConnection':
         """Create a router connection instance"""
-        print('making connection')
-        return RouterConnection(self.api_key, self.server_url, host, username, password,
+        return RouterConnection(self.api_key, self.server_url + "/mtk/console", host, username, password,
                                 self.server_id)
+
+    def client(self, *, host, username, password) -> 'MTKClient':
+        return MTKClient(self.server_url, host, username, password)
 
 
 class RouterConnection:
@@ -24,9 +43,6 @@ class RouterConnection:
 
     def _send_request(self, action, params=None):
         """Internal method to send requests to the Flask server"""
-        import requests
-        print('sending ',action)
-
         data = {
             "api_key": self.api_key,
             "server_id": self.sever_id,
@@ -37,7 +53,6 @@ class RouterConnection:
         print(self.server_url,data)
 
         response = requests.post(self.server_url, json=data)
-        print(response.text)
         return response.json()
 
     # PPPoE Server Management

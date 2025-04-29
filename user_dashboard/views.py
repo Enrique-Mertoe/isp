@@ -14,10 +14,10 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-import json,re
+import json, re
 from ISP import settings
 from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict, company_to_dict, client_to_dict, \
-    generate_invoice_number
+    generate_invoice_number, transform_ports
 from user_dashboard.models import Router, Package, ISPProvider, Client, Billing
 from ISP.settings import mikrotik_manager
 
@@ -76,7 +76,7 @@ def router_list(request):
         else:
             routers = user_router.all()
 
-        if(routers.count() == 0):
+        if (routers.count() == 0):
             return JsonResponse({
                 "routers": [],
                 "all_count": 0,
@@ -175,6 +175,16 @@ def router_count(request):
     return JsonResponse({'ok': True, "count": count})
 
 
+@api_view(['POST'])
+def router_interfaces(request):
+    rt = get_object_or_404(Router, identity=f"{request.user.username}_{request.POST.get('router') or 'MikroTik38'}")
+    network = MikroManager.mikrotik.client(host=rt.identity, username=settings.MTK_USERNAME,
+                                           password=rt.password).network
+    intf = network.list_ports()
+    print(intf)
+    return JsonResponse({'ok': True, "ports": transform_ports(intf.data or [])})
+
+
 @api_view(["GET"])
 def check_connection(request, mtk):
     user = request.user
@@ -218,6 +228,7 @@ def pkg_list(request):
             "hotspot_count": h_count,
         }, safe=False)
 
+
 def format_data(data: str) -> str:
     match = re.match(r'(\d+)', data)
     print(data)
@@ -225,6 +236,8 @@ def format_data(data: str) -> str:
         number = match.group(1)
         return f"{number}M"
     return "0M"  # or raise an error if you prefer
+
+
 @csrf_exempt
 def pkg_create(request):
     if request.method == "POST":
@@ -232,8 +245,8 @@ def pkg_create(request):
             data = json.loads(request.body)
             print(data)
             print(request.user)
-            router = Router.objects.get(id=data['router_id'],identity=data['router_identity'])
-            print('hbh',router)
+            router = Router.objects.get(id=data['router_id'], identity=data['router_identity'])
+            print('hbh', router)
             if not router:
                 print('unrecognized ')
                 return JsonResponse({'error': "Unrecognised router."}, status=400)
@@ -245,13 +258,18 @@ def pkg_create(request):
                 #                                     dns_server="8.8.8.8,8.8.4.4",
                 #                                     only_one='yes',
                 #       
-                print(data['speed'],'im here')                            
-                ratelimit=format_data(data['speed'])+"/"+format_data(data['speed'])
+                print(data['speed'], 'im here')
+                ratelimit = format_data(data['speed']) + "/" + format_data(data['speed'])
                 print(ratelimit)
                 res=mikrotik_manager.connect_router(host=router.identity,username=router.username,password=router.password)
                     # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
                 print(res,'bbbhbhbh')
                 res.create_profile(name=router.name,rate_limit=ratelimit,session_timeout=data.get("duration"),service="pppoe")
+                res = MikroManager.connect_router(router.identity, router.username, router.password)
+                # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
+                print(res, 'bbbhbhbh')
+                res.create_profile(nanme=router.name, rate_limit=ratelimit, session_timeout=data.get("duration"),
+                                   service="pppoe")
             except Exception as e:
                 print(str(e))
                 return JsonResponse({'error': "Router connection failed"}, status=400)

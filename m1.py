@@ -6,27 +6,28 @@ from easy_client import MikrotikClient, SpeedLimit
 from easy_client.server import SiteSetup
 from mtk_command_api.mtk import MikroManager
 
-# client = MikrotikClient(
-#     api_url=API_URL,
-#     username="lom_tech_user",
-#     host="Lom_Technology_MikroTik12",
-#     password="111",
-#     api_key="your_api_key"  # Optional if API key is not required
-# )
+client = MikrotikClient(
+    api_url=API_URL,
+    username="lom_tech_user",
+    host="Lom_Technology_MikroTik12",
+    password="111",
+    api_key="your_api_key"  # Optional if API key is not required
+)
 
 # Initialize the manager with your API key and server URL
-# mikrotik = MikroManager(
-#     api_key="test-api-key",
-#     server_id="LomTech",
-#     server_url=f"{API_URL}/mtk/console"
-# )
+mikrotik = MikroManager(
+    api_key="test-api-key",
+    server_id="LomTech",
+    server_url=f"{API_URL}/mtk/console"
+)
 
 # Connect to a specific router
-# router = mikrotik.connect_router(
-#     host="Lom_Technology_MikroTik12",
-#     username="lom_tech_user",
-#     password="Q8P8Kpd1VJNYKgfg"
-# )
+router = mikrotik.connect_router(
+    host="Lom_Technology_MikroTik12",
+    username="lom_tech_user",
+    password="Q8P8Kpd1VJNYKgfg"
+)
+# router.
 # print(router)
 #
 # # Set up a hotspot server

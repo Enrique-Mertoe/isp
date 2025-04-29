@@ -67,7 +67,7 @@ def gen_mtk_provision(request):
                 })
 
             router = Router.objects.create(
-                name="MTK1",
+                name=router_name,
                 username=settings.MTK_USERNAME,
                 password=mtk_info["password"],
                 location="ss",
