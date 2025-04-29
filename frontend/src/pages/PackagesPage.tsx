@@ -1,6 +1,6 @@
 import {useState, useEffect} from "react";
 import Layout from "./home-components/Layout.tsx";
-import { request } from "../build/request.ts";
+import {  request } from "../build/request.ts";
 
 interface Package {
     id: number;
@@ -14,6 +14,7 @@ interface Package {
     created: string;
     router_id?: number;
     router_identity?: string;
+    type:"ppoe" | "hotspot";
 }
 
 interface Router {
@@ -58,6 +59,17 @@ export default function PackagesPage() {
     // Mock data - replace with actual API call
     useEffect(() => {
         // Simulate API fetch
+        (async() => {
+            try {
+                const res = await request.post('/api/pkgs/')
+                console.log(res.data)
+                setPackages(res.data.pkgs);
+              
+            } catch(error) {
+                console.log(error)
+            }
+        })()
+
         setTimeout(() => {
             setPackages([
                 {
@@ -69,7 +81,8 @@ export default function PackagesPage() {
                     subscribers: 124,
                     isPopular: false,
                     status: "active",
-                    created: "2024-12-10"
+                    created: "2024-12-10",
+                    type:"ppoe"
                 },
                 {
                     id: 2,
@@ -80,7 +93,8 @@ export default function PackagesPage() {
                     subscribers: 312,
                     isPopular: true,
                     status: "active",
-                    created: "2024-11-05"
+                    created: "2024-11-05",
+                    type:"hotspot"
                 },
                 {
                     id: 3,
@@ -91,7 +105,9 @@ export default function PackagesPage() {
                     subscribers: 87,
                     isPopular: false,
                     status: "active",
-                    created: "2024-10-20"
+                    created: "2024-10-20",
+                    type:"ppoe"
+
                 },
                 {
                     id: 4,
@@ -102,7 +118,9 @@ export default function PackagesPage() {
                     subscribers: 45,
                     isPopular: false,
                     status: "inactive",
-                    created: "2024-09-15"
+                    created: "2024-09-15",
+                    type:"ppoe"
+
                 },
                 {
                     id: 5,
@@ -113,7 +131,9 @@ export default function PackagesPage() {
                     subscribers: 76,
                     isPopular: false,
                     status: "active",
-                    created: "2024-10-01"
+                    created: "2024-10-01",
+                    type:"hotspot"
+
                 }
             ]);
             setIsLoading(false);
@@ -133,6 +153,9 @@ export default function PackagesPage() {
                 console.log(error)
             }
         })()
+    }, [])
+    useEffect(() => {
+  
     }, [])
 
     const handleRouterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

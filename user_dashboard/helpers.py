@@ -25,8 +25,10 @@ def pkg_to_dict(pkg: Package):
         "price": pkg.price,
         "upload_speed": pkg.upload_speed,
         "download_speed": pkg.download_speed,
+        "speed":pkg.download_speed+"Mbps",
         "type": pkg.type,
         "router": router_to_dict(pkg.router),
+        "created":pkg.created_at.isoformat(),
     }
 
 

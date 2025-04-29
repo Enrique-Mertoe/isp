@@ -134,6 +134,8 @@ class Package(models.Model):
     type = models.CharField(max_length=20, choices=PACKAGE_CHOICES, default="hotspot", null=False)
     router = models.ForeignKey(Router, related_name='packages', on_delete=models.CASCADE)
     duration=models.CharField(max_length=100,default="30")
+    created_at=models.DateTimeField(default=timezone.now)
+
 
     def __str__(self):
         return self.name
