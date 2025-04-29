@@ -4,6 +4,7 @@ import requests
 import routeros_api as r_os
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseBadRequest
@@ -57,47 +58,73 @@ def router_page(request):
 
 def router_list(request):
     if request.method == "POST":
+        # Get parameters from request
         load_type = request.POST.get("load_type", "all")
-        # search = request.data.get("search", "")
-        #
-        # if search:
-        #     routers = routers.filter(
-        #         Q(name__icontains=search) | Q(ip_address__icontains=search)
-        #     )
+        page = int(request.POST.get("page", 1))
+        search = request.POST.get("search", "")
+        items_per_page = int(request.POST.get("per_page", 9))  # Allow customizable page size
 
+        # Get user's routers
         user_router = Router.objects.filter(Q(
             isp__user=request.user.id
         ))
 
-        print("routers", user_router)
+        # Apply filters based on tab selection
         if load_type == "active":
-            routers = user_router.filter(active=True)
+            filtered_routers = user_router.filter(active=True)
         elif load_type == "inactive":
-            routers = user_router.filter(active=False)
+            filtered_routers = user_router.filter(active=False)
         else:
-            routers = user_router.all()
+            filtered_routers = user_router.all()
 
-        if (routers.count() == 0):
-            return JsonResponse({
-                "routers": [],
-                "all_count": 0,
-                "active_count": 0,
-                "inactive_count": 0,
-            }, safe=False)
+        # Apply search filter if provided
+        if search:
+            filtered_routers = filtered_routers.filter(
+                Q(name__icontains=search) |
+                Q(ip_address__icontains=search) |
+                Q(location__icontains=search)
+            )
 
-        routers_data = [router_to_dict(router) for router in routers]
-
-        # Always calculate total counts
+        # Get counts for all tabs
         all_count = user_router.count()
         active_count = user_router.filter(active=True).count()
         inactive_count = user_router.filter(active=False).count()
 
+        # Order by most recently created first
+        ordered_routers = filtered_routers
+        # ordered_routers = filtered_routers.order_by('-created_at')
+
+        # Use Django's paginator for cleaner handling
+        paginator = Paginator(ordered_routers, items_per_page)
+        current_page = paginator.get_page(page)
+
+        # Prepare the list of routers for the response
+        routers_list = []
+        for router in current_page:
+            routers_list.append({
+                'id': router.id,
+                'name': router.name,
+                'ip_address': router.ip_address,
+                'location': router.location,
+                'active': router.active,
+                # 'created_at': router.created_at.strftime('%Y-%m-%d %H:%M:%S') if router.created_at else None,
+                # 'last_seen': router.last_seen.strftime('%Y-%m-%d %H:%M:%S') if router.last_seen else None,
+            })
+
+        # Return response with routers and pagination data
         return JsonResponse({
-            "routers": routers_data,
-            "all_count": all_count,
-            "active_count": active_count,
-            "inactive_count": inactive_count,
-        }, safe=False)
+            'routers': routers_list,
+            'all_count': all_count,
+            'active_count': active_count,
+            'inactive_count': inactive_count,
+            'current_page': page,
+            'total_pages': paginator.num_pages,
+            'has_next': current_page.has_next(),
+            'has_previous': current_page.has_previous()
+        })
+
+    # Handle GET request or other methods
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 @csrf_exempt
