@@ -207,7 +207,7 @@ def router_count(request):
 def router_interfaces(request):
     rt = get_object_or_404(Router, identity=f"{request.user.username}_{request.POST.get('router') or 'MikroTik38'}")
     network = mikrotik_manager.mikrotik.client(host=rt.identity, username=settings.MTK_USERNAME,
-                                           password=rt.password).network
+                                               password=rt.password).network
     intf = network.list_ports()
     print(intf)
     return JsonResponse({'ok': True, "ports": transform_ports(intf.data or [])})
@@ -217,11 +217,11 @@ def router_interfaces(request):
 def check_connection(request, mtk):
     user = request.user
     router_identity = f"{user.username}_{mtk}"
-    routerExisting=get_object_or_404(Router, identity=router_identity)
+    routerExisting = get_object_or_404(Router, identity=router_identity)
     ip = requests.get(settings.API_URL + f"/mikrotik/openvpn/client_ip/{router_identity}").text.strip()
     if ip.startswith("10.8.0"):
         print(ip)
-        routerExisting.ip_address = ip  
+        routerExisting.ip_address = ip
         routerExisting.save()
         return JsonResponse({'ok': True, "ip": ip, "status": "connected"})
     return JsonResponse({'ok': False})
@@ -240,40 +240,40 @@ def pkg_list(request):
         search_term = data.get("search", "")
         page = int(data.get("page", 1))
         page_size = 9  # Items per page
-        
+
         # Base queryset
         user_pkgs = Package.objects.filter(
             Q(router__isp__user=request.user.id)
         )
-        
+
         # Filter by type if specified
         if load_type not in ["all"]:
             pkgs = user_pkgs.filter(type=load_type)
         else:
             pkgs = user_pkgs.all()
-        
+
         # Search functionality
         if search_term:
             pkgs = pkgs.filter(
-                Q(name__icontains=search_term) | 
-                Q(download_speed__icontains=search_term) 
+                Q(name__icontains=search_term) |
+                Q(download_speed__icontains=search_term)
                 # Q(router_identity__icontains=search_term)
             )
-        
+
         # Calculate total counts for filters
-        
+
         all_count = user_pkgs.count()
         h_count = user_pkgs.filter(type="hotspot").count()
         p_count = user_pkgs.filter(type="pppoe").count()
-        
+
         # Calculate pagination
         start = (page - 1) * page_size
         end = start + page_size
         paginated_pkgs = pkgs[start:end]
-        
+
         # Convert to list of dictionaries
         pkgs_data = [pkg_to_dict(pkg) for pkg in paginated_pkgs]
-        
+
         return JsonResponse({
             "pkgs": pkgs_data,
             "all_count": all_count,
@@ -314,17 +314,19 @@ def pkg_create(request):
                 print(data['speed'], 'im here')
                 ratelimit = format_data(data['speed']) + "/" + format_data(data['speed'])
                 print(ratelimit)
-                res=mikrotik_manager.connect_router(host=router.identity,username=router.username,password=router.password)
-                    # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
-                print(res,'bbbhbhbh')
-                res.create_profile(name=router.name,rate_limit=ratelimit,session_timeout=data.get("duration"),service="pppoe")
-                # res = mikrotik_manager.connect_router(router.identity, router.username, router.password)
+                res = mikrotik_manager.connect_router(host=router.identity, username=router.username,
+                                                      password=router.password)
                 # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
                 print(res, 'bbbhbhbh')
-                res.create_profile(name=data['name'], rate_limit=ratelimit, session_timeout=data.get("duration"),
+                res.create_profile(name=router.name, rate_limit=ratelimit, session_timeout=data.get("duration"),
                                    service="pppoe")
+                # res = mikrotik_manager.connect_router(router.identity, router.username, router.password)
+                # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
+                # print(res, 'bbbhbhbh')
+                # res.create_profile(name=data['name'], rate_limit=ratelimit, session_timeout=data.get("duration"),
+                #                    service="pppoe")
             except Exception as e:
-                print(str(e))
+                raise
                 return JsonResponse({'error': "Router connection failed"}, status=400)
 
             pkg = Package.objects.create(
@@ -338,6 +340,7 @@ def pkg_create(request):
             return JsonResponse(pkg_to_dict(pkg), status=201)
         except Exception as e:
             print(str(e))
+            raise
             return JsonResponse({'error': str(e)}, status=400)
     return HttpResponseBadRequest()
 
@@ -382,16 +385,16 @@ def pkg_delete(request):
         try:
             data = json.loads(request.body)
             pkg_id = data.get('id')
-            
+
             # Get the package from database
             try:
                 pkg = Package.objects.get(id=pkg_id)
             except Package.DoesNotExist:
                 return JsonResponse({'error': "Package not found"}, status=404)
-            
+
             # Get the router
             router = pkg.router
-            
+
             # Remove profile from router
             try:
                 res = mikrotik_manager.connect_router(
@@ -399,23 +402,24 @@ def pkg_delete(request):
                     username=router.username,
                     password=router.password
                 )
-                
+
                 # Remove the profile from the router
                 res.remove_profile(name=pkg.name, service="pppoe")
             except Exception as e:
                 print(str(e))
                 return JsonResponse({'error': "Failed to remove profile from router"}, status=400)
-            
+
             # Delete from database
             pkg.delete()
-            
+
             return JsonResponse({'success': True, 'message': f"Package '{pkg.name}' deleted successfully"}, status=200)
-            
+
         except Exception as e:
             print(str(e))
             return JsonResponse({'error': str(e)}, status=400)
-    
+
     return HttpResponseBadRequest()
+
 
 # user views
 def user_page(request):

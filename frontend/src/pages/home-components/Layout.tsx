@@ -34,9 +34,9 @@ export default function Layout({children}: {
         <div className={"bg-[#f5f9fc] dark:bg-[#081324] min-h-screen"}>
             <Header/>
             <SideBar/>
-            <div className="p-4 md:ml-74">
+            <div className="p-1 md:ml-74">
                 <div
-                    className="p-4 border-2 border-gray-200 bg-white dark:bg-gray-700 border-dashed rounded-lg dark:border-gray-700 mt-14">
+                    className="p-2 border-2 border-gray-200 bg-white dark:bg-gray-700 border-dashed rounded-lg dark:border-gray-700 mt-14">
                     {children}
                 </div>
             </div>
