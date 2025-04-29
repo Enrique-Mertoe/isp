@@ -1,5 +1,5 @@
 import {useState, useEffect, useCallback} from 'react';
-import {EthernetPort, Wifi, Server, AlertCircle, Check} from 'lucide-react';
+import {EthernetPort, Wifi, Server, AlertCircle} from 'lucide-react';
 import {motion} from 'framer-motion';
 import {$} from "../build/request.ts";
 
@@ -21,8 +21,8 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
     const [ports, setPorts] = useState<Port[]>([]);
     const [theme,] = useState<'light' | 'dark'>('light');
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<boolean>(false);
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [, setSuccess] = useState<boolean>(false);
+    const [, setIsSubmitting] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     // Set first ethernet port to LAN by default
     useEffect(() => {
