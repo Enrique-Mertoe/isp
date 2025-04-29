@@ -71,7 +71,7 @@ def gen_mtk_provision(request):
                 username=settings.MTK_USERNAME,
                 password=mtk_info["password"],
                 location="ss",
-                ip_address=res.ip_address,
+                ip_address="not found",
                 secrete=res.task_id,
                 isp=ISPProvider.objects.get(user=user.id),
                 identity=mtk_info["name"]
@@ -129,13 +129,13 @@ def provision_content(request, encoded_payload):
     return response
 
 
-def get_ovpn_profile_data(client_id, version):
-    server_url = get_host()
-    return {
-        "client_cert": "beam_1",
-        "client_name": "beam",
-        "client_url": f"{server_url}/mikrotik/openvpn/beam/key/{config['mtk_user']}"
-    }
+# def get_ovpn_profile_data(client_id, version):
+#     server_url = get_host()
+#     return {
+#         "client_cert": "beam_1",
+#         "client_name": "beam",
+#         "client_url": f"{server_url}/mikrotik/openvpn/beam/key/{config['mtk_user']}"
+#     }
 
 
 @dataclasses.dataclass

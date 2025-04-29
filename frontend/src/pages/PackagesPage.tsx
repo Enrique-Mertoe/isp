@@ -7,16 +7,14 @@ interface Package {
     name: string;
     price: number;
     speed: string;
-    duration: number; 
+    duration: string; 
     subscribers: number;
-    isPopular: boolean;
     status: "active" | "inactive";
     created: string;
     router_id?: number;
     router_identity?: string;
-    type:"ppoe" | "hotspot";
+    type: "ppoe" | "hotspot";
 }
-
 interface Router {
     id: number;
     name: string;
@@ -24,7 +22,7 @@ interface Router {
     location: string;
     username: string;
     password: string;
-    identity:string
+    identity: string
 }
 
 interface NewPackage {
@@ -32,11 +30,12 @@ interface NewPackage {
     price: string;
     speed: string;
     duration: string;
-    isPopular: boolean;
+    durationUnit: "days" | "minutes" | "months";
     status: "active" | "inactive";
     router_id: number | null;
     router_identity?: string;
-}
+    type: "ppoe" | "hotspot";
+    }
 
 export default function PackagesPage() {
     const [packages, setPackages] = useState<Package[]>([]);
@@ -45,103 +44,40 @@ export default function PackagesPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [showAddModal, setShowAddModal] = useState(false);
     const [activeFilter, setActiveFilter] = useState("all");
+    const [packageToDelete, setPackageToDelete] = useState<Package | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [newPackage, setNewPackage] = useState<NewPackage>({
         name: "",
         price: "",
         speed: "",
         duration: "30",
-        isPopular: false,
+        durationUnit: "days",
         status: "active",
         router_id: null,
-        router_identity:""
-    });
+        router_identity: "",
+        type: "ppoe"
+    })
 
     // Mock data - replace with actual API call
     useEffect(() => {
         // Simulate API fetch
+  
+
+    }, []);
+
+    // Fetch routers
+    useEffect(() => {
         (async() => {
             try {
                 const res = await request.post('/api/pkgs/')
                 console.log(res.data)
                 setPackages(res.data.pkgs);
+                
               
             } catch(error) {
                 console.log(error)
             }
-        })()
-
-        setTimeout(() => {
-            setPackages([
-                {
-                    id: 1,
-                    name: "Basic Internet",
-                    price: 29.99,
-                    speed: "25 Mbps",
-                    duration: 30,
-                    subscribers: 124,
-                    isPopular: false,
-                    status: "active",
-                    created: "2024-12-10",
-                    type:"ppoe"
-                },
-                {
-                    id: 2,
-                    name: "Premium Internet",
-                    price: 59.99,
-                    speed: "100 Mbps",
-                    duration: 30,
-                    subscribers: 312,
-                    isPopular: true,
-                    status: "active",
-                    created: "2024-11-05",
-                    type:"hotspot"
-                },
-                {
-                    id: 3,
-                    name: "Business Internet",
-                    price: 99.99,
-                    speed: "500 Mbps",
-                    duration: 30,
-                    subscribers: 87,
-                    isPopular: false,
-                    status: "active",
-                    created: "2024-10-20",
-                    type:"ppoe"
-
-                },
-                {
-                    id: 4,
-                    name: "Summer Special",
-                    price: 39.99,
-                    speed: "50 Mbps",
-                    duration: 90,
-                    subscribers: 45,
-                    isPopular: false,
-                    status: "inactive",
-                    created: "2024-09-15",
-                    type:"ppoe"
-
-                },
-                {
-                    id: 5,
-                    name: "Fiber Optic Ultra",
-                    price: 129.99,
-                    speed: "1 Gbps",
-                    duration: 30,
-                    subscribers: 76,
-                    isPopular: false,
-                    status: "active",
-                    created: "2024-10-01",
-                    type:"hotspot"
-
-                }
-            ]);
-            setIsLoading(false);
-        }, 800);
-    }, []);
-
-    // Fetch routers
-    useEffect(() => {
+        })();
         (async() => {
             try {
                 const res = await request.post('/api/routers/')
@@ -153,9 +89,7 @@ export default function PackagesPage() {
                 console.log(error)
             }
         })()
-    }, [])
-    useEffect(() => {
-  
+        setIsLoading(false);
     }, [])
 
     const handleRouterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -174,37 +108,69 @@ export default function PackagesPage() {
             setNewPackage({
                 ...newPackage,
                 router_id: null,
-                router_identity:''
+                router_identity: ''
             });
         }
     };
 
-    const handleAddPackage = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+
+    // const handleDeletePackage = async (pkg: Package) => {
+    //     if (window.confirm(`Are you sure you want to delete the package "${pkg.name}"?`)) {
+    //         try {
+    //             const response = await request.post('/api/pkgs/delete/', {
+    //                 id: pkg.id
+    //             });
+                
+    //             if (response.data.success) {
+    //                 // Remove the package from the state
+    //                 setPackages(prevPackages => prevPackages.filter(p => p.id !== pkg.id));
+    //                 // You could add a toast notification here
+    //                 alert(response.data.message);
+    //             }
+    //         } catch (error) {
+    //             console.error("Failed to delete package:", error);
+    //             alert("Failed to delete the package. Please try again.");
+    //         }
+    //     }
+    // };
+
+const handleAddPackage = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Format the duration with the unit
+    const formattedDuration = `${newPackage.duration} ${newPackage.durationUnit}`;
+    
+    // Cast newPackage to Record<string, unknown> to satisfy the type requirement
+    const packageData: Record<string, unknown> = {
+        ...newPackage,
+        duration: formattedDuration,
+        // Add this to match the backend expectation
+        session_timeout: formattedDuration
+    };
+    
+    // Remove durationUnit from the payload since we've combined it with duration
+    delete packageData.durationUnit;
+    
+    try {
+        const response = await fetch('http://localhost:8000/api/pkgs/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(packageData),
+        });
         
-        // Cast newPackage to Record<string, unknown> to satisfy the type requirement
-        const packageData: Record<string, unknown> = {
-            ...newPackage
-        };
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
         
-        try {
-            const response = await fetch('http://localhost:8000/api/pkgs/create/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(packageData),
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            
-            const data: Package = await response.json();
+        const data: Package = await response.json();
+
             console.log(data);
             
             // Add the new package to the existing packages list
-            // setPackages(prevPackages => [...prevPackages, data]);
+            setPackages(prevPackages => [...prevPackages, data]);
             
             // Close the modal
             setShowAddModal(false);
@@ -215,20 +181,23 @@ export default function PackagesPage() {
                 price: "",
                 speed: "",
                 duration: "30",
-                isPopular: false,
+                durationUnit: "days",
                 status: "active",
                 router_id: null,
-                router_identity:""
+                router_identity: "",
+                type: "ppoe"
             });
         } catch (error) {
             console.error("Failed to add package:", error instanceof Error ? error.message : String(error));
             // You could add error state handling here
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const filteredPackages = packages.filter((pkg: Package) => {
         const matchesSearch = pkg.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter = activeFilter === "all" || pkg.status === activeFilter;
+        const matchesFilter = activeFilter === "all" || pkg.type === activeFilter;
         return matchesSearch && matchesFilter;
     });
 
@@ -275,24 +244,24 @@ export default function PackagesPage() {
                                 All
                             </button>
                             <button
-                                onClick={() => handleFilterChange("active")}
+                                onClick={() => handleFilterChange("ppoe")}
                                 className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                                    activeFilter === "active"
+                                    activeFilter === "ppoe"
                                         ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                                         : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                                 }`}
                             >
-                                Active
+                                PPPoE
                             </button>
                             <button
-                                onClick={() => handleFilterChange("inactive")}
+                                onClick={() => handleFilterChange("hotspot")}
                                 className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                                    activeFilter === "inactive"
-                                        ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                    activeFilter === "hotspot"
+                                        ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
                                         : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                                 }`}
                             >
-                                Inactive
+                                Hotspot
                             </button>
                         </div>
                         <div className="relative w-full md:w-64">
@@ -337,21 +306,14 @@ export default function PackagesPage() {
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{pkg.name}</h3>
                                     <span
                                         className={`text-xs font-medium px-2 py-1 rounded-full ${
-                                            pkg.status === "active"
+                                            pkg.type === "ppoe"
                                                 ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                                : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                                : "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
                                         }`}
                                     >
-                                        {pkg.status === "active" ? "Active" : "Inactive"}
+                                        {pkg.type === "ppoe" ? "PPPoE" : "Hotspot"}
                                     </span>
                                 </div>
-
-                                {pkg.isPopular && (
-                                    <span
-                                        className="inline-block mt-2 bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full dark:bg-amber-900 dark:text-amber-200">
-                                        <i className="bi bi-star-fill mr-1"></i> Popular
-                                    </span>
-                                )}
 
                                 <div className="mt-4 space-y-2">
                                     <div className="flex items-center text-gray-700 dark:text-gray-300">
@@ -364,9 +326,9 @@ export default function PackagesPage() {
                                         <span>{pkg.speed}</span>
                                     </div>
                                     <div className="flex items-center text-gray-700 dark:text-gray-300">
-                                        <i className="bi bi-calendar-event mr-2"></i>
-                                        <span>{pkg.duration} days</span>
-                                    </div>
+                                    <i className="bi bi-calendar-event mr-2"></i>
+                                    <span>{pkg.duration}</span>
+                                </div>
                                     <div className="flex items-center text-gray-700 dark:text-gray-300">
                                         <i className="bi bi-people mr-2"></i>
                                         <span>{pkg.subscribers} subscribers</span>
@@ -379,17 +341,19 @@ export default function PackagesPage() {
                                     )}
                                 </div>
 
-                                <div className="mt-6 flex justify-between items-center">
-                                    <button
-                                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
-                                        <i className="bi bi-pencil-square mr-1"></i> Edit
-                                    </button>
-                                    <button
-                                        className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300">
-                                        <i className="bi bi-three-dots-vertical"></i>
-                                    </button>
+                                
+                                    <div className="mt-6 flex justify-between items-center">
+                                        <button
+                                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+                                            <i className="bi bi-pencil-square mr-1"></i> Edit
+                                        </button>
+                                        <button
+                                                    onClick={() => setPackageToDelete(pkg)}
+                                                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
+                                                    <i className="bi bi-trash mr-1"></i> Delete
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
                         ))}
                     </div>
                 ) : (
@@ -409,9 +373,9 @@ export default function PackagesPage() {
 
                 {/* Add Package Modal */}
                 {showAddModal && (
-                    <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="fixed inset-0 z-50 overflow-y-auto ">
                         <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
-                            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                            <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] bg-opacity-75 transition-opacity"
                                  onClick={() => setShowAddModal(false)}></div>
                             <div
                                 className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-lg">
@@ -479,77 +443,108 @@ export default function PackagesPage() {
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4 mb-4">
-                                            <div>
-                                                <label
-                                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Duration (days)
-                                                </label>
-                                                <select
-                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        <div>
+                                            <label
+                                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                Duration
+                                            </label>
+                                            <div className="flex">
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    className="w-2/3 p-2 border border-gray-300 rounded-l-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                                     value={newPackage.duration}
                                                     onChange={(e) => setNewPackage({
                                                         ...newPackage,
                                                         duration: e.target.value
                                                     })}
+                                                    required
+                                                />
+                                                <select
+                                                    className="w-1/3 p-2 border border-gray-300 rounded-r-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white border-l-0"
+                                                    value={newPackage.durationUnit}
+                                                    onChange={(e) => setNewPackage({
+                                                        ...newPackage,
+                                                        durationUnit: e.target.value as "days" | "minutes" | "months"
+                                                    })}
+                                                    required
                                                 >
-                                                    <option value="30">30 days</option>
-                                                    <option value="90">90 days</option>
-                                                    <option value="180">180 days</option>
-                                                    <option value="365">365 days</option>
+                                                    <option value="days">Days</option>
+                                                    <option value="minutes">Minutes</option>
+                                                    <option value="months">Months</option>
                                                 </select>
                                             </div>
+                                        </div>
                                             <div>
                                                 <label
                                                     className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Router
+                                                    Type
                                                 </label>
                                                 <select
                                                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                    value={newPackage.router_id || ""}
-                                                    onChange={handleRouterChange}
+                                                    value={newPackage.type}
+                                                    onChange={(e) => setNewPackage({
+                                                        ...newPackage,
+                                                        type: e.target.value as "ppoe" | "hotspot"
+                                                    })}
                                                     required
                                                 >
-                                                    <option value="">Select a router</option>
-                                                    {routers.map(router => (
-                                                        <option key={router.id} value={router.id}>
-                                                            {router.name} ({router.ip_address})
-                                                        </option>
-                                                    ))}
+                                                    <option value="ppoe">PPPoE</option>
+                                                    <option value="hotspot">Hotspot</option>
                                                 </select>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center mb-4">
-                                            <input
-                                                type="checkbox"
-                                                id="isPopular"
-                                                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
-                                                checked={newPackage.isPopular}
-                                                onChange={(e) => setNewPackage({
-                                                    ...newPackage,
-                                                    isPopular: e.target.checked
-                                                })}
-                                            />
-                                            <label htmlFor="isPopular"
-                                                   className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                Mark as popular
+                                        <div className="mb-4">
+                                            <label
+                                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                Router
                                             </label>
+                                            <select
+                                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                value={newPackage.router_id || ""}
+                                                onChange={handleRouterChange}
+                                                required
+                                            >
+                                                <option value="">Select a router</option>
+                                                {routers.map(router => (
+                                                    <option key={router.id} value={router.id}>
+                                                        {router.name} ({router.ip_address})
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
 
                                         <div className="mt-6 flex justify-end">
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowAddModal(false)}
-                                                className="mr-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                type="submit"
-                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                            >
-                                                Add Package
-                                            </button>
+                                            {isSubmitting ? (
+                                                <button
+                                                    type="button"
+                                                    disabled
+                                                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center justify-center"
+                                                >
+                                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Processing...
+                                                </button>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowAddModal(false)}
+                                                        className="mr-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        type="submit"
+                                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                                    >
+                                                        Add Package
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     </form>
                                 </div>
@@ -558,6 +553,87 @@ export default function PackagesPage() {
                     </div>
                 )}
             </div>
+    
+{/* Delete Confirmation Modal */}
+{packageToDelete && (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+            <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] bg-opacity-75 transition-opacity"
+                 onClick={() => !isSubmitting && setPackageToDelete(null)}></div>
+            <div
+                className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-md">
+                <div className="bg-white dark:bg-gray-800 px-6 py-4">
+                    <div className="sm:flex sm:items-start">
+                        <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i className={`bi ${isSubmitting ? 'bi-hourglass-split' : 'bi-exclamation-triangle'} text-red-600`}></i>
+                        </div>
+                        <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                {isSubmitting ? "Deleting Package..." : "Delete Package"}
+                            </h3>
+                            <div className="mt-2">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {isSubmitting ? 
+                                        `Deleting package "${packageToDelete.name}". Please wait...` : 
+                                        `Are you sure you want to delete the package "${packageToDelete.name}"? This action cannot be undone.`
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                        {isSubmitting ? (
+                            <div className="w-full flex justify-center items-center py-3">
+                                <svg className="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                        ) : (
+                            <>
+                                <button
+                                    type="button"
+                                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                                    onClick={async () => {
+                                        setIsSubmitting(true);
+                                        try {
+                                            const response = await request.post('/api/pkgs/delete/', {
+                                                id: packageToDelete.id
+                                            });
+                                            
+                                            if (response.data.success) {
+                                                setPackages(prevPackages => prevPackages.filter(p => p.id !== packageToDelete.id));
+                                                setPackageToDelete(null);
+                                                setIsSubmitting(false);
+                                                // Use a more elegant notification instead of alert
+                                                alert(response.data.message || "Package deleted successfully");
+                                            } else {
+                                                throw new Error(response.data.message || "Failed to delete package");
+                                            }
+                                        } catch (error) {
+                                            console.error("Failed to delete package:", error);
+                                            setIsSubmitting(false);
+                                            alert(error instanceof Error ? error.message : "Failed to delete the package. Please try again.");
+                                        }
+                                    }}
+                                >
+                                    Delete
+                                </button>
+                                <button
+                                    type="button"
+                                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                                    onClick={() => setPackageToDelete(null)}
+                                >
+                                    Cancel
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+)}
         </Layout>
     );
 }

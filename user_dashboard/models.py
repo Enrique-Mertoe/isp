@@ -133,7 +133,7 @@ class Package(models.Model):
     download_speed = models.CharField(max_length=255, default="No limit")
     type = models.CharField(max_length=20, choices=PACKAGE_CHOICES, default="hotspot", null=False)
     router = models.ForeignKey(Router, related_name='packages', on_delete=models.CASCADE)
-    duration=models.CharField(max_length=100,default="30")
+    duration=models.CharField(max_length=100,default="30 days")
     created_at=models.DateTimeField(default=timezone.now)
 
 

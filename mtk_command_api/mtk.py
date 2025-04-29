@@ -96,6 +96,13 @@ class RouterConnection:
             "service": service
         })
 
+    def remove_profile(self, name, service="pppoe"):
+        """Remove an existing service profile"""
+        return self._send_request("remove_profile", {
+            "name": name,
+            "service": service
+        })   
+
     # Hotspot Server Management
     def setup_hotspot_server(self, interface, network, dns_name, ip_pool=None):
         """Set up a complete hotspot server with one call"""

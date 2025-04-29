@@ -44,7 +44,7 @@ pkg_url_patterns = [
     path('api/pkgs/create/', views.pkg_create, name='pkg_create'),  # POST
     path('api/pkgs/<int:pk>/', views.pkg_detail, name='pkg_detail'),  # GET one
     path('api/pkgs/<int:pk>/update/', views.pkg_update, name='pkg_update'),  # PUT/PATCH
-    path('api/pkgs/<int:pk>/delete/', views.pkg_delete, name='pkg_delete'),  # DELETE
+    path('api/pkgs/delete/', views.pkg_delete, name='pkg_delete'),  # DELETE
 ]
 
 user_urlpatterns: list[URLResolver | URLPattern] = [

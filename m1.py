@@ -28,7 +28,7 @@ router = mikrotik.connect_router(
     password="Q8P8Kpd1VJNYKgfg"
 )
 # router.
-# print(router)
+print(router)
 #
 # # Set up a hotspot server
 # c = router.setup_hotspot_server(
@@ -262,7 +262,7 @@ router = mikrotik.connect_router(
 #         print("Initialization encountered issues")
 #
 #
-# # # create_internet_packages()
+# # create_internet_packages()
 # # # manage_customers()
 # # setup_hotspot()
 # ip = requests.get(settings.API_URL + "/mikrotik/openvpn/client_ip/router_identity").text.strip()
