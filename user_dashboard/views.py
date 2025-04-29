@@ -208,23 +208,45 @@ def pkg_page(request):
 
 def pkg_list(request):
     if request.method == "POST":
-        load_type = request.POST.get("load_type", "all")
-        user_pkgs = Package.objects.filter(Q(
-            router__isp__user=request.user.id
-        ))
-
-        if load_type in ["hotspot", "pppoe"]:
+        data = json.loads(request.body)
+        load_type = data.get("load_type", "all")
+        search_term = data.get("search", "")
+        page = int(data.get("page", 1))
+        page_size = 9  # Items per page
+        
+        # Base queryset
+        user_pkgs = Package.objects.filter(
+            Q(router__isp__user=request.user.id)
+        )
+        
+        # Filter by type if specified
+        if load_type not in ["all"]:
             pkgs = user_pkgs.filter(type=load_type)
         else:
             pkgs = user_pkgs.all()
-
-        pkgs_data = [pkg_to_dict(pkg) for pkg in pkgs]
-
-        # Always calculate total counts
+        
+        # Search functionality
+        if search_term:
+            pkgs = pkgs.filter(
+                Q(name__icontains=search_term) | 
+                Q(download_speed__icontains=search_term) 
+                # Q(router_identity__icontains=search_term)
+            )
+        
+        # Calculate total counts for filters
+        
         all_count = user_pkgs.count()
         h_count = user_pkgs.filter(type="hotspot").count()
         p_count = user_pkgs.filter(type="pppoe").count()
-
+        
+        # Calculate pagination
+        start = (page - 1) * page_size
+        end = start + page_size
+        paginated_pkgs = pkgs[start:end]
+        
+        # Convert to list of dictionaries
+        pkgs_data = [pkg_to_dict(pkg) for pkg in paginated_pkgs]
+        
         return JsonResponse({
             "pkgs": pkgs_data,
             "all_count": all_count,

@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react";
+import {useState, useEffect,useRef} from "react";
 import Layout from "./home-components/Layout.tsx";
 import {  request } from "../build/request.ts";
 
@@ -38,6 +38,17 @@ interface NewPackage {
     }
 
 export default function PackagesPage() {
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [_totalCount, setTotalCount] = useState({
+      all: 0,
+      pppoe: 0,
+      hotspot: 0
+    });
+
+
     const [packages, setPackages] = useState<Package[]>([]);
     const [routers, setRouters] = useState<Router[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -67,17 +78,17 @@ export default function PackagesPage() {
 
     // Fetch routers
     useEffect(() => {
-        (async() => {
-            try {
-                const res = await request.post('/api/pkgs/')
-                console.log(res.data)
-                setPackages(res.data.pkgs);
+        // (async() => {
+        //     try {
+        //         const res = await request.post('/api/pkgs/')
+        //         console.log(res.data)
+        //         setPackages(res.data.pkgs);
                 
               
-            } catch(error) {
-                console.log(error)
-            }
-        })();
+        //     } catch(error) {
+        //         console.log(error)
+        //     }
+        // })();
         (async() => {
             try {
                 const res = await request.post('/api/routers/')
@@ -92,27 +103,54 @@ export default function PackagesPage() {
         setIsLoading(false);
     }, [])
 
-    const handleRouterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const routerId = parseInt(e.target.value);
-        if (routerId) {
-            const selectedRouter = routers.find(router => router.id === routerId);
-            console.log(selectedRouter)
-            if (selectedRouter) {
-                setNewPackage({
-                    ...newPackage,
-                    router_id: routerId,
-                    router_identity: selectedRouter.identity,
-                });
-            }
-        } else {
+   // Add this function to handle scroll events
+const handleScroll = () => {
+    const scrollTop = (document.documentElement && document.documentElement.scrollTop) || document.body.scrollTop;
+    const scrollHeight = (document.documentElement && document.documentElement.scrollHeight) || document.body.scrollHeight;
+    const clientHeight = document.documentElement.clientHeight || window.innerHeight;
+    
+    // If we're near the bottom (within 200px) and not already loading
+    if (scrollHeight - scrollTop - clientHeight < 200 && !isLoading && !isLoadingMore && hasMore) {
+      setPage(prevPage => prevPage + 1);
+    }
+  };
+
+
+  // Add this effect to handle the scroll event
+useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isLoading, isLoadingMore, hasMore]);
+  
+  // Add this effect to load more when page changes
+  useEffect(() => {
+    if (page > 1) {
+      fetchPackages(page, searchTerm, activeFilter);
+    }
+  }, [page]);
+
+  
+
+  const handleRouterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const routerId = parseInt(e.target.value);
+    if (routerId) {
+        const selectedRouter = routers.find((router) => router.id === routerId);
+        console.log(selectedRouter);
+        if (selectedRouter) {
             setNewPackage({
                 ...newPackage,
-                router_id: null,
-                router_identity: ''
+                router_id: routerId,
+                router_identity: selectedRouter.identity,
             });
         }
-    };
-
+    } else {
+        setNewPackage({
+            ...newPackage,
+            router_id: null,
+            router_identity: "",
+        });
+    }
+};
 
     // const handleDeletePackage = async (pkg: Package) => {
     //     if (window.confirm(`Are you sure you want to delete the package "${pkg.name}"?`)) {
@@ -134,47 +172,43 @@ export default function PackagesPage() {
     //     }
     // };
 
-const handleAddPackage = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+    const handleAddPackage = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSubmitting(true);
     
-    // Format the duration with the unit
-    const formattedDuration = `${newPackage.duration} ${newPackage.durationUnit}`;
+        // Format the duration with the unit
+        const formattedDuration = `${newPackage.duration} ${newPackage.durationUnit}`;
     
-    // Cast newPackage to Record<string, unknown> to satisfy the type requirement
-    const packageData: Record<string, unknown> = {
-        ...newPackage,
-        duration: formattedDuration,
-        // Add this to match the backend expectation
-        session_timeout: formattedDuration
-    };
+        // Define the payload type
+        const packageData: Omit<NewPackage, "durationUnit"> & { session_timeout: string } = {
+            ...newPackage,
+            duration: formattedDuration,
+            session_timeout: formattedDuration,
+        };
     
-    // Remove durationUnit from the payload since we've combined it with duration
-    delete packageData.durationUnit;
+        try {
+            const response = await fetch('http://localhost:8000/api/pkgs/create/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(packageData),
+            });
     
-    try {
-        const response = await fetch('http://localhost:8000/api/pkgs/create/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(packageData),
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        
-        const data: Package = await response.json();
-
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+    
+            const data: Package = await response.json();
+    
             console.log(data);
-            
+    
             // Add the new package to the existing packages list
-            setPackages(prevPackages => [...prevPackages, data]);
-            
+            setPackages((prevPackages) => [...prevPackages, data]);
+    
             // Close the modal
             setShowAddModal(false);
-            
+    
             // Reset the form data
             setNewPackage({
                 name: "",
@@ -185,14 +219,27 @@ const handleAddPackage = async (e: React.FormEvent<HTMLFormElement>) => {
                 status: "active",
                 router_id: null,
                 router_identity: "",
-                type: "ppoe"
+                type: "ppoe",
             });
         } catch (error) {
             console.error("Failed to add package:", error instanceof Error ? error.message : String(error));
-            // You could add error state handling here
         } finally {
             setIsSubmitting(false);
         }
+    };
+    const handleSearch = (value: string) => {
+        setSearchTerm(value);
+        // Reset pagination when searching
+        setPage(1);
+    
+        // Debounce search to avoid too many requests
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+    
+        searchTimeoutRef.current = setTimeout(() => {
+            fetchPackages(1, value, activeFilter, true);
+        }, 500); // Wait 500ms after typing stops
     };
 
     const filteredPackages = packages.filter((pkg: Package) => {
@@ -200,11 +247,57 @@ const handleAddPackage = async (e: React.FormEvent<HTMLFormElement>) => {
         const matchesFilter = activeFilter === "all" || pkg.type === activeFilter;
         return matchesSearch && matchesFilter;
     });
+  // Update your filter change handler
+  const handleFilterChange = (filter: string) => {
+    setActiveFilter(filter);
+    setPage(1); // Reset pagination when changing filters
+    // fetchPackages will be called via the useEffect that watches activeFilter
+};
+    // Replace your existing useEffect for fetching packages
+useEffect(() => {
+    fetchPackages(1, searchTerm, activeFilter, true);
+  }, [activeFilter]); // Only re-run when filter changes
 
-    const handleFilterChange = (filter: string) => {
-        setActiveFilter(filter);
+    // Create this function to handle fetching packages with pagination and search
+    const fetchPackages = async (
+        pageNum: number = 1,
+        search: string = "",
+        filter: string = "all",
+        isInitial: boolean = false
+    ) => {
+        try {
+            setIsLoading(isInitial);
+            setIsLoadingMore(!isInitial);
+    
+            // Updated request.post with proper typing
+            const res = await request.post<{ pkgs: Package[]; all_count: number; pppoe_count: number; hotspot_count: number }>('/api/pkgs/', {
+                page: pageNum,
+                search: search,
+                load_type: filter,
+            });
+    
+            if (res.data) {
+                if (isInitial || pageNum === 1) {
+                    setPackages(res.data.pkgs);
+                } else {
+                    setPackages((prevPackages) => [...prevPackages, ...res.data.pkgs]);
+                }
+    
+                setTotalCount({
+                    all: res.data.all_count,
+                    pppoe: res.data.pppoe_count,
+                    hotspot: res.data.hotspot_count,
+                });
+    
+                setHasMore(res.data.pkgs.length > 0);
+            }
+        } catch (error) {
+            console.error("Failed to fetch packages:", error);
+        } finally {
+            setIsLoading(false);
+            setIsLoadingMore(false);
+        }
     };
-
     return (
         <Layout>
             <div className="p-4 md:p-6 lg:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
@@ -273,8 +366,8 @@ const handleAddPackage = async (e: React.FormEvent<HTMLFormElement>) => {
                                 className="w-full p-2 pl-10 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                                 placeholder="Search packages..."
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+                                onChange={(e) => handleSearch(e.target.value)}
+                                />
                         </div>
                     </div>
                 </div>
@@ -356,6 +449,8 @@ const handleAddPackage = async (e: React.FormEvent<HTMLFormElement>) => {
                                 </div>
                         ))}
                     </div>
+
+                    
                 ) : (
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
                         <div
@@ -369,6 +464,24 @@ const handleAddPackage = async (e: React.FormEvent<HTMLFormElement>) => {
                                 : "No packages match the selected filters"}
                         </p>
                     </div>
+                )}
+
+                {isLoadingMore && (
+                <div className="col-span-full my-6 flex justify-center">
+                    <div className="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm rounded-md text-blue-500 bg-white dark:bg-gray-800 transition ease-in-out duration-150">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Loading more...
+                    </div>
+                </div>
+                )}
+
+                {!isLoading && !isLoadingMore && !hasMore && packages.length > 0 && (
+                <div className="col-span-full text-center py-4 text-gray-500 dark:text-gray-400">
+                    You've reached the end of the list
+                </div>
                 )}
 
                 {/* Add Package Modal */}

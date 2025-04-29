@@ -35,7 +35,7 @@ FERNET_KEY = config('FERNET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '192.168.10.1', '192.168.56.1', "192.168.88.99","192.168.10.2","127.0.0.1", '192.168.88.100',
+ALLOWED_HOSTS = ['localhost', '192.168.10.1', '192.168.56.1', "192.168.88.99","192.168.10.4","127.0.0.1", '192.168.88.100',
                  'isp.coolify.kaigates.com']
 
 # Application definition
