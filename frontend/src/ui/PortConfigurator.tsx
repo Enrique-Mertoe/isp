@@ -124,7 +124,7 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
     };
 
     const [out, setOut] = useState<any>({})
-    const handleSubmit = () => {
+    const handleSubmit = useCallback(() => {
         setIsSubmitting(true);
         setError(null);
 
@@ -151,12 +151,16 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
             setTimeout(() => {
                 setIsSubmitting(false);
             }, 1000);
+            return !0;
         } else {
             setIsSubmitting(false);
         }
-    };
-    props.setOnValidate(handleSubmit)
-    props.setInfoCallback(() => out)
+        return
+    }, [ports, validateConfiguration])
+    useEffect(() => {
+        props.setOnValidate(() => handleSubmit)
+        props.setInfoCallback(() => out)
+    }, [handleSubmit, out, props])
 
     // Get port count by mode
     const getPortCountByMode = (mode: 'wan' | 'lan' | null) => {
@@ -250,18 +254,6 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
                                 <span className="text-sm">LAN (Local network)</span>
                             </div>
                         </div>
-                        <button
-                            onClick={handleSubmit}
-                            disabled={isSubmitting}
-                            className={`px-6 py-2 rounded-md font-medium transition-colors duration-300
-                ${isSubmitting ?
-                                (theme === 'light' ? 'bg-gray-400 text-gray-700' : 'bg-gray-600 text-gray-300') :
-                                (theme === 'light' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-400 text-white')
-                            }
-              `}
-                        >
-                            {isSubmitting ? 'Processing...' : 'Apply Configuration'}
-                        </button>
                     </div>
 
                     {error && (
@@ -269,14 +261,6 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
                             className={`mt-4 p-3 rounded-md flex items-center gap-2 bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200`}>
                             <AlertCircle size={20}/>
                             <span>{error}</span>
-                        </div>
-                    )}
-
-                    {success && (
-                        <div
-                            className={`mt-4 p-3 rounded-md flex items-center gap-2 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200`}>
-                            <Check size={20}/>
-                            <span>Configuration successfully generated! Check console for output.</span>
                         </div>
                     )}
                 </div>

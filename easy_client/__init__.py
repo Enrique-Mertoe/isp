@@ -79,7 +79,7 @@ class MikrotikClient:
         self.system = System(self)
         self._context: SeverContext | None = None
 
-    def _send_request(self, command: str, parameters: Dict = None) -> Response:
+    def _send_request(self, command: str, parameters: Dict = None) -> 'Response':
         """
         Send request to the API server
 
@@ -481,14 +481,22 @@ class Network:
         """
         return self.client._send_request("/interface/ethernet/print")
 
-    def list_ip_addresses(self) -> Response:
+    def ip_addresses(self, interface=None) -> Response | str:
         """
         List all IP address assignments
 
         Returns:
             Response with list of IP address assignments
         """
-        return self.client._send_request("/ip/address/print")
+        res = self.client._send_request("/ip/address/print")
+        if not interface:
+            return res
+        if res.success and res.data:
+            matching = list(filter(lambda e: interface in e['interface'], res.data))
+            if matching:
+                ip = matching[0]['address'].split('/')[0]
+                return ip
+        return ''
 
     def add_ip_address(self, address: str, interface: str) -> Response:
         """
