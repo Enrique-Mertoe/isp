@@ -33,7 +33,7 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
                 updatedPorts[firstEtherIndex].mode = 'lan';
             setPorts(updatedPorts);
         }
-    }, []);
+    }, [ports]);
 
 
     // Get appropriate icon based on port type
@@ -88,6 +88,7 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
         setPorts(updatedPorts);
     };
     const fetchInterfaces = useCallback(() => {
+        if (ports.length) return;
         setLoading(true);
         $.post<{ ports: Port[] }>({
             url: "/api/routers/interface/", data: {router}
@@ -99,14 +100,15 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
         }).done(() => {
             setLoading(false);
         });
-    }, [router]);
+    }, [error, ports, router]);
     useEffect(() => {
         fetchInterfaces();
     }, [fetchInterfaces]);
 
     // Validate configuration before submission
-    const validateConfiguration = () => {
+    const validateConfiguration = useCallback(() => {
         // Check if we have at least one WAN port
+        alert(ports.length)
         const wanPorts = ports.filter(port => port.mode === 'wan');
         if (wanPorts.length === 0) {
             setError('You must configure at least one WAN port');
@@ -121,7 +123,7 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
         }
 
         return true;
-    };
+    }, [ports]);
 
     const [out, setOut] = useState<any>({})
     const handleSubmit = useCallback(() => {

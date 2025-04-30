@@ -293,7 +293,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({info, form, conn}) => {
 };
 
 export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
-    const [step, setStep] = useState(2);
+    const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState<"idle" | "connecting" | "connected" | "failed">("idle");
     const [checkingAttempts, setCheckingAttempts] = useState(0);
