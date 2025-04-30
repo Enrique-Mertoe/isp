@@ -50,10 +50,10 @@ def dashboard_view(request):
     payment_data = defaultdict(float)
 
     for b in Billing.objects.filter(created_at__year=current_year):
-        billing_data[b.created_at.strftime('%B')] += b.package_price
+        billing_data[b.created_at.strftime('%B')] += float(b.package_price)
 
     for p in Payment.objects.filter(created_at__year=current_year):
-        payment_data[p.created_at.strftime('%B')] += p.package_price
+        payment_data[p.created_at.strftime('%B')] += float(p.package_price)
 
     # Daily aggregation for current month
     daily_billing_data = []

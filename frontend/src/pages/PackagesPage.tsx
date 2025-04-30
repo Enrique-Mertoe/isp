@@ -275,6 +275,7 @@ useEffect(() => {
                 search: search,
                 load_type: filter,
             });
+            console.log(res.data)
     
             if (res.data) {
                 if (isInitial || pageNum === 1) {

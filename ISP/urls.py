@@ -49,8 +49,8 @@ pkg_url_patterns = [
 
 user_urlpatterns: list[URLResolver | URLPattern] = [
     path('user/page/', views.user_page, name='user_page'),  # Normal page for React app maybe
-    path('api/user/', views.user_list, name='user_list'),  # GET all
-    path('api/user/create/', views.user_create, name='user_create'),  # POST
+    path('api/users/', views.user_list, name='user_list'),  # GET all
+    path('api/clients/create/', views.user_create, name='user_create'),  # POST
     path('api/user/<int:pk>/', views.user_detail, name='user_detail'),  # GET one
     path('api/user/<int:pk>/update/', views.user_update, name='user_update'),  # PUT/PATCH
     path('api/user/<int:pk>/delete/', views.user_delete, name='user_delete'),  # DELETE

@@ -1,4 +1,6 @@
 from datetime import timedelta
+import random
+import string
 
 import requests
 import routeros_api as r_os
@@ -27,6 +29,11 @@ from ISP.settings import mikrotik_manager
 @login_required
 def home(request):
     return render(request, 'index.html')
+def generate_password(name: str) -> str:
+    # Generate 4 random alphanumeric characters
+    random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=5))
+    # Combine the name with the random suffix
+    return f"{name}_{random_suffix}"
 
 
 @api_view(["POST", "GET"])
@@ -234,7 +241,7 @@ def pkg_list(request):
             )
         
         # Calculate total counts for filters
-        
+
         all_count = user_pkgs.count()
         h_count = user_pkgs.filter(type="hotspot").count()
         p_count = user_pkgs.filter(type="pppoe").count()
@@ -290,12 +297,12 @@ def pkg_create(request):
                 res=mikrotik_manager.connect_router(host=router.identity,username=router.username,password=router.password)
                     # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
                 print(res,'bbbhbhbh')
-                res.create_profile(name=router.name,rate_limit=ratelimit,session_timeout=data.get("duration"),service="pppoe")
+                res.create_profile(name=data['name'],rate_limit=ratelimit,session_timeout=data["duration"],service="pppoe")
                 # res = mikrotik_manager.connect_router(router.identity, router.username, router.password)
                 # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
-                print(res, 'bbbhbhbh')
-                res.create_profile(name=data['name'], rate_limit=ratelimit, session_timeout=data.get("duration"),
-                                   service="pppoe")
+                # print(res, 'bbbhbhbh')
+                # res.create_profile(name=data['name'], rate_limit=ratelimit, session_timeout=data.get("duration"),
+                #                    service="pppoe")
             except Exception as e:
                 print(str(e))
                 return JsonResponse({'error': "Router connection failed"}, status=400)
@@ -395,26 +402,73 @@ def user_page(request):
     return render(request, 'index.html')
 
 
+def client_to_dict(client):
+    """Convert a Client model instance to a dictionary"""
+    return {
+        'id': client.id,
+        'full_name': client.full_name,
+        'email': client.email,
+        'phone': client.phone,
+        'address': client.address,
+        'created_at': client.created_at.isoformat(),
+        'due': client.due.isoformat() if client.due else None,
+        'package_start': client.package_start.strftime('%Y-%m-%d') if client.package_start else None,
+        'router_username': client.router_username,
+        'router_password': client.router_password,
+        'isp': client.isp_id,
+        'package': {
+            'id': client.package.id,
+            'name': client.package.name,
+            'speed': client.package.speed,
+            'download_speed': client.package.download_speed,
+            'upload_speed': client.package.upload_speed,
+            'duration': client.package.duration,
+            'price': client.package.price,
+            'type': client.package.type,
+            'created': client.package.created.isoformat() if client.package.created else None,
+            'router': {
+                'id': client.package.router.id,
+                'name': client.package.router.name,
+                'username': client.package.router.username,
+                'password': client.package.router.password,
+                'location': client.package.router.location,
+            } if client.package.router else None
+        } if client.package else None
+    }
+
+@csrf_exempt
 def user_list(request):
     if request.method == "POST":
-        load_type = request.POST.get("load_type", "all")
-        # search = request.data.get("search", "")
-        #
-        # if search:
-        #     routers = routers.filter(
-        #         Q(name__icontains=search) | Q(ip_address__icontains=search)
-        #     )
-
+        # Handle both form data and JSON data
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            load_type = data.get("load_type", "all")
+            search = data.get("search", "")
+            page = data.get("page", 1)
+            page_size = data.get("page_size", 10)
+        else:
+            load_type = request.POST.get("load_type", "all")
+            search = request.POST.get("search", "")
+            page = int(request.POST.get("page", 1))
+            page_size = int(request.POST.get("page_size", 10))
+        
+        # Apply filters based on load_type
         if load_type in ["hotspot", "pppoe"]:
             users = Client.objects.filter(
                 Q(package__type=load_type)
             )
         else:
             users = Client.objects.all()
-
-        users_data = [client_to_dict(user) for user in users]
-
-        # Always calculate total counts
+        
+        # Apply search filter if provided
+        if search:
+            users = users.filter(
+                Q(full_name__icontains=search) | 
+                Q(phone__icontains=search) |
+                Q(email__icontains=search)
+            )
+        
+        # Calculate total counts
         all_count = Client.objects.filter(isp=request.user.id).count()
         h_count = Client.objects.filter(
             Q(package__type="hotspot")
@@ -422,53 +476,97 @@ def user_list(request):
         p_count = Client.objects.filter(
             Q(package__type="pppoe")
         ).count()
-
+        
+        # Apply pagination
+        start_index = (page - 1) * page_size
+        end_index = start_index + page_size
+        
+        # Get the paginated results and convert to dict
+        paginated_users = users[start_index:end_index]
+        users_data = [client_to_dict(user) for user in paginated_users]
+        
+        # Check if there are more results
+        has_more = users.count() > end_index
+        
         return JsonResponse({
             "users": users_data,
             "all_count": all_count,
             "pppoe_count": p_count,
             "hotspot_count": h_count,
+            "has_more": has_more,
+            "total_count": users.count()
         }, safe=False)
 
-
+@csrf_exempt
+def delete_client(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            client_id = data.get("id")
+            username = data.get("username")
+            
+            if not client_id:
+                return JsonResponse({"success": False, "message": "Client ID is required"}, status=400)
+                
+            client = Client.objects.get(id=client_id)
+            
+            # Optional: Perform any additional validation here
+            # For example, checking if the username matches the client's username
+            if username and client.router_username != username:
+                return JsonResponse({"success": False, "message": "Username mismatch"}, status=400)
+                
+            client.delete()
+            return JsonResponse({"success": True, "message": "Client deleted successfully"})
+            
+        except Client.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Client not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=500)
+    
+    return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
 @csrf_exempt
 def user_create(request):
     if request.method == "POST":
-        data = request.POST
-        print(data)
+        bodyData = json.loads(request.body)
+        data=bodyData.copy()
         try:
-            package = Package.objects.get(id=data['package'])
+            required_fields = ['fullName', 'phone', 'packageId']
+            missing_fields = [field for field in required_fields if field not in data]
+            if missing_fields:
+                return JsonResponse({'error': f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+            package = Package.objects.get(id=data['packageId'])
             router = package.router
+            data['password']=generate_password(data['fullName'])
+            data['username']=generate_password(data['fullName'])
         except Package.DoesNotExist:
             return JsonResponse({'error': 'Package not found'}, status=400)
         except Router.DoesNotExist:
             return JsonResponse({'error': 'Router not found'}, status=400)
-        if Client.objects.filter(router_username=data['username']).exists():
-            return JsonResponse(
-                {'error': f"Client: {data['username']} already in use for router {package.router.name}"},
-                status=400)
+        if Client.objects.filter(router_username=router.name, package=package, phone=data["phone"]).exists():
+                return JsonResponse(
+                    {'error': f"Client: {data['fullName']} already in use for router {router.name}"},
+                    status=400
+                )
 
         try:
-            api = router.connection()
+            res=mikrotik_manager.connect_router(host=router.identity,username=router.username,password=router.password)
 
-            api.get_resource('/ppp/secret').add(
-                name=data['username'],
-                password=data['password'],
-                service=data.get('user_type', 'any'),
-                profile=package.name
-            )
+
+            res.add_client(username=data['username'],password=data['password'],profile_name=package.name,service=package.type)
         except Exception as e:
+            
+            print(str(e))
             return JsonResponse({'error': "MikroTik connection failed"}, status=400)
 
         try:
             with transaction.atomic():
                 Client.objects.create(
-                    phone=data.get('phone'),
-                    full_name=data.get('full_name'),
+                    phone=data['phone'],
+                    full_name=data['fullName'],
                     isp=request.user,
                     package=package,
-                    router_username=data.get('username'),
-                    router_password=data.get('password'),
+                    router_username=data['username'],
+                    router_password=data['password'],
                     due=data.get('expiry_date') or timezone.now() + timedelta(days=30),
                     # Default to 30 days if not provided
                     package_start=timezone.now()
@@ -481,9 +579,10 @@ def user_create(request):
                     package_start=timezone.now().date(),
                     user=request.user
                 )
-                return JsonResponse({'error': "User created successfully"}, status=201)
+                return JsonResponse({'success': "User created successfully"}, status=201)
 
         except Exception as e:
+            
             print(e)
             return JsonResponse({'error': "Error creating client"}, status=400)
     return HttpResponseBadRequest()
