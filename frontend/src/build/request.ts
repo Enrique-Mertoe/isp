@@ -20,8 +20,8 @@ export const request = axios.create({
         // 'Content-Type': 'application/json'
     }
 });
-
-if (Config.mode == "development")
+alert(Config.baseURL.length > 0)
+if (Config.baseURL.length > 0)
     request.interceptors.response.use(
         response => response,
         async error => {
