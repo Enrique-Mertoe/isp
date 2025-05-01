@@ -470,7 +470,7 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                             display: disp,
                             error: undefined,
                             status: "complete",
-                            form
+                            form,onReload:()=>{}
                         });
                         setConnectionStatus("connecting")
 
