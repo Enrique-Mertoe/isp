@@ -602,7 +602,7 @@ def user_create(request):
 
         try:
             with transaction.atomic():
-                Client.objects.create(
+                client= Client.objects.create(
                     phone=data['phone'],
                     full_name=data['fullName'],
                     isp=request.user,
@@ -621,7 +621,8 @@ def user_create(request):
                     package_start=timezone.now().date(),
                     user=request.user
                 )
-                return JsonResponse({'success': "User created successfully"}, status=201)
+                client=client_to_dict(client)
+                return JsonResponse({'success': "User created successfully","client":client}, status=201)
 
         except Exception as e:
             print(e)
