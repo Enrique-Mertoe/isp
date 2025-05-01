@@ -1,13 +1,14 @@
-import {useState, useEffect,useRef} from "react";
+import {useState, useEffect, useRef} from "react";
 import Layout from "./home-components/Layout.tsx";
-import {  request } from "../build/request.ts";
+import {request} from "../build/request.ts";
+import Config from "../assets/config.ts";
 
 interface Package {
     id: number;
     name: string;
     price: number;
     speed: string;
-    duration: string; 
+    duration: string;
     subscribers: number;
     status: "active" | "inactive";
     created: string;
@@ -15,6 +16,7 @@ interface Package {
     router_identity?: string;
     type: "ppoe" | "hotspot";
 }
+
 interface Router {
     id: number;
     name: string;
@@ -35,7 +37,7 @@ interface NewPackage {
     router_id: number | null;
     router_identity?: string;
     type: "ppoe" | "hotspot";
-    }
+}
 
 export default function PackagesPage() {
     const [page, setPage] = useState(1);
@@ -43,9 +45,9 @@ export default function PackagesPage() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [_totalCount, setTotalCount] = useState({
-      all: 0,
-      pppoe: 0,
-      hotspot: 0
+        all: 0,
+        pppoe: 0,
+        hotspot: 0
     });
 
 
@@ -72,7 +74,7 @@ export default function PackagesPage() {
     // Mock data - replace with actual API call
     useEffect(() => {
         // Simulate API fetch
-  
+
 
     }, []);
 
@@ -83,74 +85,73 @@ export default function PackagesPage() {
         //         const res = await request.post('/api/pkgs/')
         //         console.log(res.data)
         //         setPackages(res.data.pkgs);
-                
-              
+
+
         //     } catch(error) {
         //         console.log(error)
         //     }
         // })();
-        (async() => {
+        (async () => {
             try {
                 const res = await request.post('/api/routers/')
                 console.log(res.data)
                 if (res.data && res.data.routers) {
                     setRouters(res.data.routers);
                 }
-            } catch(error) {
+            } catch (error) {
                 console.log(error)
             }
         })()
         setIsLoading(false);
     }, [])
 
-   // Add this function to handle scroll events
-const handleScroll = () => {
-    const scrollTop = (document.documentElement && document.documentElement.scrollTop) || document.body.scrollTop;
-    const scrollHeight = (document.documentElement && document.documentElement.scrollHeight) || document.body.scrollHeight;
-    const clientHeight = document.documentElement.clientHeight || window.innerHeight;
-    
-    // If we're near the bottom (within 200px) and not already loading
-    if (scrollHeight - scrollTop - clientHeight < 200 && !isLoading && !isLoadingMore && hasMore) {
-      setPage(prevPage => prevPage + 1);
-    }
-  };
+    // Add this function to handle scroll events
+    const handleScroll = () => {
+        const scrollTop = (document.documentElement && document.documentElement.scrollTop) || document.body.scrollTop;
+        const scrollHeight = (document.documentElement && document.documentElement.scrollHeight) || document.body.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight || window.innerHeight;
+
+        // If we're near the bottom (within 200px) and not already loading
+        if (scrollHeight - scrollTop - clientHeight < 200 && !isLoading && !isLoadingMore && hasMore) {
+            setPage(prevPage => prevPage + 1);
+        }
+    };
 
 
-  // Add this effect to handle the scroll event
-useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLoading, isLoadingMore, hasMore]);
-  
-  // Add this effect to load more when page changes
-  useEffect(() => {
-    if (page > 1) {
-      fetchPackages(page, searchTerm, activeFilter);
-    }
-  }, [page]);
+    // Add this effect to handle the scroll event
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [isLoading, isLoadingMore, hasMore]);
 
-  
+    // Add this effect to load more when page changes
+    useEffect(() => {
+        if (page > 1) {
+            fetchPackages(page, searchTerm, activeFilter);
+        }
+    }, [page]);
 
-  const handleRouterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const routerId = parseInt(e.target.value);
-    if (routerId) {
-        const selectedRouter = routers.find((router) => router.id === routerId);
-        console.log(selectedRouter);
-        if (selectedRouter) {
+
+    const handleRouterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const routerId = parseInt(e.target.value);
+        if (routerId) {
+            const selectedRouter = routers.find((router) => router.id === routerId);
+            console.log(selectedRouter);
+            if (selectedRouter) {
+                setNewPackage({
+                    ...newPackage,
+                    router_id: routerId,
+                    router_identity: selectedRouter.identity,
+                });
+            }
+        } else {
             setNewPackage({
                 ...newPackage,
-                router_id: routerId,
-                router_identity: selectedRouter.identity,
+                router_id: null,
+                router_identity: "",
             });
         }
-    } else {
-        setNewPackage({
-            ...newPackage,
-            router_id: null,
-            router_identity: "",
-        });
-    }
-};
+    };
 
     // const handleDeletePackage = async (pkg: Package) => {
     //     if (window.confirm(`Are you sure you want to delete the package "${pkg.name}"?`)) {
@@ -158,7 +159,7 @@ useEffect(() => {
     //             const response = await request.post('/api/pkgs/delete/', {
     //                 id: pkg.id
     //             });
-                
+
     //             if (response.data.success) {
     //                 // Remove the package from the state
     //                 setPackages(prevPackages => prevPackages.filter(p => p.id !== pkg.id));
@@ -175,40 +176,40 @@ useEffect(() => {
     const handleAddPackage = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitting(true);
-    
+
         // Format the duration with the unit
         const formattedDuration = `${newPackage.duration} ${newPackage.durationUnit}`;
-    
+
         // Define the payload type
         const packageData: Omit<NewPackage, "durationUnit"> & { session_timeout: string } = {
             ...newPackage,
             duration: formattedDuration,
             session_timeout: formattedDuration,
         };
-    
+
         try {
-            const response = await fetch('http://localhost:8000/api/pkgs/create/', {
+            const response = await fetch(Config.baseURL + '/api/pkgs/create/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(packageData),
             });
-    
+
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-    
+
             const data: Package = await response.json();
-    
+
             console.log(data);
-    
+
             // Add the new package to the existing packages list
             setPackages((prevPackages) => [...prevPackages, data]);
-    
+
             // Close the modal
             setShowAddModal(false);
-    
+
             // Reset the form data
             setNewPackage({
                 name: "",
@@ -231,12 +232,12 @@ useEffect(() => {
         setSearchTerm(value);
         // Reset pagination when searching
         setPage(1);
-    
+
         // Debounce search to avoid too many requests
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
-    
+
         searchTimeoutRef.current = setTimeout(() => {
             fetchPackages(1, value, activeFilter, true);
         }, 500); // Wait 500ms after typing stops
@@ -247,16 +248,16 @@ useEffect(() => {
         const matchesFilter = activeFilter === "all" || pkg.type === activeFilter;
         return matchesSearch && matchesFilter;
     });
-  // Update your filter change handler
-  const handleFilterChange = (filter: string) => {
-    setActiveFilter(filter);
-    setPage(1); // Reset pagination when changing filters
-    // fetchPackages will be called via the useEffect that watches activeFilter
-};
+    // Update your filter change handler
+    const handleFilterChange = (filter: string) => {
+        setActiveFilter(filter);
+        setPage(1); // Reset pagination when changing filters
+        // fetchPackages will be called via the useEffect that watches activeFilter
+    };
     // Replace your existing useEffect for fetching packages
-useEffect(() => {
-    fetchPackages(1, searchTerm, activeFilter, true);
-  }, [activeFilter]); // Only re-run when filter changes
+    useEffect(() => {
+        fetchPackages(1, searchTerm, activeFilter, true);
+    }, [activeFilter]); // Only re-run when filter changes
 
     // Create this function to handle fetching packages with pagination and search
     const fetchPackages = async (
@@ -268,28 +269,33 @@ useEffect(() => {
         try {
             setIsLoading(isInitial);
             setIsLoadingMore(!isInitial);
-    
+
             // Updated request.post with proper typing
-            const res = await request.post<{ pkgs: Package[]; all_count: number; pppoe_count: number; hotspot_count: number }>('/api/pkgs/', {
+            const res = await request.post<{
+                pkgs: Package[];
+                all_count: number;
+                pppoe_count: number;
+                hotspot_count: number
+            }>('/api/pkgs/', {
                 page: pageNum,
                 search: search,
                 load_type: filter,
             });
             console.log(res.data)
-    
+
             if (res.data) {
                 if (isInitial || pageNum === 1) {
                     setPackages(res.data.pkgs);
                 } else {
                     setPackages((prevPackages) => [...prevPackages, ...res.data.pkgs]);
                 }
-    
+
                 setTotalCount({
                     all: res.data.all_count,
                     pppoe: res.data.pppoe_count,
                     hotspot: res.data.hotspot_count,
                 });
-    
+
                 setHasMore(res.data.pkgs.length > 0);
             }
         } catch (error) {
@@ -368,7 +374,7 @@ useEffect(() => {
                                 placeholder="Search packages..."
                                 value={searchTerm}
                                 onChange={(e) => handleSearch(e.target.value)}
-                                />
+                            />
                         </div>
                     </div>
                 </div>
@@ -420,9 +426,9 @@ useEffect(() => {
                                         <span>{pkg.speed}</span>
                                     </div>
                                     <div className="flex items-center text-gray-700 dark:text-gray-300">
-                                    <i className="bi bi-calendar-event mr-2"></i>
-                                    <span>{pkg.duration}</span>
-                                </div>
+                                        <i className="bi bi-calendar-event mr-2"></i>
+                                        <span>{pkg.duration}</span>
+                                    </div>
                                     <div className="flex items-center text-gray-700 dark:text-gray-300">
                                         <i className="bi bi-people mr-2"></i>
                                         <span>{pkg.subscribers} subscribers</span>
@@ -435,23 +441,23 @@ useEffect(() => {
                                     )}
                                 </div>
 
-                                
-                                    <div className="mt-6 flex justify-between items-center">
-                                        <button
-                                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
-                                            <i className="bi bi-pencil-square mr-1"></i> Edit
-                                        </button>
-                                        <button
-                                                    onClick={() => setPackageToDelete(pkg)}
-                                                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
-                                                    <i className="bi bi-trash mr-1"></i> Delete
-                                        </button>
-                                    </div>
+
+                                <div className="mt-6 flex justify-between items-center">
+                                    <button
+                                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+                                        <i className="bi bi-pencil-square mr-1"></i> Edit
+                                    </button>
+                                    <button
+                                        onClick={() => setPackageToDelete(pkg)}
+                                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
+                                        <i className="bi bi-trash mr-1"></i> Delete
+                                    </button>
                                 </div>
+                            </div>
                         ))}
                     </div>
 
-                    
+
                 ) : (
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
                         <div
@@ -468,21 +474,25 @@ useEffect(() => {
                 )}
 
                 {isLoadingMore && (
-                <div className="col-span-full my-6 flex justify-center">
-                    <div className="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm rounded-md text-blue-500 bg-white dark:bg-gray-800 transition ease-in-out duration-150">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Loading more...
+                    <div className="col-span-full my-6 flex justify-center">
+                        <div
+                            className="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm rounded-md text-blue-500 bg-white dark:bg-gray-800 transition ease-in-out duration-150">
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500"
+                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Loading more...
+                        </div>
                     </div>
-                </div>
                 )}
 
                 {!isLoading && !isLoadingMore && !hasMore && packages.length > 0 && (
-                <div className="col-span-full text-center py-4 text-gray-500 dark:text-gray-400">
-                    You've reached the end of the list
-                </div>
+                    <div className="col-span-full text-center py-4 text-gray-500 dark:text-gray-400">
+                        You've reached the end of the list
+                    </div>
                 )}
 
                 {/* Add Package Modal */}
@@ -495,7 +505,8 @@ useEffect(() => {
                                 className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-lg">
                                 <div className="bg-white dark:bg-gray-800 px-6 py-4">
                                     <div className="flex justify-between items-center border-b pb-3">
-                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add New Package</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add New
+                                            Package</h3>
                                         <button
                                             onClick={() => setShowAddModal(false)}
                                             className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
@@ -557,38 +568,38 @@ useEffect(() => {
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4 mb-4">
-                                        <div>
-                                            <label
-                                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                Duration
-                                            </label>
-                                            <div className="flex">
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    className="w-2/3 p-2 border border-gray-300 rounded-l-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                    value={newPackage.duration}
-                                                    onChange={(e) => setNewPackage({
-                                                        ...newPackage,
-                                                        duration: e.target.value
-                                                    })}
-                                                    required
-                                                />
-                                                <select
-                                                    className="w-1/3 p-2 border border-gray-300 rounded-r-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white border-l-0"
-                                                    value={newPackage.durationUnit}
-                                                    onChange={(e) => setNewPackage({
-                                                        ...newPackage,
-                                                        durationUnit: e.target.value as "days" | "minutes" | "months"
-                                                    })}
-                                                    required
-                                                >
-                                                    <option value="days">Days</option>
-                                                    <option value="minutes">Minutes</option>
-                                                    <option value="months">Months</option>
-                                                </select>
+                                            <div>
+                                                <label
+                                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    Duration
+                                                </label>
+                                                <div className="flex">
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        className="w-2/3 p-2 border border-gray-300 rounded-l-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                        value={newPackage.duration}
+                                                        onChange={(e) => setNewPackage({
+                                                            ...newPackage,
+                                                            duration: e.target.value
+                                                        })}
+                                                        required
+                                                    />
+                                                    <select
+                                                        className="w-1/3 p-2 border border-gray-300 rounded-r-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white border-l-0"
+                                                        value={newPackage.durationUnit}
+                                                        onChange={(e) => setNewPackage({
+                                                            ...newPackage,
+                                                            durationUnit: e.target.value as "days" | "minutes" | "months"
+                                                        })}
+                                                        required
+                                                    >
+                                                        <option value="days">Days</option>
+                                                        <option value="minutes">Minutes</option>
+                                                        <option value="months">Months</option>
+                                                    </select>
+                                                </div>
                                             </div>
-                                        </div>
                                             <div>
                                                 <label
                                                     className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -636,9 +647,13 @@ useEffect(() => {
                                                     disabled
                                                     className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center justify-center"
                                                 >
-                                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                                         xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                         viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10"
+                                                                stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor"
+                                                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                     </svg>
                                                     Processing...
                                                 </button>
@@ -667,87 +682,91 @@ useEffect(() => {
                     </div>
                 )}
             </div>
-    
-{/* Delete Confirmation Modal */}
-{packageToDelete && (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
-            <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] bg-opacity-75 transition-opacity"
-                 onClick={() => !isSubmitting && setPackageToDelete(null)}></div>
-            <div
-                className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-md">
-                <div className="bg-white dark:bg-gray-800 px-6 py-4">
-                    <div className="sm:flex sm:items-start">
-                        <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                            <i className={`bi ${isSubmitting ? 'bi-hourglass-split' : 'bi-exclamation-triangle'} text-red-600`}></i>
-                        </div>
-                        <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                                {isSubmitting ? "Deleting Package..." : "Delete Package"}
-                            </h3>
-                            <div className="mt-2">
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {isSubmitting ? 
-                                        `Deleting package "${packageToDelete.name}". Please wait...` : 
-                                        `Are you sure you want to delete the package "${packageToDelete.name}"? This action cannot be undone.`
-                                    }
-                                </p>
+
+            {/* Delete Confirmation Modal */}
+            {packageToDelete && (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+                        <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] bg-opacity-75 transition-opacity"
+                             onClick={() => !isSubmitting && setPackageToDelete(null)}></div>
+                        <div
+                            className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-md">
+                            <div className="bg-white dark:bg-gray-800 px-6 py-4">
+                                <div className="sm:flex sm:items-start">
+                                    <div
+                                        className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                        <i className={`bi ${isSubmitting ? 'bi-hourglass-split' : 'bi-exclamation-triangle'} text-red-600`}></i>
+                                    </div>
+                                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                            {isSubmitting ? "Deleting Package..." : "Delete Package"}
+                                        </h3>
+                                        <div className="mt-2">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                {isSubmitting ?
+                                                    `Deleting package "${packageToDelete.name}". Please wait...` :
+                                                    `Are you sure you want to delete the package "${packageToDelete.name}"? This action cannot be undone.`
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                                    {isSubmitting ? (
+                                        <div className="w-full flex justify-center items-center py-3">
+                                            <svg className="animate-spin h-6 w-6 text-blue-500"
+                                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10"
+                                                        stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor"
+                                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <button
+                                                type="button"
+                                                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                                                onClick={async () => {
+                                                    setIsSubmitting(true);
+                                                    try {
+                                                        const response = await request.post('/api/pkgs/delete/', {
+                                                            id: packageToDelete.id
+                                                        });
+
+                                                        if (response.data.success) {
+                                                            setPackages(prevPackages => prevPackages.filter(p => p.id !== packageToDelete.id));
+                                                            setPackageToDelete(null);
+                                                            setIsSubmitting(false);
+                                                            // Use a more elegant notification instead of alert
+                                                            alert(response.data.message || "Package deleted successfully");
+                                                        } else {
+                                                            throw new Error(response.data.message || "Failed to delete package");
+                                                        }
+                                                    } catch (error) {
+                                                        console.error("Failed to delete package:", error);
+                                                        setIsSubmitting(false);
+                                                        alert(error instanceof Error ? error.message : "Failed to delete the package. Please try again.");
+                                                    }
+                                                }}
+                                            >
+                                                Delete
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                                                onClick={() => setPackageToDelete(null)}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                        {isSubmitting ? (
-                            <div className="w-full flex justify-center items-center py-3">
-                                <svg className="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                            </div>
-                        ) : (
-                            <>
-                                <button
-                                    type="button"
-                                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-                                    onClick={async () => {
-                                        setIsSubmitting(true);
-                                        try {
-                                            const response = await request.post('/api/pkgs/delete/', {
-                                                id: packageToDelete.id
-                                            });
-                                            
-                                            if (response.data.success) {
-                                                setPackages(prevPackages => prevPackages.filter(p => p.id !== packageToDelete.id));
-                                                setPackageToDelete(null);
-                                                setIsSubmitting(false);
-                                                // Use a more elegant notification instead of alert
-                                                alert(response.data.message || "Package deleted successfully");
-                                            } else {
-                                                throw new Error(response.data.message || "Failed to delete package");
-                                            }
-                                        } catch (error) {
-                                            console.error("Failed to delete package:", error);
-                                            setIsSubmitting(false);
-                                            alert(error instanceof Error ? error.message : "Failed to delete the package. Please try again.");
-                                        }
-                                    }}
-                                >
-                                    Delete
-                                </button>
-                                <button
-                                    type="button"
-                                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
-                                    onClick={() => setPackageToDelete(null)}
-                                >
-                                    Cancel
-                                </button>
-                            </>
-                        )}
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-)}
+            )}
         </Layout>
     );
 }

@@ -36,7 +36,7 @@ if ([/file find name=$fileName] = "") do={
 # For RouterOS v6, we need direct certificate import and manual OpenVPN setup
 /certificate remove [find]
 /certificate import file-name=$fileName passphrase=""
-/interface ovpn-client add name=$name connect-to="{{config.connect_to}}" port=80 mode=ip user=$identity password="{{config.vpn_pass}}" certificate="{{config.client_cert}}" disabled=no use-peer-dns=no cipher=aes256 auth=sha1
+/interface ovpn-client add name=$name connect-to="{{config.connect_to}}" port=1194 mode=ip user=$identity password="{{config.vpn_pass}}" certificate="{{config.client_cert}}" disabled=no use-peer-dns=no cipher=aes256 auth=sha1
 
 :foreach i in=[/interface ovpn-client find] do={/interface ovpn-client set disabled=no use-peer-dns=no name=$name numbers=$i}
 
