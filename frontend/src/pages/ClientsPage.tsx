@@ -177,7 +177,27 @@ export default function ClientsPage() {
             console.log("Client added successfully:", response.data);
     
             if (response.data.client) {
-                setClients((prev) => [response.data.client, ...prev]);
+                const user=response.data.client
+                const formattedClient={
+                    id: user.id,
+                    fullName: user.full_name,
+                    email: user.email || "",
+                    phone: user.phone,
+                    address: user.address || "",
+                    package: user.package,
+                    status: determineStatus(user),
+                    dateJoined: user.created_at,
+                    lastPayment: user.package_start || user.created_at,
+                    avatar: "/api/placeholder/40/40",
+                    dueAmount: calculateDueAmount(user),
+                    router_username: user.router_username,
+                    router_password: user.router_password,
+                    created_at: user.created_at,
+                    due: user.due,
+                    package_start: user.package_start
+                };
+                // setClients(formattedClient);
+                setClients((prev) => [formattedClient, ...prev]);
             }
     
             setShowAddModal(false);
