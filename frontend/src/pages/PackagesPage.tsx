@@ -187,7 +187,7 @@ useEffect(() => {
         };
     
         try {
-            const response = await fetch('http://localhost:3700/api/pkgs/create/', {
+            const response = await fetch('http://localhost:8000/api/pkgs/create/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

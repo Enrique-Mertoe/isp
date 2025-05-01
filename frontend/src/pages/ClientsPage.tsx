@@ -91,7 +91,8 @@ export default function ClientsPage() {
     const [passwordVisibility, setPasswordVisibility] = useState<{[key: number]: boolean}>({});
     const [isDeletingClient, setIsDeletingClient] = useState<number | null>(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [clientToDelete, setClientToDelete] = useState<{id: number, fullName: string} | null>(null);
+    const [clientToDelete, setClientToDelete] = useState<{id: number, phone: string} | null>(null);
+    const [isLoadingAdd, setIsLoadingAdd] = useState(false);
     
     const [newClient, setNewClient] = useState<NewClient>({
         fullName: "",
@@ -125,7 +126,7 @@ export default function ClientsPage() {
             [clientId]: !prev[clientId]
         }));
     };
-    const handleDeleteClient = (client: {id: number, fullName: string}) => {
+    const handleDeleteClient = (client: {id: number, phone: string}) => {
         setClientToDelete(client);
         setShowDeleteConfirm(true);
     };
@@ -151,96 +152,7 @@ export default function ClientsPage() {
             setIsDeletingClient(null);
         }
     };
-        
-
-    // Mock data - replace with actual API call
-    useEffect(() => {
-        // Simulate API fetch
-        // setTimeout(() => {
-        //     setClients([
-        //         {
-        //             id: 1,
-        //             fullName: "Alex Johnson",
-        //             email: "alex.johnson@example.com",
-        //             phone: "+1 (555) 123-4567",
-        //             address: "123 Main St, Anytown",
-        //             package: "Premium Internet",
-        //             status: "active",
-        //             dateJoined: "2024-01-15",
-        //             lastPayment: "2024-04-01",
-        //             avatar: "/api/placeholder/40/40",
-        //             dueAmount: 0
-        //         },
-        //         {
-        //             id: 2,
-        //             fullName: "Sarah Williams",
-        //             email: "sarah.w@example.com",
-        //             phone: "+1 (555) 234-5678",
-        //             address: "456 Oak Ave, Somecity",
-        //             package: "Basic Internet",
-        //             status: "overdue",
-        //             dateJoined: "2023-11-20",
-        //             lastPayment: "2024-03-01",
-        //             avatar: "/api/placeholder/40/40",
-        //             dueAmount: 59.99
-        //         },
-        //         {
-        //             id: 3,
-        //             fullName: "Michael Brown",
-        //             email: "mbrown@example.com",
-        //             phone: "+1 (555) 345-6789",
-        //             address: "789 Pine Rd, Othertown",
-        //             package: "Business Internet",
-        //             status: "active",
-        //             dateJoined: "2024-02-10",
-        //             lastPayment: "2024-04-10",
-        //             avatar: "/api/placeholder/40/40",
-        //             dueAmount: 0
-        //         },
-        //         {
-        //             id: 4,
-        //             fullName: "Emily Davis",
-        //             email: "emily.d@example.com",
-        //             phone: "+1 (555) 456-7890",
-        //             address: "101 Cedar Ln, Newcity",
-        //             package: "Fiber Optic Ultra",
-        //             status: "inactive",
-        //             dateJoined: "2023-09-05",
-        //             lastPayment: "2024-02-05",
-        //             avatar: "/api/placeholder/40/40",
-        //             dueAmount: 0
-        //         },
-        //         {
-        //             id: 5,
-        //             fullName: "David Wilson",
-        //             email: "dwilson@example.com",
-        //             phone: "+1 (555) 567-8901",
-        //             address: "202 Maple Dr, Lasttown",
-        //             package: "Premium Internet",
-        //             status: "active",
-        //             dateJoined: "2024-03-22",
-        //             lastPayment: "2024-04-22",
-        //             avatar: "/api/placeholder/40/40",
-        //             dueAmount: 0
-        //         },
-        //         {
-        //             id: 6,
-        //             fullName: "Jennifer Taylor",
-        //             email: "jennifer.t@example.com",
-        //             phone: "+1 (555) 678-9012",
-        //             address: "303 Birch Blvd, Somewhere",
-        //             package: "Summer Special",
-        //             status: "warning",
-        //             dateJoined: "2023-12-15",
-        //             lastPayment: "2024-03-15",
-        //             avatar: "/api/placeholder/40/40",
-        //             dueAmount: 0
-        //         }
-        //     ]);
-        //     setIsLoading(false);
-        // }, 800);
-    }, []);
-
+    
     const handleAddClient = async () => {
         if (!newClient.fullName || !newClient.phone || !newClient.package) {
             alert("Full Name, Phone Number, and Package are mandatory fields.");
@@ -248,6 +160,7 @@ export default function ClientsPage() {
         }
     
         setIsLoadingSubmit(true);
+        setIsLoadingAdd(true);
     
         const clientData = {
             fullName: newClient.fullName,
@@ -256,7 +169,7 @@ export default function ClientsPage() {
             email: newClient.email,
             package: newClient.package,
             packageId: newClient.packageId,
-            status: newClient.status,
+            status:"action",
         };
     
         try {
@@ -282,6 +195,8 @@ export default function ClientsPage() {
             alert("Failed to add client. Please try again.");
         } finally {
             setIsLoadingSubmit(false);
+            setIsLoadingAdd(false);
+
         }
     };
 
@@ -413,11 +328,11 @@ const uniquePackages = [...new Set(clients.map((c) => c.package?.name))].filter(
                     className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 animate-fadeIn"
                 >
                     <div className="flex items-center space-x-4 mb-4">
-                        <img
+                        {/* <img
                             src={client.avatar}
                             alt={client.fullName}
                             className="rounded-full h-12 w-12 object-cover"
-                        />
+                        /> */}
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{client.fullName}</h3>
                             <div className="text-sm text-gray-500 dark:text-gray-400">{client.phone}</div>
@@ -469,7 +384,7 @@ const uniquePackages = [...new Set(clients.map((c) => c.package?.name))].filter(
                                 </span>
                             )}
                             <button 
-                                onClick={() => handleDeleteClient({id: client.id, fullName: client.fullName})}
+                                onClick={() => handleDeleteClient({id: client.id, phone: client.phone})}
                                 className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                                 disabled={isDeletingClient === client.id}
                             >
@@ -520,19 +435,19 @@ const uniquePackages = [...new Set(clients.map((c) => c.package?.name))].filter(
                         className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 animate-fadeIn">
                         <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                                <div className="flex-shrink-0 h-10 w-10">
+                                {/* <div className="flex-shrink-0 h-10 w-10">
                                     <img className="h-10 w-10 rounded-full" src={client.avatar} alt=""/>
-                                </div>
+                                </div> */}
                                 <div className="ml-4">
                                     <div className="text-sm font-medium text-gray-900 dark:text-white">{client.fullName}</div>
-                                    <div className="text-sm text-gray-500 dark:text-gray-400">{client.phone}</div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">Phone: {client.phone}</div>
                                 </div>
                             </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                            <div className="text-sm text-gray-900 dark:text-white">{client.package?.name}</div>
+                            <div className="text-sm text-gray-900 dark:text-white">Package: {client.package?.name}</div>
                             <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {client.package?.speed} - {client.package?.duration}
+                             Pkg Duration:   {client.package?.speed} - {client.package?.duration}
                             </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
@@ -567,7 +482,7 @@ const uniquePackages = [...new Set(clients.map((c) => c.package?.name))].filter(
                                 <i className="bi bi-credit-card-2-front"></i>
                             </button>
                             <button
-                                onClick={() => handleDeleteClient({id: client.id, fullName: client.fullName})}
+                                onClick={() => handleDeleteClient({id: client.id, phone: client.phone})}
                                 className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                                 disabled={isDeletingClient === client.id}
                             >
@@ -600,7 +515,7 @@ const uniquePackages = [...new Set(clients.map((c) => c.package?.name))].filter(
                                 </h3>
                                 <div className="mt-2">
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Are you sure you want to delete <span className="font-medium">{clientToDelete.fullName}</span>? This action cannot be undone.
+                                        Are you sure you want to delete <span className="font-medium">{clientToDelete.phone}</span>? This action cannot be undone.
                                     </p>
                                 </div>
                             </div>
@@ -973,157 +888,151 @@ const uniquePackages = [...new Set(clients.map((c) => c.package?.name))].filter(
 
                 {/* Add Client Modal */}
                 {showAddModal && (
-                    <div className="fixed inset-0 z-50 overflow-y-auto">
-                        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
-                            <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] bg-opacity-75 transition-opacity"
-                                 onClick={() => setShowAddModal(false)}></div>
-                            <div
-                                className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-lg">
-                                <div className="bg-white dark:bg-gray-800 px-6 py-4">
-                                    <div className="flex justify-between items-center border-b pb-3">
-                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add New
-                                            Client</h3>
-                                        <button
-                                            onClick={() => setShowAddModal(false)}
-                                            className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
-                                        >
-                                            <i className="bi bi-x-lg"></i>
-                                        </button>
-                                    </div>
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+            <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] bg-opacity-75 transition-opacity"
+                 onClick={() => setShowAddModal(false)}></div>
+            <div
+                className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-lg">
+                <div className="bg-white dark:bg-gray-800 px-6 py-4">
+                    <div className="flex justify-between items-center border-b pb-3">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add New
+                            Client</h3>
+                        <button
+                            onClick={() => setShowAddModal(false)}
+                            className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                        >
+                            <i className="bi bi-x-lg"></i>
+                        </button>
+                    </div>
 
-                                    <div className="mt-4">
-                                        <div className="mb-4">
-                                            <label
-                                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                Full Name
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                value={newClient.fullName}
-                                                onChange={(e) => setNewClient({...newClient, fullName: e.target.value})}
-                                                required
-                                            />
-                                        </div>
+                    <div className="mt-4">
+                        <div className="mb-4">
+                            <label
+                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Full Name
+                            </label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                value={newClient.fullName}
+                                onChange={(e) => setNewClient({...newClient, fullName: e.target.value})}
+                                required
+                            />
+                        </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                            <div>
-                                                <label
-                                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Email
-                                                </label>
-                                                <input
-                                                    type="email"
-                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                    value={newClient.email}
-                                                    onChange={(e) => setNewClient({...newClient, email: e.target.value})}
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <label
-                                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Phone
-                                                </label>
-                                                <input
-                                                    type="tel"
-                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                    value={newClient.phone}
-                                                    onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <label
-                                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                Address
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                value={newClient.address}
-                                                onChange={(e) => setNewClient({...newClient, address: e.target.value})}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Package
-                                                </label>
-                                               <select
-                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                    value={newClient.package}
-                                                    onChange={(e) => {
-                                                        const selectedPackage = clientsPackages.find(
-                                                            (pkg) => `${pkg.name} ${pkg.speed} ${pkg.duration}` === e.target.value
-                                                        );
-                                                        setNewClient({
-                                                            ...newClient,
-                                                            package: e.target.value,
-                                                            packageId: selectedPackage?.id || null,
-                                                        });
-                                                    }}
-                                                    required
-                                                >
-                                                    <option value="">Select a package</option>
-                                                    {clientsPackages.length === 0 ? (
-                                                        <option value="" disabled>
-                                                            Loading packages...
-                                                        </option>
-                                                    ) : (
-                                                        clientsPackages.map((pkg, index) => (
-                                                            <option key={index} value={`${pkg.name} ${pkg.speed} ${pkg.duration}`}>
-                                                                {pkg.name} {pkg.speed} {pkg.duration}
-                                                            </option>
-                                                        ))
-                                                    )}
-                                                </select>
-                                            </div>
-
-                                        <div className="mb-4">
-                                            <label
-                                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                Status
-                                            </label>
-                                            <select
-                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                            value={newClient.status}
-                                            onChange={(e) => {
-                                                setNewClient({
-                                                    ...newClient,
-                                                    status: e.target.value, // Correctly update the status field
-                                                });
-                                            }}
-                                        >
-                                            <option value="active">Active</option>
-                                            <option value="inactive">Inactive</option>
-                                        </select>
-                                        </div>
-
-                                        <div className="mt-6 flex justify-end">
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowAddModal(false)}
-                                                className="mr-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleAddClient()}
-                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                            >
-                                                Add Client
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label
+                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    value={newClient.email}
+                                    onChange={(e) => setNewClient({...newClient, email: e.target.value})}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Phone
+                                </label>
+                                <input
+                                    type="tel"
+                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    value={newClient.phone}
+                                    onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
+                                    required
+                                />
                             </div>
                         </div>
+
+                        <div className="mb-4">
+                            <label
+                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Address
+                            </label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                value={newClient.address}
+                                onChange={(e) => setNewClient({...newClient, address: e.target.value})}
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Package
+                                </label>
+                               <select
+                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    value={newClient.package}
+                                    onChange={(e) => {
+                                        const selectedPackage = clientsPackages.find(
+                                            (pkg) => `${pkg.name} ${pkg.speed} ${pkg.duration}` === e.target.value
+                                        );
+                                        setNewClient({
+                                            ...newClient,
+                                            package: e.target.value,
+                                            packageId: selectedPackage?.id || null,
+                                        });
+                                    }}
+                                    required
+                                >
+                                    <option value="">Select a package</option>
+                                    {clientsPackages.length === 0 ? (
+                                        <option value="" disabled>
+                                            Loading packages...
+                                        </option>
+                                    ) : (
+                                        clientsPackages.map((pkg, index) => (
+                                            <option key={index} value={`${pkg.name} ${pkg.speed} ${pkg.duration}`}>
+                                                {pkg.name} {pkg.speed} {pkg.duration}
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
+                            </div>
+
+                       
+
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setShowAddModal(false)}
+                                className="mr-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                                disabled={isLoadingAdd}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleAddClient()}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center min-w-[90px]"
+                                disabled={isLoadingAdd}
+                            >
+                                {isLoadingAdd ? (
+                                    <>
+                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Saving...
+                                    </>
+                                ) : (
+                                    'Add Client'
+                                )}
+                            </button>
+                        </div>
                     </div>
-                )}
+                </div>
+            </div>
+        </div>
+    </div>
+)}
             </div>
         {renderDeleteConfirmModal()}
 

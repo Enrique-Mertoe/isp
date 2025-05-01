@@ -151,4 +151,5 @@ class Client(models.Model):
     router_username = models.CharField(max_length=255)
     due = models.DateTimeField()
     created_at = models.DateTimeField(default=timezone.now)
+    address=models.CharField(max_length=255,default="No address")
 

@@ -114,6 +114,7 @@ def router_list(request):
                 'ip_address': router.ip_address,
                 'location': router.location,
                 'active': router.active,
+                'identity': router.identity,
                 # 'created_at': router.created_at.strftime('%Y-%m-%d %H:%M:%S') if router.created_at else None,
                 # 'last_seen': router.last_seen.strftime('%Y-%m-%d %H:%M:%S') if router.last_seen else None,
             })
@@ -325,14 +326,14 @@ def pkg_create(request):
                 res=mikrotik_manager.connect_router(host=router.identity,username=router.username,password=router.password)
                     # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
                 print(res,'bbbhbhbh')
-                res.create_profile(name=data['name'],rate_limit=ratelimit,session_timeout=data["duration"],service="pppoe")
+                result= res.create_profile(name=data['name'],rate_limit=ratelimit,session_timeout=data["duration"],service="pppoe")
+                print(result)
                 # res = mikrotik_manager.connect_router(router.identity, router.username, router.password)
                 # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
                 # print(res, 'bbbhbhbh')
                 # res.create_profile(name=data['name'], rate_limit=ratelimit, session_timeout=data.get("duration"),
                 #                    service="pppoe")
             except Exception as e:
-                raise
                 return JsonResponse({'error': "Router connection failed"}, status=400)
 
             pkg = Package.objects.create(
@@ -437,7 +438,6 @@ def client_to_dict(client):
     return {
         'id': client.id,
         'full_name': client.full_name,
-        'email': client.email,
         'phone': client.phone,
         'address': client.address,
         'created_at': client.created_at.isoformat(),
@@ -449,13 +449,12 @@ def client_to_dict(client):
         'package': {
             'id': client.package.id,
             'name': client.package.name,
-            'speed': client.package.speed,
             'download_speed': client.package.download_speed,
             'upload_speed': client.package.upload_speed,
             'duration': client.package.duration,
             'price': client.package.price,
             'type': client.package.type,
-            'created': client.package.created.isoformat() if client.package.created else None,
+            'created_at': client.package.created_at.isoformat() if client.package.created_at else None,
             'router': {
                 'id': client.package.router.id,
                 'name': client.package.router.name,
@@ -534,6 +533,8 @@ def delete_client(request):
             data = json.loads(request.body)
             client_id = data.get("id")
             username = data.get("username")
+
+            
             
             if not client_id:
                 return JsonResponse({"success": False, "message": "Client ID is required"}, status=400)
@@ -544,7 +545,18 @@ def delete_client(request):
             # For example, checking if the username matches the client's username
             if username and client.router_username != username:
                 return JsonResponse({"success": False, "message": "Username mismatch"}, status=400)
-                
+            router=client.package.router
+            # Check if the router is reachable
+            if not router:
+                return JsonResponse({"success": False, "message": "Router not found"}, status=404)
+            try:
+                    res=mikrotik_manager.connect_router(host=router.identity,username=router.username,password=router.password)
+                    res.remove_client(username=client.router_username, service=client.package.type)
+
+            except Exception as e:
+                    
+                    print(str(e))
+                    return JsonResponse({'error': "MikroTik connection failed"}, status=400)   
             client.delete()
             return JsonResponse({"success": True, "message": "Client deleted successfully"})
             
@@ -612,7 +624,6 @@ def user_create(request):
                 return JsonResponse({'success': "User created successfully"}, status=201)
 
         except Exception as e:
-            
             print(e)
             return JsonResponse({'error': "Error creating client"}, status=400)
     return HttpResponseBadRequest()

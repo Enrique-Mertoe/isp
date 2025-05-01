@@ -53,7 +53,7 @@ user_urlpatterns: list[URLResolver | URLPattern] = [
     path('api/clients/create/', views.user_create, name='user_create'),  # POST
     path('api/user/<int:pk>/', views.user_detail, name='user_detail'),  # GET one
     path('api/user/<int:pk>/update/', views.user_update, name='user_update'),  # PUT/PATCH
-    path('api/user/<int:pk>/delete/', views.user_delete, name='user_delete'),  # DELETE
+    path('api/clients/delete/', views.delete_client, name='user_delete'),  # DELETE
 ]
 urlpatterns = [
     path('admin/', admin.site.urls),

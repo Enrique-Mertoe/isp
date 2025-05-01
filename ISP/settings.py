@@ -193,11 +193,13 @@ MikroManager.initialise(
 
 
 # Initialize the singleton instance
-mikrotik_manager = MikroManager(
-    api_key="test-api-key",
-    server_id="LomTech",
-    server_url=f"{API_URL}/mtk/console"
-)
+# mikrotik_manager = MikroManager(
+#     api_key="test-api-key",
+#     server_id="LomTech",
+#     server_url=f"{API_URL}/mtk/console"
+# )
+
+mikrotik_manager=MikroManager.mikrotik
 
 # router_conn = mikrotik_manager.connect_router("192.168.1.1", "admin", "password")
 
