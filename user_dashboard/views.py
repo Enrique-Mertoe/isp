@@ -342,12 +342,12 @@ def pkg_create(request):
                 upload_speed=data['speed'],
                 download_speed=data['speed'],
                 price=data['price'],
-                router=router
+                router=router,
+                duration=data['duration']
             )
             return JsonResponse(pkg_to_dict(pkg), status=201)
         except Exception as e:
             print(str(e))
-            raise
             return JsonResponse({'error': str(e)}, status=400)
     return HttpResponseBadRequest()
 
@@ -737,7 +737,6 @@ def get_user_packages(request):
             'message': 'Client profile not found'
         }, status=404)
     except Exception as e:
-        raise
         return Response({
             'status': 'error',
             'message': str(e)
