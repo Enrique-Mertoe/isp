@@ -21,23 +21,24 @@ export const request = axios.create({
     }
 });
 
-request.interceptors.response.use(
-    response => response,
-    async error => {
-        if (error.response && error.response.status === 403) {
-            console.warn('CSRF token might be expired. Refreshing...');
-            try {
-                await request.get('/api/csrf/');
-                request.defaults.headers['X-CSRFToken'] = getCookie('csrftoken');
-                return request.request(error.config);
-            } catch (refreshError) {
-                console.error('Failed to refresh CSRF token.', refreshError);
-                return Promise.reject(refreshError);
+if (Config.mode == "development")
+    request.interceptors.response.use(
+        response => response,
+        async error => {
+            if (error.response && error.response.status === 403) {
+                console.warn('CSRF token might be expired. Refreshing...');
+                try {
+                    await request.get('/api/csrf/');
+                    request.defaults.headers['X-CSRFToken'] = getCookie('csrftoken');
+                    return request.request(error.config);
+                } catch (refreshError) {
+                    console.error('Failed to refresh CSRF token.', refreshError);
+                    return Promise.reject(refreshError);
+                }
             }
+            return Promise.reject(error);
         }
-        return Promise.reject(error);
-    }
-);
+    );
 
 type RequestResponse<T> = {
     data: T
@@ -117,6 +118,7 @@ function post<T>(
         }
     };
 }
+
 function get<T>(
     options: RequestInterface<T>
 ) {
