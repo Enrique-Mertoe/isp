@@ -6,7 +6,6 @@ import {
     User,
     ChevronDown,
     Search,
-    Menu,
     X,
     HelpCircle,
     Moon,
@@ -39,6 +38,7 @@ export default function Header() {
     const [showNotifications, setShowNotifications] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [unreadCount, setUnreadCount] = useState(0);
+    // @ts-ignore
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [drawerMenuOpen, setDrawerMenuOpen] = useState(false);
 
@@ -88,10 +88,12 @@ export default function Header() {
 
     // Handle clicks outside of dropdown menus to close them
     useEffect(() => {
-        function handleClickOutside(event) {
+        function handleClickOutside(event: { target: any; }) {
+            // @ts-ignore
             if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
                 setShowUserMenu(false);
             }
+            // @ts-ignore
             if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
                 setShowNotifications(false);
             }
@@ -109,9 +111,9 @@ export default function Header() {
     }, []);
 
     // Handle mobile menu toggle
-    const toggleMobileMenu = () => {
-        setMobileMenuOpen(!mobileMenuOpen);
-    };
+    // const toggleMobileMenu = () => {
+    //     setMobileMenuOpen(!mobileMenuOpen);
+    // };
 
     // Simulate triggering sidebar from your existing code
     const toggleSidebar = useCallback(() => {
