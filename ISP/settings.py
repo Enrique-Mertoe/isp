@@ -182,7 +182,7 @@ SERVER_IP = "142.93.39.55"  # Your server's public IP address
 HOSTNAME = "isp3.lomtechnology.com"  # Your server's hostname
 
 # VPN settings
-VPN_SERVER_IP = "142.93.39.55"
+VPN_SERVER_IP = "34.45.29.23"
 
 
 MikroManager.initialise(

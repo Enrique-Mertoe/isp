@@ -19,7 +19,6 @@ export type PortProp = {
 }
 const PortConfigurator = ({router, props}: { router: string; props: PortProp }) => {
     const [ports, setPorts] = useState<Port[]>([]);
-    const [theme,] = useState<'light' | 'dark'>('light');
     const [error, setError] = useState<string | null>(null);
     const [, setSuccess] = useState<boolean>(false);
     const [, setIsSubmitting] = useState<boolean>(false);
@@ -30,25 +29,25 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
         const firstEtherIndex = updatedPorts.findIndex(port => port.type === 'ethernet');
         if (firstEtherIndex !== -1) {
             if (updatedPorts[firstEtherIndex])
-                updatedPorts[firstEtherIndex].mode = 'lan';
+                updatedPorts[firstEtherIndex].mode = 'wan';
             setPorts(updatedPorts);
         }
-    }, [ports]);
+    }, []);
 
 
     // Get appropriate icon based on port type
     const getPortIcon = (type: PortType) => {
         switch (type) {
             case 'ethernet':
-                return <EthernetPort size={24} className={theme === 'light' ? 'text-blue-600' : 'text-blue-400'}/>;
+                return <EthernetPort size={24} className={'text-blue-600 dark:text-blue-400'}/>;
             case 'sfp':
-                return <Server size={24} className={theme === 'light' ? 'text-purple-600' : 'text-purple-400'}/>;
+                return <Server size={24} className={'text-purple-600 dark:text-purple-400'}/>;
             case 'sfp+':
-                return <Server size={24} className={theme === 'light' ? 'text-indigo-600' : 'text-indigo-400'}/>;
+                return <Server size={24} className={'text-indigo-600 dark:text-indigo-400'}/>;
             case 'wireless':
-                return <Wifi size={24} className={theme === 'light' ? 'text-green-600' : 'text-green-400'}/>;
+                return <Wifi size={24} className={'text-green-600 dark:text-green-400'}/>;
             default:
-                return <EthernetPort size={24} className={theme === 'light' ? 'text-gray-600' : 'text-gray-400'}/>;
+                return <EthernetPort size={24} className={'text-gray-600 dark:text-gray-400'}/>;
         }
     };
 
@@ -103,7 +102,7 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
     }, [error, ports, router]);
     useEffect(() => {
         fetchInterfaces();
-    }, [fetchInterfaces]);
+    }, []);
 
     // Validate configuration before submission
     const validateConfiguration = useCallback(() => {
@@ -224,7 +223,7 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
                                     className={`
                   p-4 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200
                   ${port.mode === 'wan' ?
-                                        (theme === 'light' ? 'bg-blue-100 border-2 border-blue-500' : 'bg-blue-900 border-2 border-blue-400') :
+                                        ('bg-blue-100 border-2 border-blue-500 dark:bg-blue-900 dark:border-2 dark:border-blue-400') :
                                         port.mode === 'lan' ?
                                             ('bg-green-100 border-2 border-green-500 dark:bg-green-900 dark:border-2 dark:border-green-400') :
                                             ('bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600')}
@@ -234,10 +233,10 @@ const PortConfigurator = ({router, props}: { router: string; props: PortProp }) 
                                     <div className="font-medium">{port.name}</div>
                                     <div className={`text-xs mt-1 px-2 py-1 rounded-full ${
                                         port.mode === 'wan' ?
-                                            (theme === 'light' ? 'bg-blue-200 text-blue-800' : 'bg-blue-800 text-blue-200') :
+                                            ('bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-200') :
                                             port.mode === 'lan' ?
-                                                (theme === 'light' ? 'bg-green-200 text-green-800' : 'bg-green-800 text-green-200') :
-                                                (theme === 'light' ? 'bg-gray-300 text-gray-600' : 'bg-gray-600 text-gray-300')
+                                                ('bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200') :
+                                                ('bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300')
                                     }`}>
                                         {port.mode === null ? 'Unassigned' : port.mode.toUpperCase()}
                                     </div>

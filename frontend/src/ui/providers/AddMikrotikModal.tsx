@@ -1,6 +1,6 @@
 import React, {useRef, useState, useEffect} from "react";
 import {$} from "../../build/request.ts";
-import {ChevronRight, X, Wifi, CheckCircle, Loader2, RefreshCw, Copy, AlertCircle} from "lucide-react";
+import {ChevronRight, X, Wifi, CheckCircle, Loader2, RefreshCw, Copy, AlertCircle, AlertTriangle} from "lucide-react";
 import {motion, AnimatePresence} from "framer-motion";
 import PortConfigurator, {PortProp} from "../PortConfigurator.tsx";
 
@@ -31,7 +31,7 @@ interface TerminalViewProps {
     info: {
         txt: string; display: string; status: '' | 'processing' | 'complete';
         error?: string;
-
+        onReload: Closure;
         form: any
     };
     conn: {
@@ -41,7 +41,8 @@ interface TerminalViewProps {
         checkingAttempts: any,
         maxCheckAttempts: any
     };
-    form: any
+    form: any;
+
 }
 
 // Complete the TerminalView component that was cut off
@@ -117,16 +118,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({info, form, conn}) => {
             )}
 
             {info.error && (
-                <div
-                    className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 p-3 rounded-lg border border-red-200 dark:border-red-800">
-                    <div className="flex items-start">
-                        <AlertCircle className="mt-0.5 mr-2" size={18}/>
-                        <div>
-                            <p className="font-medium">Error occurred</p>
-                            <p className="text-sm">{info.error}</p>
-                        </div>
-                    </div>
-                </div>
+                <ErrorReloader onReload={() => info.onReload?.()} error={info.error}/>
             )}
 
             {info.display && (
@@ -314,12 +306,15 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
 
     const [terminal, setTerminal] = useState<{
         txt: string; error?: string, display: string; status: '' | 'processing' | 'complete',
-        form: any
+        form: any, onReload: Closure
     }>({
         txt: '',
         display: '',
         status: '',
-        form
+        form,
+        onReload: async () => {
+            await handleSubmit();
+        }
     });
 
     // Service configuration state
@@ -583,7 +578,7 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                     >
 
 
-                        {terminal.status === '' ? <>
+                        {['processing', ''].includes(terminal.status) ? <>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label htmlFor="mtk-name"
@@ -619,7 +614,8 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                             </div>
                             <p className="text-gray-500 my-4">The identity name of your MikroTik device will be used for
                                 identification and connection. The name should be unique within your ISP system.</p>
-                        </> : (
+                        </> : ''}
+                        {terminal.status !== '' ? (
                             <TerminalView
                                 conn={{
                                     connectionStatus,
@@ -630,7 +626,7 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                                 }}
                                 form={form}
                                 info={terminal}/>
-                        )}
+                        ) : ''}
                     </motion.div>
                 );
             case 2:
@@ -1032,6 +1028,102 @@ add action=accept chain=forward in-interface=bridge-lan out-interface=${form.sel
                             </motion.div>
                         )}
                     </form>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// @ts-ignore
+function ErrorReloader({error, onReload}) {
+    const [isVisible, setIsVisible] = useState(true);
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [progress, setProgress] = useState(0);
+
+    const handleReload = () => {
+        setIsAnimating(true);
+        setProgress(0);
+        onReload()
+        setIsAnimating(false);
+        // const interval = setInterval(() => {
+        //     setProgress(prev => {
+        //         if (prev >= 100) {
+        //             clearInterval(interval);
+        //             setIsAnimating(false);
+        //             return 100;
+        //         }
+        //         return prev + 5;
+        //     });
+        // }, 50);
+    };
+
+    useEffect(() => {
+        if (error) {
+            setIsVisible(true);
+        }
+    }, [error]);
+
+    if (!isVisible || !error) return null;
+
+    return (
+        <div className="flex justify-center z-50 px-4">
+            <div
+                className="bg-white dark:bg-gray-900 shadow-lg rounded-lg w-full max-w-2xl border border-red-300 dark:border-red-800 overflow-hidden">
+                {/* Progress bar that appears during reload */}
+                {isAnimating && (
+                    <div className="h-1 bg-gray-200 dark:bg-gray-700">
+                        <div
+                            className="h-full bg-blue-500 transition-all duration-300 ease-out"
+                            style={{width: `${progress}%`}}
+                        />
+                    </div>
+                )}
+
+                <div className="p-4">
+                    <div className="flex justify-between items-start">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <AlertTriangle className="h-6 w-6 text-red-500 animate-pulse"/>
+                            </div>
+                            <div className="ml-3">
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Error Occurred</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-2">
+                        <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4 my-2">
+                            <div className="text-sm text-red-700 dark:text-red-300">
+                                {error}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 flex justify-between items-center">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Error ID: {Math.random().toString(36).substring(2, 12).toUpperCase()}
+                        </div>
+
+                        <div className="flex space-x-3">
+                            <button
+                                type="button"
+                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
+                                onClick={handleReload}
+                                disabled={isAnimating}
+                            >
+                                <RefreshCw className={`mr-2 h-4 w-4 ${isAnimating ? 'animate-spin' : ''}`}/>
+                                {isAnimating ? 'Reloading...' : 'Reload'}
+                            </button>
+
+                            <button
+                                type="button"
+                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-700 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                                Details
+                                <ChevronRight className="ml-2 h-4 w-4"/>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
