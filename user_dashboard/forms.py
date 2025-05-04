@@ -1,6 +1,6 @@
 from django import forms
 
-from user_dashboard.models import Router, ISPProvider
+from user_dashboard.models import Router, SystemUser
 
 
 class RouterForm(forms.ModelForm):
@@ -11,7 +11,7 @@ class RouterForm(forms.ModelForm):
 
 class CompanyForm(forms.ModelForm):
     class Meta:
-        model = ISPProvider
+        model = SystemUser
         fields = ['name', 'address', 'phone', 'email']
 
     def clean_name(self):

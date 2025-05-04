@@ -22,7 +22,7 @@ from ISP import settings
 from mtk_command_api.mtk import MikroManager
 from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict, company_to_dict, client_to_dict, \
     generate_invoice_number, transform_ports
-from user_dashboard.models import Router, Package, ISPProvider, Client, Billing
+from user_dashboard.models import Router, Package, SystemUser, Client, Billing
 from ISP.settings import mikrotik_manager
 
 
@@ -30,6 +30,8 @@ from ISP.settings import mikrotik_manager
 @login_required
 def home(request):
     return render(request, 'index.html')
+
+
 def generate_password(name: str) -> str:
     # Generate 4 random alphanumeric characters
     random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=5))
@@ -140,7 +142,7 @@ def router_create(request):
     if request.method == "POST":
         try:
             data = request.POST
-            company = ISPProvider.objects.get(user=request.user)
+            company = SystemUser.objects.get(user=request.user)
             if not company:
                 return JsonResponse({'error': "Update company information first"}, status=400)
 
@@ -161,7 +163,7 @@ def router_create(request):
                 location=data.get('location'),
                 username=data.get('username'),
                 ip_address=data.get('ip'),
-                isp=ISPProvider.objects.get(user=request.user.id)
+                isp=SystemUser.objects.get(user=request.user.id)
             )
             return JsonResponse(router_to_dict(router), status=201)
         except Exception as e:
@@ -217,8 +219,8 @@ def router_interfaces(request):
     network = mikrotik_manager.mikrotik.client(host=rt.identity, username=settings.MTK_USERNAME,
                                                password=rt.password).network
     intf = network.list_ports()
-    print(intf)
-    return JsonResponse({'ok': True, "ports": transform_ports(intf.data or [])})
+    ports, wan = transform_ports(intf, network.wan)
+    return JsonResponse({'ok': True, "ports": ports, "wan": wan})
 
 
 @api_view(["GET"])
@@ -269,7 +271,6 @@ def pkg_list(request):
             )
 
         # Calculate total counts for filters
-
 
         all_count = user_pkgs.count()
         h_count = user_pkgs.filter(type="hotspot").count()
@@ -323,10 +324,12 @@ def pkg_create(request):
                 print(data['speed'], 'im here')
                 ratelimit = format_data(data['speed']) + "/" + format_data(data['speed'])
                 print(ratelimit)
-                res=mikrotik_manager.connect_router(host=router.identity,username=router.username,password=router.password)
-                    # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
-                print(res,'bbbhbhbh')
-                result= res.create_profile(name=data['name'],rate_limit=ratelimit,session_timeout=data["duration"],service="pppoe")
+                res = mikrotik_manager.connect_router(host=router.identity, username=router.username,
+                                                      password=router.password)
+                # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
+                print(res, 'bbbhbhbh')
+                result = res.create_profile(name=data['name'], rate_limit=ratelimit, session_timeout=data["duration"],
+                                            service="pppoe")
                 print(result)
                 # res = mikrotik_manager.connect_router(router.identity, router.username, router.password)
                 # def create_profile(self, name, rate_limit=None, session_timeout=None, service="pppoe"):
@@ -465,6 +468,7 @@ def client_to_dict(client):
         } if client.package else None
     }
 
+
 @csrf_exempt
 def user_list(request):
     if request.method == "POST":
@@ -480,7 +484,7 @@ def user_list(request):
             search = request.POST.get("search", "")
             page = int(request.POST.get("page", 1))
             page_size = int(request.POST.get("page_size", 10))
-        
+
         # Apply filters based on load_type
         if load_type in ["hotspot", "pppoe"]:
             users = Client.objects.filter(
@@ -488,15 +492,15 @@ def user_list(request):
             )
         else:
             users = Client.objects.all()
-        
+
         # Apply search filter if provided
         if search:
             users = users.filter(
-                Q(full_name__icontains=search) | 
+                Q(full_name__icontains=search) |
                 Q(phone__icontains=search) |
                 Q(email__icontains=search)
             )
-        
+
         # Calculate total counts
         all_count = Client.objects.filter(isp=request.user.id).count()
         h_count = Client.objects.filter(
@@ -505,18 +509,18 @@ def user_list(request):
         p_count = Client.objects.filter(
             Q(package__type="pppoe")
         ).count()
-        
+
         # Apply pagination
         start_index = (page - 1) * page_size
         end_index = start_index + page_size
-        
+
         # Get the paginated results and convert to dict
         paginated_users = users[start_index:end_index]
         users_data = [client_to_dict(user) for user in paginated_users]
-        
+
         # Check if there are more results
         has_more = users.count() > end_index
-        
+
         return JsonResponse({
             "users": users_data,
             "all_count": all_count,
@@ -526,6 +530,7 @@ def user_list(request):
             "total_count": users.count()
         }, safe=False)
 
+
 @csrf_exempt
 def delete_client(request):
     if request.method == "POST":
@@ -534,43 +539,44 @@ def delete_client(request):
             client_id = data.get("id")
             username = data.get("username")
 
-            
-            
             if not client_id:
                 return JsonResponse({"success": False, "message": "Client ID is required"}, status=400)
-                
+
             client = Client.objects.get(id=client_id)
-            
+
             # Optional: Perform any additional validation here
             # For example, checking if the username matches the client's username
             if username and client.router_username != username:
                 return JsonResponse({"success": False, "message": "Username mismatch"}, status=400)
-            router=client.package.router
+            router = client.package.router
             # Check if the router is reachable
             if not router:
                 return JsonResponse({"success": False, "message": "Router not found"}, status=404)
             try:
-                    res=mikrotik_manager.connect_router(host=router.identity,username=router.username,password=router.password)
-                    res.remove_client(username=client.router_username, service=client.package.type)
+                res = mikrotik_manager.connect_router(host=router.identity, username=router.username,
+                                                      password=router.password)
+                res.remove_client(username=client.router_username, service=client.package.type)
 
             except Exception as e:
-                    
-                    print(str(e))
-                    return JsonResponse({'error': "MikroTik connection failed"}, status=400)   
+
+                print(str(e))
+                return JsonResponse({'error': "MikroTik connection failed"}, status=400)
             client.delete()
             return JsonResponse({"success": True, "message": "Client deleted successfully"})
-            
+
         except Client.DoesNotExist:
             return JsonResponse({"success": False, "message": "Client not found"}, status=404)
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=500)
-    
+
     return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+
+
 @csrf_exempt
 def user_create(request):
     if request.method == "POST":
         bodyData = json.loads(request.body)
-        data=bodyData.copy()
+        data = bodyData.copy()
         try:
             required_fields = ['fullName', 'phone', 'packageId']
             missing_fields = [field for field in required_fields if field not in data]
@@ -578,31 +584,32 @@ def user_create(request):
                 return JsonResponse({'error': f"Missing fields: {', '.join(missing_fields)}"}, status=400)
             package = Package.objects.get(id=data['packageId'])
             router = package.router
-            data['password']=generate_password(data['fullName'])
-            data['username']=generate_password(data['fullName'])
+            data['password'] = generate_password(data['fullName'])
+            data['username'] = generate_password(data['fullName'])
         except Package.DoesNotExist:
             return JsonResponse({'error': 'Package not found'}, status=400)
         except Router.DoesNotExist:
             return JsonResponse({'error': 'Router not found'}, status=400)
         if Client.objects.filter(router_username=router.name, package=package, phone=data["phone"]).exists():
-                return JsonResponse(
-                    {'error': f"Client: {data['fullName']} already in use for router {router.name}"},
-                    status=400
-                )
+            return JsonResponse(
+                {'error': f"Client: {data['fullName']} already in use for router {router.name}"},
+                status=400
+            )
 
         try:
-            res=mikrotik_manager.connect_router(host=router.identity,username=router.username,password=router.password)
+            res = mikrotik_manager.connect_router(host=router.identity, username=router.username,
+                                                  password=router.password)
 
-
-            res.add_client(username=data['username'],password=data['password'],profile_name=package.name,service=package.type)
+            res.add_client(username=data['username'], password=data['password'], profile_name=package.name,
+                           service=package.type)
         except Exception as e:
-            
+
             print(str(e))
             return JsonResponse({'error': "MikroTik connection failed"}, status=400)
 
         try:
             with transaction.atomic():
-                client= Client.objects.create(
+                client = Client.objects.create(
                     phone=data['phone'],
                     full_name=data['fullName'],
                     isp=request.user,
@@ -621,8 +628,8 @@ def user_create(request):
                     package_start=timezone.now().date(),
                     user=request.user
                 )
-                client=client_to_dict(client)
-                return JsonResponse({'success': "User created successfully","client":client}, status=201)
+                client = client_to_dict(client)
+                return JsonResponse({'success': "User created successfully", "client": client}, status=201)
 
         except Exception as e:
             print(e)
@@ -669,21 +676,21 @@ class CompanyEditView(LoginRequiredMixin, View):
         fetch = request.GET.get('api')
         if not fetch:
             return render(request, 'index.html')
-        company = ISPProvider.objects.filter(user=request.user.id).first()
+        company = SystemUser.objects.filter(user=request.user.id).first()
         return JsonResponse({'company': company_to_dict(company)})
 
     def post(self, request):
         data = request.POST
         print(data)
         try:
-            c = ISPProvider.objects.get(user=request.user)
+            c = SystemUser.objects.get(user=request.user)
             if not c:
-                c = ISPProvider.objects.create(user=request.user,
-                                               address=data.get('address'),
-                                               phone=data.get('phone'),
-                                               email=data.get('email'),
-                                               name=data.get('name'),
-                                               )
+                c = SystemUser.objects.create(user=request.user,
+                                              address=data.get('address'),
+                                              phone=data.get('phone'),
+                                              email=data.get('email'),
+                                              name=data.get('name'),
+                                              )
             else:
                 c.address = data.get('address')
                 c.phone = data.get('phone')
@@ -746,3 +753,25 @@ def get_user_packages(request):
 @api_view(["GET", "POST"])
 def hotspot_packages(request):
     return render(request, "hotspot/packages.html")
+
+
+@api_view(["GET"])
+def et(request):
+    import m2
+    # from sendgrid import SendGridAPIClient
+    # from sendgrid.helpers.mail import Mail
+    #
+    # message = Mail(
+    #     from_email='info@lomtechnology.com',
+    #     to_emails='abutimartin778@gmail.com',
+    #     subject='Sending with Twilio SendGrid is Fun',
+    #     html_content='<strong>and easy to do anywhere, even with Python</strong>')
+    # try:
+    #     sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+    #     response = sg.send(message)
+    #     print(response.status_code)
+    #     print(response.body)
+    #     print(response.headers)
+    # except Exception as e:
+    #     print(e)
+    return JsonResponse({})

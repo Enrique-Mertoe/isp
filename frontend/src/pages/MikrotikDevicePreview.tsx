@@ -1,4 +1,4 @@
-import {useState} from "react";
+import React, {useState} from "react";
 import {
     Wifi,
     Server,
@@ -15,6 +15,7 @@ import {
     RefreshCw
 } from "lucide-react";
 import "../main.scss";
+import LayoutNavigator from "./home-components/LayoutNavigator.tsx";
 
 // TypeScript interfaces
 interface DeviceStats {
@@ -136,26 +137,18 @@ export default function MikrotikDevicePreview() {
         <div
             className={`min-h-screen mtk-view ${darkMode ? "dark bg-gray-900" : "bg-gray-50"} transition-colors duration-300`}>
             {/* Header */}
-            <div className="w-full bg-white dark:bg-gray-800 shadow-md transition-colors duration-300">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                        <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                            <ArrowLeft className="h-5 w-5 text-gray-700 dark:text-gray-300"/>
-                        </button>
-                        <h1 className="text-xl font-bold text-gray-800 dark:text-white">Mikrotik Device Details</h1>
-                    </div>
-
-                    <div className="flex items-center space-x-4">
-                        <button
-                            onClick={refreshData}
-                            className="flex items-center px-3 py-1 rounded-md bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition-all"
-                        >
-                            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}/>
-                            Refresh
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <LayoutNavigator
+            title={"Mikrotik Device Details"}
+            description={""}
+            >
+                <button
+                    onClick={refreshData}
+                    className="flex items-center px-3 py-1 rounded-md bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition-all"
+                >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}/>
+                    Refresh
+                </button>
+            </LayoutNavigator>
 
             {/* Main content */}
             <div className="container  mx-auto px-4 py-6">

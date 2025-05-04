@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification</title>
+    <style type="text/css">
+        /* Reset styles to minimize rendering differences */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+        }
+
+        /* Make all images responsive */
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Container styling */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        /* Header styling */
+        .header {
+            background-color: #8b5cf6;
+            padding: 25px 0;
+            text-align: center;
+            color: white;
+        }
+
+        /* Logo styling */
+        .logo {
+            width: 180px;
+            margin: 0 auto;
+        }
+
+        /* Content section styling */
+        .content {
+            padding: 30px 40px;
+            background-color: #ffffff;
+        }
+
+        /* Button styling */
+        .button-container {
+            padding: 25px 0;
+            text-align: center;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 14px 28px;
+            background-color: #8b5cf6;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            border: 0;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Notification box */
+        .notification-box {
+            background-color: #f5f3ff;
+            border-left: 4px solid #8b5cf6;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+
+        /* Details table */
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .details-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .details-table td:first-child {
+            font-weight: bold;
+            width: 40%;
+        }
+
+        /* Footer styling */
+        .footer {
+            padding: 20px 40px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Link styling */
+        .footer a {
+            color: #8b5cf6;
+            text-decoration: underline;
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background-color: #e2e8f0;
+            margin: 20px 0;
+        }
+
+        /* Preference note */
+        .preference-note {
+            font-size: 13px;
+            color: #64748b;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        /* Icons */
+        .icon {
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        /* For mobile devices */
+        @media screen and (max-width: 600px) {
+            .content {
+                padding: 25px 20px;
+            }
+
+            .footer {
+                padding: 20px;
+            }
+
+            .details-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .details-table td:first-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f1f5f9">
+        <tr>
+            <td align="center" style="padding: 30px 0;">
+                <!-- Email Container -->
+                <table class="email-container" width="600" border="0" cellpadding="0" cellspacing="0">
+                    <!-- Header -->
+                    <tr>
+                        <td class="header">
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td align="center">
+                                        <!-- Replace with your logo -->
+                                        <img src="/api/placeholder/180/50" alt="Company Logo" class="logo">
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Main Content -->
+                    <tr>
+                        <td class="content">
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td>
+                                        <h1 style="margin-top: 0; color: #1e293b; font-size: 24px; text-align: center;">{{notification_title}}</h1>
+                                        <p>Hello {{user_name}},</p>
+                                        <p>{{notification_message}}</p>
+                                    </td>
+                                </tr>
+
+                                <!-- Notification Box -->
+                                <tr>
+                                    <td>
+                                        <div class="notification-box">
+                                            <h3 style="margin-top: 0; color: #8b5cf6;">{{notification_highlight_title}}</h3>
+                                            <p style="margin-bottom: 0;">{{notification_highlight_message}}</p>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Details Section -->
+                                <tr>
+                                    <td>
+                                        <h3 style="color: #1e293b;">Details</h3>
+                                        <table class="details-table" border="0" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                                <td>Date</td>
+                                                <td>{{detail_date}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Reference</td>
+                                                <td>{{detail_reference}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Status</td>
+                                                <td>{{detail_status}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Category</td>
+                                                <td>{{detail_category}}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+
+                                <!-- Action Button -->
+                                <tr>
+                                    <td class="button-container">
+                                        <a href="{{action_link}}" class="button">{{action_text}}</a>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="divider"></td>
+                                </tr>
+
+                                <!-- Preference Note -->
+                                <tr>
+                                    <td>
+                                        <p class="preference-note">You received this notification because you're subscribed to {{notification_category}} alerts. <a href="{{preferences_link}}">Manage your notification preferences</a>.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td class="footer">
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td align="center">
+                                        <p style="margin-bottom: 10px;">© {{current_year}} Your Company. All rights reserved.</p>
+                                        <p style="margin-top: 0;">
+                                            <a href="{{help_center_link}}">Help Center</a> |
+                                            <a href="{{privacy_policy_link}}">Privacy Policy</a> |
+                                            <a href="{{contact_us_link}}">Contact Us</a>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

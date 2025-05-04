@@ -14,8 +14,9 @@ class User(AbstractUser):
         ('isp', 'ISP'),
     )
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='user')
-    isp = models.ForeignKey('ISPProvider', null=True, blank=True, on_delete=models.SET_NULL,
-                                     related_name='users')
+    isp = models.ForeignKey('user_dashboard.SystemUser', null=True, blank=True, on_delete=models.SET_NULL,
+                            related_name='users')
+
     # package = models.ForeignKey(Package, related_name='users', on_delete=models.CASCADE)
 
     def is_admin(self):
@@ -37,24 +38,32 @@ class Detail(models.Model):
     phone = models.CharField(max_length=20)
 
 
-class ISPProvider(models.Model):
+class SystemUser(models.Model):
+    ROLE_CHOICES = (
+        ('manager', 'Manager'),
+        ('technician', 'Technician'),
+        ('admin', 'Admin'),
+        ('support', 'Support'),
+    )
     name = models.CharField(max_length=255)
     address = models.TextField()
     phone = models.CharField(max_length=50)
+    performance = models.IntegerField(default=0)
     email = models.EmailField()
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='isp_account')
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='technician')
 
 
 class Router(models.Model):
     name = models.CharField(max_length=255)
     identity = models.CharField(max_length=255)
     secrete = models.CharField(max_length=255)
-    location = models.CharField(max_length=255,null=True)
+    location = models.CharField(max_length=255, null=True)
     ip_address = models.GenericIPAddressField()
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
     active = models.BooleanField(default=False)
-    isp = models.ForeignKey(ISPProvider, related_name='routers', on_delete=models.CASCADE)
+    isp = models.ForeignKey(SystemUser, related_name='routers', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -133,9 +142,8 @@ class Package(models.Model):
     download_speed = models.CharField(max_length=255, default="No limit")
     type = models.CharField(max_length=20, choices=PACKAGE_CHOICES, default="hotspot", null=False)
     router = models.ForeignKey(Router, related_name='packages', on_delete=models.CASCADE)
-    duration=models.CharField(max_length=100,default="30 days")
-    created_at=models.DateTimeField(default=timezone.now)
-
+    duration = models.CharField(max_length=100, default="30 days")
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.name
@@ -151,5 +159,4 @@ class Client(models.Model):
     router_username = models.CharField(max_length=255)
     due = models.DateTimeField()
     created_at = models.DateTimeField(default=timezone.now)
-    address=models.CharField(max_length=255,default="No address")
-
+    address = models.CharField(max_length=255, default="No address")

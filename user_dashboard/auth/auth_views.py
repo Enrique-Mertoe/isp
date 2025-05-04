@@ -5,7 +5,7 @@ from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetVi
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views import View
 from .forms import LoginForm, PasswordResetForm
-from ..models import User, ISPProvider, Detail
+from ..models import User, SystemUser, Detail
 
 
 class AjaxFormMixin(LoginView):
@@ -55,11 +55,12 @@ class RegisterView(View):
                                         password=password)
         user.role = 'isp'
         user.save()
-        ISPProvider.objects.create(
+        SystemUser.objects.create(
             name=data['fname'] + ' ' + data['fname'],
             phone=data['phone'],
             email=email,
-            user=user
+            user=user,
+            role="admin",
         )
 
         Detail.objects.create(

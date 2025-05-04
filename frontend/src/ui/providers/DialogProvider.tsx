@@ -19,7 +19,7 @@ interface DialogContextType {
     create: (options: DialogOptions) => DialogBuilder;
 }
 
-interface DialogBuilder {
+export interface DialogBuilder {
     onDismiss: () => DialogBuilder | void;
     onOpen: () => DialogBuilder | void;
     dismiss: () => DialogBuilder | void;
@@ -34,6 +34,7 @@ const Dialog = ({
                     cancelable, content, onOpen, onClose, persist, size, design
                 }: DialogOptions): DialogInstance => {
     console.log(onClose, persist)
+
     const closeHandler: Closure[] = [];
     let hideHandler: Closure | null = null;
     let dismissHolder: Closure | null = null;
@@ -49,8 +50,8 @@ const Dialog = ({
             onOpen?.();
         },
         setView(view: React.ReactNode): DialogBuilder | void {
-            console.log(view)
-            return undefined;
+            content = view
+            return this
         },
         show(): void {
         }

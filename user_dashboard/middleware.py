@@ -1,6 +1,8 @@
 from django.shortcuts import redirect
 from django.utils.http import urlencode
 
+from user_dashboard.account import Account
+
 EXCLUDED_PATHS = [
     '/static/',  # static files
     '/media/',
@@ -18,6 +20,7 @@ class LoginRequiredMiddleware:
 
     def __call__(self, request):
         path = request.path
+        Account.init(request)
     #
     #     # Skip static/media/api or public paths
     #     if any(path.startswith(p) for p in EXCLUDED_PATHS):

@@ -7,3 +7,4 @@ cryptography~=44.0.2
 whitenoise
 django-cors-headers
 routeros-api
+sendgrid~=6.11.0

@@ -1,9 +1,12 @@
 # serializers.py
 import random
 import string
-from typing import Dict
+from typing import Dict, List, Optional
 
-from .models import Router, Package, User, Payment, Ticket, ISPProvider, Client, Billing
+from django.http import JsonResponse
+
+from mtk_command_api.utility import EthernetInterface, DhcpClient
+from .models import Router, Package, User, Payment, Ticket, SystemUser, Client, Billing
 
 
 def router_to_dict(router: Router):
@@ -22,14 +25,14 @@ def pkg_to_dict(pkg: Package):
     return {
         "id": pkg.id,
         "name": pkg.name,
-        "duration":pkg.duration,
+        "duration": pkg.duration,
         "price": pkg.price,
         "upload_speed": pkg.upload_speed,
         "download_speed": pkg.download_speed,
-        "speed":pkg.download_speed,
+        "speed": pkg.download_speed,
         "type": pkg.type,
         "router": router_to_dict(pkg.router),
-        "created":pkg.created_at.isoformat(),
+        "created": pkg.created_at.isoformat(),
     }
 
 
@@ -40,6 +43,7 @@ def user_to_dict(user: User):
         "email": user.email,
         # "package": pkg_to_dict(user.package),
         "role": user.role,
+        "isp": company_to_dict(user.isp),
         "due_amount": user.due_amount()
     }
 
@@ -83,7 +87,7 @@ def ticket_to_dict(ticket: Ticket) -> Dict:
     }
 
 
-def company_to_dict(company: ISPProvider):
+def company_to_dict(company: SystemUser):
     if not company:
         return {}
     return {
@@ -91,7 +95,8 @@ def company_to_dict(company: ISPProvider):
         "name": company.name,
         "email": company.email,
         "phone": company.phone,
-        "address": company.address
+        "address": company.address,
+        "role": company.role
     }
 
 
@@ -133,16 +138,26 @@ def get_mode_from_url(url):
         return 'http'
 
 
-def transform_ports(data):
+def get_wan_interface(clients: List[DhcpClient]) -> Optional[DhcpClient]:
+    for client in clients:
+        if client.status == "bound" and not client.disabled:
+            return client
+    return None
+
+
+def transform_ports(data: List['EthernetInterface'], wan: List["DhcpClient"]):
     """
        Transform RouterOS API data into a format suitable for UI
        Returns data in the format matching the Port interface
        """
     ports = []
     port_data = data
+    wan = get_wan_interface(wan)
     for port in port_data:
-        port_id = port.get('.id', '').replace('*', '')
-        port_name = port.get('name', '')
+        port_id = port.id.replace('*', '')
+        port_name = port.name
+        if wan and wan.interface == port_name:
+            continue
 
         # Determine port type
         port_type = 'ethernet'
@@ -151,21 +166,17 @@ def transform_ports(data):
         elif 'wlan' in port_name.lower():
             port_type = 'wireless'
 
-        # Determine port mode (WAN or LAN)
-        port_mode = None
-        if port.get('running') == True and (
-                int(port.get('rx-bytes', 0)) > 0 or
-                int(port.get('tx-bytes', 0)) > 0
-        ):
-            port_mode = 'wan'
-        elif port.get('running') == True:
-            port_mode = 'lan'
-
         ports.append({
             'id': port_id,
             'name': port_name,
             'type': port_type,
-            'mode': port_mode
+            'mode': None
         })
 
-    return ports
+    return ports, wan.interface if wan else None
+
+
+def make_response(*, ok=False, error='', message='', data: Dict = None, **kwargs):
+    return JsonResponse({
+        "ok": ok, "error": error, "message": message, "data": data or {}, **kwargs
+    })

@@ -1,43 +1,12 @@
 import {useState, useEffect, useRef} from "react";
 import Layout from "./home-components/Layout.tsx";
 import {request} from "../build/request.ts";
-import Config from "../assets/config.ts";
+import {useDialog} from "../ui/providers/DialogProvider.tsx";
+import Create from "./packages_components/Create.tsx";
+import {Package, Router} from "./packages_components/types.pkg.ts";
 
-interface Package {
-    id: number;
-    name: string;
-    price: number;
-    speed: string;
-    duration: string;
-    subscribers: number;
-    status: "active" | "inactive";
-    created: string;
-    router_id?: number;
-    router_identity?: string;
-    type: "ppoe" | "hotspot";
-}
 
-interface Router {
-    id: number;
-    name: string;
-    ip_address: string;
-    location: string;
-    username: string;
-    password: string;
-    identity: string
-}
 
-interface NewPackage {
-    name: string;
-    price: string;
-    speed: string;
-    duration: string;
-    durationUnit: "days" | "minutes" | "months";
-    status: "active" | "inactive";
-    router_id: number | null;
-    router_identity?: string;
-    type: "ppoe" | "hotspot";
-}
 
 export default function PackagesPage() {
     const [page, setPage] = useState(1);
@@ -55,21 +24,9 @@ export default function PackagesPage() {
     const [routers, setRouters] = useState<Router[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
-    const [showAddModal, setShowAddModal] = useState(false);
     const [activeFilter, setActiveFilter] = useState("all");
     const [packageToDelete, setPackageToDelete] = useState<Package | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [newPackage, setNewPackage] = useState<NewPackage>({
-        name: "",
-        price: "",
-        speed: "",
-        duration: "30",
-        durationUnit: "days",
-        status: "active",
-        router_id: null,
-        router_identity: "",
-        type: "ppoe"
-    })
+
 
     // Mock data - replace with actual API call
     useEffect(() => {
@@ -130,104 +87,6 @@ export default function PackagesPage() {
             fetchPackages(page, searchTerm, activeFilter);
         }
     }, [page]);
-
-
-    const handleRouterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const routerId = parseInt(e.target.value);
-        if (routerId) {
-            const selectedRouter = routers.find((router) => router.id === routerId);
-            console.log(selectedRouter);
-            if (selectedRouter) {
-                setNewPackage({
-                    ...newPackage,
-                    router_id: routerId,
-                    router_identity: selectedRouter.identity,
-                });
-            }
-        } else {
-            setNewPackage({
-                ...newPackage,
-                router_id: null,
-                router_identity: "",
-            });
-        }
-    };
-
-    // const handleDeletePackage = async (pkg: Package) => {
-    //     if (window.confirm(`Are you sure you want to delete the package "${pkg.name}"?`)) {
-    //         try {
-    //             const response = await request.post('/api/pkgs/delete/', {
-    //                 id: pkg.id
-    //             });
-
-    //             if (response.data.success) {
-    //                 // Remove the package from the state
-    //                 setPackages(prevPackages => prevPackages.filter(p => p.id !== pkg.id));
-    //                 // You could add a toast notification here
-    //                 alert(response.data.message);
-    //             }
-    //         } catch (error) {
-    //             console.error("Failed to delete package:", error);
-    //             alert("Failed to delete the package. Please try again.");
-    //         }
-    //     }
-    // };
-
-    const handleAddPackage = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-
-        // Format the duration with the unit
-        const formattedDuration = `${newPackage.duration} ${newPackage.durationUnit}`;
-
-        // Define the payload type
-        const packageData: Omit<NewPackage, "durationUnit"> & { session_timeout: string } = {
-            ...newPackage,
-            duration: formattedDuration,
-            session_timeout: formattedDuration,
-        };
-
-        try {
-            const response = await fetch(Config.baseURL + '/api/pkgs/create/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(packageData),
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const data: Package = await response.json();
-
-            console.log(data);
-
-            // Add the new package to the existing packages list
-            setPackages((prevPackages) => [...prevPackages, data]);
-
-            // Close the modal
-            setShowAddModal(false);
-
-            // Reset the form data
-            setNewPackage({
-                name: "",
-                price: "",
-                speed: "",
-                duration: "30",
-                durationUnit: "days",
-                status: "active",
-                router_id: null,
-                router_identity: "",
-                type: "ppoe",
-            });
-        } catch (error) {
-            console.error("Failed to add package:", error instanceof Error ? error.message : String(error));
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
     const handleSearch = (value: string) => {
         setSearchTerm(value);
         // Reset pagination when searching
@@ -305,6 +164,22 @@ export default function PackagesPage() {
             setIsLoadingMore(false);
         }
     };
+
+    const dialog = useDialog();
+    const UiCreate = () => {
+        const dl = dialog.create({
+            content: <Create handler={{
+                onDismiss: () => {
+                    dl.dismiss()
+                },
+                routers,
+            }}/>,
+            design: ["sm-down"],
+            size: "lg"
+        })
+    }
+
+     const [isSubmitting, setIsSubmitting] = useState(false);
     return (
         <Layout>
             <div className="p-4 md:p-6 lg:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
@@ -319,7 +194,7 @@ export default function PackagesPage() {
                         </div>
                         <div className="mt-4 md:mt-0">
                             <button
-                                onClick={() => setShowAddModal(true)}
+                                onClick={() => UiCreate()}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
                             >
                                 <i className="bi bi-plus-circle mr-2"></i>
@@ -400,7 +275,7 @@ export default function PackagesPage() {
                         {filteredPackages.map((pkg: Package) => (
                             <div
                                 key={pkg.id}
-                                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-t-4 border-blue-500 hover:shadow-lg transition-shadow duration-300"
+                                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-t-4 border-amber-500 hover:shadow-lg transition-shadow duration-300"
                             >
                                 <div className="flex justify-between items-start">
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{pkg.name}</h3>
@@ -418,7 +293,7 @@ export default function PackagesPage() {
                                 <div className="mt-4 space-y-2">
                                     <div className="flex items-center text-gray-700 dark:text-gray-300">
                                         <i className="bi bi-cash-coin mr-2"></i>
-                                        <span className="text-md font-semibold">KES {pkg.price}</span>
+                                        <span className="text-md font-semibold">Ksh {pkg.price}</span>
                                         <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">/ month</span>
                                     </div>
                                     <div className="flex items-center text-gray-700 dark:text-gray-300">
@@ -492,193 +367,6 @@ export default function PackagesPage() {
                 {!isLoading && !isLoadingMore && !hasMore && packages.length > 0 && (
                     <div className="col-span-full text-center py-4 text-gray-500 dark:text-gray-400">
                         You've reached the end of the list
-                    </div>
-                )}
-
-                {/* Add Package Modal */}
-                {showAddModal && (
-                    <div className="fixed inset-0 z-50 overflow-y-auto ">
-                        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
-                            <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] bg-opacity-75 transition-opacity"
-                                 onClick={() => setShowAddModal(false)}></div>
-                            <div
-                                className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-lg">
-                                <div className="bg-white dark:bg-gray-800 px-6 py-4">
-                                    <div className="flex justify-between items-center border-b pb-3">
-                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add New
-                                            Package</h3>
-                                        <button
-                                            onClick={() => setShowAddModal(false)}
-                                            className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
-                                        >
-                                            <i className="bi bi-x-lg"></i>
-                                        </button>
-                                    </div>
-
-                                    <form onSubmit={handleAddPackage} className="mt-4">
-                                        <div className="mb-4">
-                                            <label
-                                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                Package Name
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                value={newPackage.name}
-                                                onChange={(e) => setNewPackage({...newPackage, name: e.target.value})}
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4 mb-4">
-                                            <div>
-                                                <label
-                                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Price ($/month)
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                    value={newPackage.price}
-                                                    onChange={(e) => setNewPackage({
-                                                        ...newPackage,
-                                                        price: e.target.value
-                                                    })}
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <label
-                                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Speed
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="e.g., 100 Mbps"
-                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                    value={newPackage.speed}
-                                                    onChange={(e) => setNewPackage({
-                                                        ...newPackage,
-                                                        speed: e.target.value
-                                                    })}
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4 mb-4">
-                                            <div>
-                                                <label
-                                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Duration
-                                                </label>
-                                                <div className="flex">
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        className="w-2/3 p-2 border border-gray-300 rounded-l-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                        value={newPackage.duration}
-                                                        onChange={(e) => setNewPackage({
-                                                            ...newPackage,
-                                                            duration: e.target.value
-                                                        })}
-                                                        required
-                                                    />
-                                                    <select
-                                                        className="w-1/3 p-2 border border-gray-300 rounded-r-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white border-l-0"
-                                                        value={newPackage.durationUnit}
-                                                        onChange={(e) => setNewPackage({
-                                                            ...newPackage,
-                                                            durationUnit: e.target.value as "days" | "minutes" | "months"
-                                                        })}
-                                                        required
-                                                    >
-                                                        <option value="days">Days</option>
-                                                        <option value="minutes">Minutes</option>
-                                                        <option value="months">Months</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label
-                                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Type
-                                                </label>
-                                                <select
-                                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                    value={newPackage.type}
-                                                    onChange={(e) => setNewPackage({
-                                                        ...newPackage,
-                                                        type: e.target.value as "ppoe" | "hotspot"
-                                                    })}
-                                                    required
-                                                >
-                                                    <option value="ppoe">PPPoE</option>
-                                                    <option value="hotspot">Hotspot</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <label
-                                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                Router
-                                            </label>
-                                            <select
-                                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                value={newPackage.router_id || ""}
-                                                onChange={handleRouterChange}
-                                                required
-                                            >
-                                                <option value="">Select a router</option>
-                                                {routers.map(router => (
-                                                    <option key={router.id} value={router.id}>
-                                                        {router.name} ({router.ip_address})
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="mt-6 flex justify-end">
-                                            {isSubmitting ? (
-                                                <button
-                                                    type="button"
-                                                    disabled
-                                                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center justify-center"
-                                                >
-                                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                                                         xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                         viewBox="0 0 24 24">
-                                                        <circle className="opacity-25" cx="12" cy="12" r="10"
-                                                                stroke="currentColor" strokeWidth="4"></circle>
-                                                        <path className="opacity-75" fill="currentColor"
-                                                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                    </svg>
-                                                    Processing...
-                                                </button>
-                                            ) : (
-                                                <>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowAddModal(false)}
-                                                        className="mr-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                    <button
-                                                        type="submit"
-                                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                                    >
-                                                        Add Package
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 )}
             </div>

@@ -16,7 +16,7 @@ from ISP import settings
 import requests as req
 
 from user_dashboard.helpers import get_client_provisioning_data, get_host, generate_key, get_mode_from_url
-from user_dashboard.models import Router, ISPProvider
+from user_dashboard.models import Router, SystemUser
 
 
 @dataclasses.dataclass
@@ -73,7 +73,7 @@ def gen_mtk_provision(request):
                 location="ss",
                 ip_address="not found",
                 secrete=res.task_id,
-                isp=ISPProvider.objects.get(user=user.id),
+                isp=SystemUser.objects.get(user=user.id),
                 identity=mtk_info["name"]
             )
             client_info = {
