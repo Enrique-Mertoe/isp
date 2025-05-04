@@ -200,6 +200,7 @@ export default function TeamManagement() {
 
     // Handle adding/updating a team member
     const handleAddOrUpdate = () => {
+
         if (editingMember) {
             // Update existing member
             setMembers(members.map(member =>
