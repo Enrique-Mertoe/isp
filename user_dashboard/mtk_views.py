@@ -61,6 +61,7 @@ def gen_mtk_provision(request):
             # Initial request to create provision
             res = req.post(api_url + f"/mikrotik/openvpn/create_provision/{mtk_info['name']}")
             res = ResponseData(**res.json())
+            print(res)
             if res.status in ["error", None]:
                 return JsonResponse({
                     "error": f"Something went wrong. {res.message or ''}"
@@ -108,6 +109,7 @@ def gen_mtk_provision(request):
                 "script": str(script), "pvr_url": provisioning_url, "rsc_file": rsc_file
             })
         except Exception as e:
+            raise
             print(str(e))
             return JsonResponse({
                 "ok": False,

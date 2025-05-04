@@ -1,20 +1,10 @@
-import routeros_api as router
+from intasend import APIService
 
-# pool = router.connect(
-#     host='192.168.88.1',
-#     password='12345_-',
-#     username='admin'
-# ).login()
+publishable_key = "ISPubKey_test_bf9cd546-8017-4af8-bf73-3e754887d3ff"
+service = APIService(token="ISSecretKey_test_0b3dce15-b552-4492-8777-80cb83fdcfab", publishable_key=publishable_key, test=True)
 
-conn = router.RouterOsApiPool(host='192.168.88.1',
-                              password='12345_-',
-                              username='admin',
-                              plaintext_login=True)
-api = conn.get_api()
-# ip_addresses = api.get_resource('ip/address').get()
-# qry = api.get_resource("ppp/profile").add(name='ido',bridge_path_cost='300')
-qry = api.get_resource("system").call("reboot")
-# for ip in ip_addresses:
-#     print(ip)
+response = service.collect.checkout(phone_number=25411376536,
+                                    email="brianndesa262@gmail.com", amount=10, currency="KES", comment="Service Fees", redirect_url="http://example.com/thank-you")
+print(response.get("url"))
 
-# connection.disconnect()
+print(response.get("url"))  # Redirect user here for payment

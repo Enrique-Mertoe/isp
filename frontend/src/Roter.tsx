@@ -14,6 +14,8 @@ import RouterView from "./pages/RouterView.tsx";
 // import PaymentAndBillingPage from "./pages/PaymentAndBillingPage.tsx";
 import PaymentsPage from "./pages/PaymentsPage.tsx";
 import ManagementPage from "./pages/ManagementPage.tsx";
+import IspPaymentPage from "./pages/IspPayment";
+
 
 function RouterAwareApp() {
     const location = useLocation();
@@ -36,6 +38,7 @@ function RouterAwareApp() {
                 <Route path="/mikrotiks/:pk/" element={<RouterView/>}/>
                 <Route path="/auth/login/" element={<SignInPage/>}/>
                 <Route path="/auth/register/" element={<SignUpPage/>}/>
+                <Route path="/accountpay/" element={<IspPaymentPage/>}/>
             </Routes>
         </AppProvider>
     );

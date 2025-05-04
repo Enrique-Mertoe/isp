@@ -1,7 +1,7 @@
 from datetime import timedelta
 import random
 import string
-
+from decouple import config
 import requests
 import routeros_api as r_os
 from django.contrib.auth.decorators import login_required
@@ -18,12 +18,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 import json, re
+from intasend import APIService
 from ISP import settings
 from mtk_command_api.mtk import MikroManager
 from user_dashboard.helpers import router_to_dict, pkg_to_dict, user_to_dict, company_to_dict, client_to_dict, \
     generate_invoice_number, transform_ports
-from user_dashboard.models import Router, Package, ISPProvider, Client, Billing
+from user_dashboard.models import Router, Package, ISPProvider, Client, Billing ,ISPAccountPayment
 from ISP.settings import mikrotik_manager
+import uuid
 
 
 # Create your views here.
@@ -41,6 +43,142 @@ def generate_password(name: str) -> str:
 @ensure_csrf_cookie
 def set_csrf(request):
     return JsonResponse({'detail': 'CSRF cookie set'})
+
+# views.py
+@csrf_exempt
+def initiate_payment(request):
+    if request.method == 'POST':
+        try:
+            # Parse request data
+            data = json.loads(request.body)
+            payment_method = data.get('payment_method')
+            amount = data.get('amount', 0)
+            currency = data.get('currency', 'KES')
+            
+            # Get user information
+            # user = request.user
+            user=request.user.isp
+            # user=ISPProvider.objects.get(id=3)
+            # In production, use authenticated user info
+            # email = user.email if user.is_authenticated else data.get('email', '')
+            # phone_number = user.profile.phone if hasattr(user, 'profile') and hasattr(user.profile, 'phone') else data.get('phone_number', '')
+            
+            # For demo purposes
+            email = user.email
+            phone_number = user.phone
+            
+            # Initialize IntaSend service
+            publishable_key = config("INTASEND_PUBLISHABLE_KEY")
+            secret_key = config("INTASEND_SECRET_KEY")
+            service = APIService(
+                token=secret_key,
+                publishable_key=publishable_key,
+                test=True  # Set to False in production
+            )
+            
+            # Create a payment record in our system first
+            payment = ISPAccountPayment.objects.create(
+                user=user,
+                amount=amount,
+                currency=currency,
+                payment_method=payment_method,
+                invoice_id=f"INV-{uuid.uuid4().hex[:8].upper()}",  # Generate unique invoice ID
+                status='pending'
+            )
+            
+            # Initiate payment with IntaSend
+            response = service.collect.checkout(
+                # phone_number=phone_number,
+                email=email,
+                amount=500,
+                currency=currency,
+                comment="Payment for ISP service",
+                api_ref=payment.invoice_id,  # Use our invoice ID as reference
+                phone_number=phone_number,
+                redirect_url="https://mksu.com"  # Replace with your actual redirect URL
+            )
+            
+            # Update payment record with IntaSend checkout details
+            payment.checkout_id = response.get('id')
+            payment.payment_url = response.get('url')
+            payment.save()
+            
+            # Return payment URL and details
+            return JsonResponse({
+                'status': 'success',
+                'payment_url': response.get('url'),
+                'checkout_id': response.get('id'),
+                'invoice_id': payment.invoice_id
+            })
+            
+        except Exception as e:
+            
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=400)
+
+@csrf_exempt
+def intasend_webhook_view(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            print("IntaSend webhook received:", data)
+            
+            # Handle challenge (if IntaSend sends a challenge parameter)
+            # if "challenge" in data:
+            #     return JsonResponse({"challenge": data["challenge"]})
+            
+            # Process payment update
+            invoice_id = data.get("api_ref")
+            state = data.get("state")
+            
+            # If no invoice ID in api_ref, use invoice_id from the webhook
+            print('here i am222 ',invoice_id,state)
+
+            if not invoice_id:
+                invoice_id = data.get("invoice_id")
+            
+            # Try to find our payment record
+            try:
+                print('here i am ')
+                payment = ISPAccountPayment.objects.get(invoice_id=invoice_id)
+                print(payment.status,state)
+                
+                # Update payment status based on webhook state
+                if state == "PENDING":
+                    payment.status = "pending"
+                elif state == "PROCESSING":
+                    payment.status = "processing"
+                elif state == "COMPLETED":
+                    payment.status = "completed"
+                    payment.payment_expiry = timezone.now() + timezone.timedelta(days=30)  # Assuming 1 hour expiry
+                elif state == "FAILED":
+                    payment.status = "failed"
+                    payment.failed_reason = data.get("failed_reason")
+                    payment.failed_code = data.get("failed_code")
+                
+                # Update additional information
+                payment.mpesa_reference = data.get("mpesa_reference")
+                payment.save()
+                
+                # Process additional business logic based on payment status
+                if payment.status == "completed":
+                    # Handle successful payment (e.g., activate service, send notification)
+                    pass
+                
+                return JsonResponse({"status": "received", "payment_updated": True}, status=200)
+                
+            except ISPAccountPayment.DoesNotExist:
+                return JsonResponse({"status": "received", "payment_updated": False, 
+                                    "error": "Payment record not found"}, status=200)
+                
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
 
 
 def start_app(request):
@@ -745,4 +883,8 @@ def get_user_packages(request):
 
 @api_view(["GET", "POST"])
 def hotspot_packages(request):
+    ip=request.POST.get("ip")
+    routerId=request.get("router")
+    
+
     return render(request, "hotspot/packages.html")

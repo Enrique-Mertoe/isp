@@ -1,10 +1,14 @@
 from django.shortcuts import redirect
 from django.utils.http import urlencode
+from user_dashboard.models import ISPAccountPayment
+from django.utils import timezone
 
 EXCLUDED_PATHS = [
     '/static/',  # static files
     '/media/',
-    '/api/csrf/'
+    '/api/csrf/',
+    '/accountpay/',  
+
 ]
 
 AUTH_PATHS = [
@@ -18,20 +22,19 @@ class LoginRequiredMiddleware:
 
     def __call__(self, request):
         path = request.path
+        print(path)
+
     #
     #     # Skip static/media/api or public paths
-    #     if any(path.startswith(p) for p in EXCLUDED_PATHS):
-    #         return self.get_response(request)
-    #     # Redirect if user is NOT authenticated
-    #     if request.method == "GET" and not request.user.is_authenticated and not any(
-    #             path.startswith(p) for p in AUTH_PATHS):
-    #         next_url = request.get_full_path()
-    #         login_url = '/auth/login/'
-    #         query_string = urlencode({'next': next_url})
-    #         return redirect(f'{login_url}?{query_string}')
-    #
-    #     # Redirect logged-in users away from auth pages
-    #     if request.user.is_authenticated and any(path.startswith(p) for p in AUTH_PATHS):
-    #         return redirect('/')  # or dashboard/homepage
-    #
+        if (path in EXCLUDED_PATHS):
+            return self.get_response(request)
+        # if request.user.is_authenticated and path.startswith('/accountpay/'):
+        #         latest_payment = (
+        #             ISPAccountPayment.objects
+        #             .filter(user=request.user.isp, status='completed',payment_expiry__isnull=False, payment_expiry__gt=timezone.now())
+        #             .order_by('-payment_expiry')
+        #             .first()
+        #         )
+        #         if not latest_payment:
+        #             return redirect('/accountpay/')  # force payment if expired or not completed
         return self.get_response(request)
