@@ -418,7 +418,7 @@ export default function PackagesPage() {
                                 <div className="mt-4 space-y-2">
                                     <div className="flex items-center text-gray-700 dark:text-gray-300">
                                         <i className="bi bi-cash-coin mr-2"></i>
-                                        <span className="text-lg font-semibold">${pkg.price}</span>
+                                        <span className="text-md font-semibold">KES {pkg.price}</span>
                                         <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">/ month</span>
                                     </div>
                                     <div className="flex items-center text-gray-700 dark:text-gray-300">
