@@ -53,6 +53,30 @@ class SystemUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='isp_account')
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='technician')
 
+class ISPAccountPayment(models.Model):
+    user = models.ForeignKey('ISPProvider', on_delete=models.CASCADE, related_name='isp_account_payments')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=False)
+    payment_method = models.CharField(max_length=100, blank=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=20, 
+                             choices=(('pending', 'Pending'), 
+                                     ('processing', 'Processing'), 
+                                     ('completed', 'Completed'), 
+                                     ('failed', 'Failed')), 
+                             default='pending')
+    invoice_id = models.CharField(max_length=50, unique=True)
+    checkout_id = models.CharField(max_length=100, null=True, blank=True)
+    payment_url = models.URLField(max_length=500, null=True, blank=True)
+    payment_expiry = models.DateTimeField(null=True, blank=True,default=None)
+    currency = models.CharField(max_length=3, default='KES')
+    mpesa_reference = models.CharField(max_length=100, null=True, blank=True)
+    failed_reason = models.CharField(max_length=255, null=True, blank=True)
+    failed_code = models.CharField(max_length=50, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.amount} {self.currency} - {self.status}"
+
+
 
 class Router(models.Model):
     name = models.CharField(max_length=255)
