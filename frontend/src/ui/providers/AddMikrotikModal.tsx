@@ -3,6 +3,7 @@ import {$} from "../../build/request.ts";
 import {ChevronRight, X, Wifi, CheckCircle, Loader2, RefreshCw, Copy, AlertCircle, AlertTriangle} from "lucide-react";
 import {motion, AnimatePresence} from "framer-motion";
 import PortConfigurator, {PortProp} from "../PortConfigurator.tsx";
+import Signal from "../../lib/Signal.ts";
 
 type RouterForm = {
     mtkName: string;
@@ -23,7 +24,7 @@ type Interface = {
 };
 
 interface AddMikrotikModalProps {
-    onClose: () => void;
+    onClose: (refresh?: boolean) => void;
 }
 
 
@@ -285,7 +286,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({info, form, conn}) => {
 };
 
 export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState(2);
     const [loading, setLoading] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState<"idle" | "connecting" | "connected" | "failed">("idle");
     const [checkingAttempts, setCheckingAttempts] = useState(0);
@@ -294,7 +295,7 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
     const [showSuccess, setShowSuccess] = useState(false);
 
     const [form, setForm] = useState<RouterForm>({
-        mtkName: "",
+        mtkName: "MikroTik9",
         location: "",
         ip: "",
         username: "",
@@ -318,7 +319,7 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
     });
 
     // Service configuration state
-    const [serviceType, setServiceType] = useState<"pppoe" | "hotspot">("pppoe");
+    const [serviceType, setServiceType] = useState<("pppoe" | "hotspot")[]>([]);
     const [setupProgress, setSetupProgress] = useState<{
         stage: string;
         percent: number;
@@ -332,7 +333,7 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
     useEffect(() => {
         setForm(prev => ({
             ...prev,
-            mtkName: `MikroTik44`
+            mtkName: `MikroTik9`
         }));
         const fetchRouterCount = async () => {
             $.get<{ count: number }>({url: "/api/routers/count/", data: {}}).then(
@@ -470,7 +471,8 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                             display: disp,
                             error: undefined,
                             status: "complete",
-                            form,onReload:()=>{}
+                            form, onReload: () => {
+                            }
                         });
                         setConnectionStatus("connecting")
 
@@ -479,18 +481,18 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
 
 
             } else if (step === 2) {
-                if (phCheck?.())
-                    return nextStep()
-                setNextStepEnabled(true);
+                Signal.trigger("mtk-i-proceed", () => {
+                    nextStep()
+                })
+                return setNextStepEnabled(true);
 
             } else if (step === 3) {
-                // Submit the selected interfaces
-                await $.post({
+                setNextStepEnabled(false);
+                $.post({
                     url: "/api/routers/configure-interfaces/",
                     data: {
                         router_name: form.mtkName,
-                        wan_interface: form.selectedWanInterface,
-                        lan_interface: form.selectedLanInterface
+                        lan: form.selectedLanInterface
                     }
                 });
                 setNextStepEnabled(true);
@@ -515,7 +517,7 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                 setSetupProgress({
                     stage: "Service configuration",
                     percent: 60,
-                    message: `Configuring ${serviceType === "pppoe" ? "PPPoE Server" : "Hotspot"} service...`
+                    message: `Configuring ${serviceType.includes("pppoe") ? "PPPoE Server" : "Hotspot"} service...`
                 });
 
                 await new Promise(resolve => setTimeout(resolve, 2000));
@@ -562,9 +564,12 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
 
     // Handle service type selection
     const handleServiceTypeChange = (type: "pppoe" | "hotspot") => {
-        setServiceType(type);
+        setServiceType(prev =>
+            prev.includes(type)
+                ? prev.filter(t => t != type)
+                : [...prev, type]
+        );
     };
-
 
     const renderStepContent = () => {
         switch (step) {
@@ -643,7 +648,7 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                         <PortConfigurator props={ph} router={form.mtkName || "MikroTik38"}/>
                     </motion.div>
                 );
-            case 4:
+            case 3:
                 return (
                     <motion.div
                         initial={{opacity: 0, y: 20}}
@@ -702,7 +707,7 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                                     className="mt-6"
                                 >
                                     <button
-                                        onClick={onClose}
+                                        onClick={()=>onClose()}
                                         className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                                     >
                                         Go to Dashboard
@@ -720,17 +725,17 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                                         <div>
                                             <label
                                                 className={`inline-flex items-center p-3 border rounded-lg w-full cursor-pointer transition-all ${
-                                                    serviceType === 'pppoe'
+                                                    serviceType.includes("pppoe")
                                                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-700'
                                                         : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
                                                 }`}
                                                 onClick={() => handleServiceTypeChange('pppoe')}
                                             >
                                                 <input
-                                                    type="radio"
-                                                    name="service_type"
-                                                    className="form-radio h-5 w-5 text-blue-600"
-                                                    checked={serviceType === 'pppoe'}
+                                                    type="checkbox"
+                                                    name="service_type_ppoe"
+                                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                                    defaultChecked={serviceType.includes("pppoe")}
                                                     onChange={() => {
                                                     }}
                                                 />
@@ -745,19 +750,20 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                                         <div>
                                             <label
                                                 className={`inline-flex items-center p-3 border rounded-lg w-full cursor-pointer transition-all ${
-                                                    serviceType === 'hotspot'
-                                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-700'
+                                                    serviceType.includes("hotspot") ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-700'
                                                         : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
                                                 }`}
                                                 onClick={() => handleServiceTypeChange('hotspot')}
                                             >
                                                 <input
-                                                    type="radio"
-                                                    name="service_type"
-                                                    className="form-radio h-5 w-5 text-blue-600"
-                                                    checked={serviceType === 'hotspot'}
+                                                    type="checkbox"
+                                                    name="service_type_hotspot"
+                                                    className="w-4 h-4 outline-0 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                                                    defaultChecked={serviceType.includes("hotspot")}
                                                     onChange={() => {
+
                                                     }}
+
                                                 />
                                                 <div className="ml-2">
                                                     <span className="text-sm font-medium">Hotspot</span>
@@ -783,7 +789,7 @@ export default function AddMikrotikModal({onClose}: AddMikrotikModalProps) {
                         id="service-config"
                         className="bg-gray-50 border-2 border-gray-300 outline-0 text-gray-900 text-sm font-mono rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                         rows={12}
-                        defaultValue={serviceType === 'pppoe' ?
+                        defaultValue={serviceType.includes("pppoe") ?
                             `# PPPoE Server Configuration
 /interface bridge
 add name=bridge-lan
@@ -890,7 +896,7 @@ add action=accept chain=forward in-interface=bridge-lan out-interface=${form.sel
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="font-bold text-xl">Add MikroTik Device</h2>
                     <button
-                        onClick={onClose}
+                        onClick={() => onClose()}
                         className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
                         <X className="w-5 h-5 text-gray-500"/>

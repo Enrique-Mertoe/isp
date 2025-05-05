@@ -17,11 +17,9 @@ from decouple import config
 from django.contrib import staticfiles
 from mtk_command_api.mtk import MikroManager
 
-
 from mtk_command_api.mtk import MikroManager
 
 pymysql.install_as_MySQLdb()
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -151,14 +149,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     'http://192.168.10.3:5173',
     "http://127.0.0.1:5173",
-    'http://192.168.88.254:5173'
+    'http://192.168.88.251:5173'
 
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     'https://isp.coolify.kaigates.com',
-    'http://192.168.88.254:5173',
+    'http://192.168.88.251:5173',
     'http://192.168.10.3:5173'
 ]
 AUTH_USER_MODEL = 'user_dashboard.User'
@@ -184,13 +182,11 @@ HOSTNAME = "isp3.lomtechnology.com"  # Your server's hostname
 # VPN settings
 VPN_SERVER_IP = "34.45.29.23"
 
-
 MikroManager.initialise(
     api_key="test-api-key",
     server_id="LomTech",
     server_url=API_URL
 )
-
 
 # Initialize the singleton instance
 # mikrotik_manager = MikroManager(
@@ -199,8 +195,16 @@ MikroManager.initialise(
 #     server_url=f"{API_URL}/mtk/console"
 # )
 
-mikrotik_manager=MikroManager.mikrotik
+mikrotik_manager = MikroManager.mikrotik
 
 # router_conn = mikrotik_manager.connect_router("192.168.1.1", "admin", "password")
 
 
+SENDGRID_API_KEY = config('SENDGRID_API_KEY')
+
+# Email domain configurations
+EMAIL_DOMAINS = {
+    'info': 'info@yourdomain.com',
+    'support': 'support@yourdomain.com',
+    # etc...
+}

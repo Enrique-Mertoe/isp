@@ -20,6 +20,7 @@ from django.views.generic import TemplateView
 
 from user_dashboard import views, dash_view, mtk_views
 from user_dashboard.mtk_views import serve_hotspot_file
+from user_dashboard.view_functions import team
 from user_dashboard.views import set_csrf
 
 router_url_patterns = [
@@ -80,6 +81,8 @@ urlpatterns = [
 
     # Add these new patterns
     path('mikrotik/hotspot/<str:router_identity>/<str:file_name>', serve_hotspot_file, name='hotspot_file'),
-    path("hotspot/", include("user_dashboard.urls"))
+    path("hotspot/", include("user_dashboard.urls")),
+    path("test/", views.et, name="sss"),
+    *team.urlpatterns
 
 ]

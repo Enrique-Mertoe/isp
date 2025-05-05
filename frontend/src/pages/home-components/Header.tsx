@@ -15,14 +15,17 @@ import {
     Users
 } from "lucide-react";
 import Signal from "../../lib/Signal.ts";
-import placeholder_img from "../../assets/placeholder.jpg"
+import avatar from "../../assets/placeholder.jpg"
+import {useNavigate} from "react-router-dom";
+import Config from "../../assets/config.ts";
+import {useApp} from "../../ui/AppContext.tsx";
 // Simulate user data - you'll replace this with actual data from your backend
-const userData = {
-    name: "John Doe",
-    email: "john.doe@yourcompany.com",
-    role: "Administrator",
-    avatar: placeholder_img
-};
+// const userData = {
+//     name: "John Doe",
+//     email: "john.doe@yourcompany.com",
+//     role: "Administrator",
+//     avatar: placeholder_img
+// };
 
 // Simulate notifications - you'll populate these from your backend
 const notifications = [
@@ -33,6 +36,7 @@ const notifications = [
 ];
 
 export default function Header() {
+    const navigate = useNavigate();
     const [darkMode, setDarkMode] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
@@ -44,6 +48,8 @@ export default function Header() {
 
     const userMenuRef = useRef(null);
     const notificationsRef = useRef(null);
+    const userData = useApp().currentUser();
+
 
     // Calculate unread notifications
     useEffect(() => {
@@ -244,13 +250,13 @@ export default function Header() {
                                 className="flex items-center justify-center space-x-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:hover:bg-gray-700"
                             >
                                 <img
-                                    src={userData.avatar}
+                                    src={avatar}
                                     alt="User"
                                     className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600"
                                 />
                                 <div className="hidden md:block text-left">
-                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{userData.name}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-500">{userData.role}</p>
+                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{userData?.username}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-500">{userData?.isp?.role}</p>
                                 </div>
                                 <ChevronDown size={16} className="hidden md:block text-gray-400"/>
                             </button>
@@ -258,19 +264,25 @@ export default function Header() {
                             {/* User Dropdown */}
                             {showUserMenu && (
                                 <div
-                                    className="absolute right-0 mt-2 w-56 rounded-lg bg-white shadow-lg overflow-hidden border border-gray-200 z-50 dark:bg-gray-800 dark:border-gray-700">
+                                    className="absolute right-0 mt-2 w-66 rounded-lg bg-white shadow-lg overflow-hidden border border-gray-200 z-50 dark:bg-gray-800 dark:border-gray-700">
                                     <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{userData.name}</p>
-                                        <p className="text-xs text-gray-500 mt-0.5 dark:text-gray-400">{userData.email}</p>
+                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{userData?.username}</p>
+                                        <p className="text-xs text-gray-500 mt-0.5 dark:text-gray-400">{userData?.email}</p>
                                     </div>
                                     <div className="py-1">
                                         {[
-                                            {icon: User, text: "My Profile", delay: 0},
-                                            {icon: Users, text: "Manage Team", delay: 50},
-                                            {icon: BarChart, text: "Analytics", delay: 100},
-                                            {icon: Settings, text: "Settings", delay: 150}
+                                            {icon: User, link: "/team/", text: "My Profile", delay: 0},
+                                            {icon: Users, link: "/team/", text: "Manage Team", delay: 50},
+                                            {icon: BarChart, link: "/team/", text: "Analytics", delay: 100},
+                                            {icon: Settings, link: "/team/", text: "Settings", delay: 150}
                                         ].map((item, index) => (
-                                            <button
+                                            <a
+                                                href={"/team/"}
+                                                onClick={e => {
+                                                    e.preventDefault();
+                                                    setShowUserMenu(false)
+                                                    navigate(item.link);
+                                                }}
                                                 key={index}
                                                 className="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                                                 style={{
@@ -279,12 +291,16 @@ export default function Header() {
                                             >
                                                 <item.icon size={16} className="mr-2"/>
                                                 {item.text}
-                                            </button>
+                                            </a>
                                         ))}
                                     </div>
                                     <div className="py-1 border-t border-gray-200 dark:border-gray-700">
                                         <button
-                                            className="flex items-center w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-gray-100 dark:text-red-400 dark:hover:bg-gray-700"
+                                            onClick={() => {
+                                                location.href = Config.baseURL + "/auth/logout"
+                                            }}
+                                            type={"button"}
+                                            className="flex cursor-pointer items-center w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-gray-100 dark:text-red-400 dark:hover:bg-gray-700"
                                             style={{
                                                 animation: `fadeIn 300ms ease-out 200ms both`
                                             }}
@@ -322,11 +338,10 @@ export default function Header() {
                             {icon: User, text: "My Profile"},
                             {icon: Settings, text: "Settings"},
                             {icon: HelpCircle, text: "Help & Support"},
-                            {icon: LogOut, text: "Sign out", textColor: "text-red-600 dark:text-red-400"}
                         ].map((item, index) => (
                             <button
                                 key={index}
-                                className={`flex items-center w-full px-4 py-2 text-sm ${item.textColor || "text-gray-700 dark:text-gray-300"} hover:bg-gray-100 dark:hover:bg-gray-700`}
+                                className={`flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700`}
                                 style={{
                                     animation: `fadeIn 300ms ease-out ${index * 50}ms both`
                                 }}
@@ -335,6 +350,15 @@ export default function Header() {
                                 {item.text}
                             </button>
                         ))}
+                        <button
+                            className={`flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700`}
+                            style={{
+                                animation: `fadeIn 300ms ease-out ${4 * 50}ms both`
+                            }}
+                        >
+                            <HelpCircle size={18} className="mr-3"/>
+                            Sign out
+                        </button>
                     </div>
                 </div>
             )}

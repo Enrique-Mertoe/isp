@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from easy_client.context import ServerContext
+from mtk_command_api.utility import EthernetInterface, DhcpClient
 
 
 @dataclass
@@ -472,14 +473,30 @@ class Network:
         """
         return self.client._send_request("/interface/print")
 
-    def list_ports(self) -> Response:
+    def list_ports(self) -> List[EthernetInterface]:
         """
         List all network ports
 
         Returns:
             Response with list of all ports e.g ether1,ether2 sfp
         """
-        return self.client._send_request("/interface/ethernet/print")
+        res = self.client._send_request("/interface/ethernet/print")
+        if res.success and res.data:
+            return [EthernetInterface.from_dict(d) for d in res.data]
+        return []
+
+    @property
+    def wan(self) -> List[DhcpClient]:
+        """
+        List all network ports
+
+        Returns:
+            Response with list of all ports e.g ether1,ether2 sfp
+        """
+        res = self.client._send_request("/ip/dhcp-client/print")
+        if res.success and res.data:
+            return [DhcpClient.from_dict(d) for d in res.data]
+        return []
 
     def ip_addresses(self, interface=None) -> Response | str:
         """

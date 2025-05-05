@@ -5,6 +5,7 @@ import GIcon from "../../ui/components/Icons.tsx";
 import {useSignIn} from "../../hooks/useSignIn.ts";
 import {Plus} from "lucide-react";
 import {useNavigate} from "react-router-dom";
+import Fav from "../../assets/logo.png"
 
 const SignInPage: React.FC = () => {
     const su = useSignIn()

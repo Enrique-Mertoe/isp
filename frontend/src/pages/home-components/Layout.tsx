@@ -25,6 +25,7 @@ export default function Layout({children}: {
                 setCount("users", data.users)
                 setCount("package", data.packages)
                 setCount("router", data.routers)
+                console.log(data)
                 currentUser(data.user)
             }).catch(err => {
             console.log(err);

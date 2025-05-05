@@ -3,11 +3,13 @@ from django.utils.http import urlencode
 from user_dashboard.models import ISPAccountPayment
 from django.utils import timezone
 
+from user_dashboard.account import Account
+
 EXCLUDED_PATHS = [
     '/static/',  # static files
     '/media/',
     '/api/csrf/',
-    '/accountpay/',  
+    '/accountpay/',
 
 ]
 
@@ -22,6 +24,7 @@ class LoginRequiredMiddleware:
 
     def __call__(self, request):
         path = request.path
+        Account.init(request)
         print(path)
 
     #
