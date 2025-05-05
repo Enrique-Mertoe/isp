@@ -260,7 +260,7 @@ def serve_hotspot_file(request, router_identity, file_name):
         # Context data for the template
         context = {
             'url': get_host(request) + "/hotspot/packages",
-            'router': router,
+            'router': router.identity,
             'isp_name': settings.ISP_NAME,
             'support_phone': settings.SUPPORT_PHONE,
             'year': datetime.datetime.now().year

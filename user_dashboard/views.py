@@ -883,8 +883,40 @@ def get_user_packages(request):
 
 @api_view(["GET", "POST"])
 def hotspot_packages(request):
-    ip=request.POST.get("ip")
-    routerId=request.get("router")
-    
+    body=json.loads(request.body) if request.body else None
+    print(request.POST.get("ip"))
+    if(body is not None and body.get("action")=="fetchPackages"):
+        routers=Package.filter(
+           router__identity=request.POST.get("identity"),
+           router__ip_address=request.POST.get("ip")
+       )
+        if not routers:
+           return JsonResponse({
+               "error": "No packages found for this router"
+           }, status=404)
+        
+        print(routers)
+        def pkg_to_dict1(pkg):
+            return {
+                "id": pkg.id,
+                "name": pkg.name,
+                "download_speed": pkg.download_speed,
+                "upload_speed": pkg.upload_speed,
+                "price": pkg.price,
+                "duration": pkg.duration,
+                "type": pkg.type,
+            }
+       
+        return JsonResponse({
+            "packages": [pkg_to_dict1(pkg) for pkg in routers]
+        }, status=200)
 
-    return render(request, "hotspot/packages.html")
+    ip=request.POST.get("ip")
+    routerId=request.POST.get("router")
+    context = {
+        'ip': ip,
+        'routerId': routerId
+    }
+
+
+    return render(request, "hotspot/packages.html",context)

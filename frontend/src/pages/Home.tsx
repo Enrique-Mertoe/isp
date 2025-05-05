@@ -6,7 +6,7 @@ import {
 import {
   Users, Wifi, Server, AlertTriangle, Globe, ArrowUpRight,
   Calendar, Clock, BarChart3, PieChart as PieChartIcon,
-  Download, Upload, ChevronRight, MoreHorizontal, Map, Search
+  Download, Upload, ChevronRight, MoreHorizontal, Map
 } from 'lucide-react';
 import Layout from "./home-components/Layout.tsx";
 
@@ -61,7 +61,7 @@ export default function HomePage() {
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [activeView, setActiveView] = useState('grid');
+  const [activeView, _setActiveView] = useState('grid');
 
   useEffect(() => {
     // Simulate loading data
@@ -91,7 +91,7 @@ export default function HomePage() {
   }, []);
 
   // Format currency for KES
-  const formatCurrency = (value) => {
+  const formatCurrency = (value:any) => {
     return new Intl.NumberFormat('en-KE', {
       style: 'currency',
       currency: 'KES',
@@ -100,7 +100,7 @@ export default function HomePage() {
   };
 
   // Status color mapping
-  const getStatusColor = (status) => {
+  const getStatusColor = (status:string) => {
     switch(status) {
       case 'Critical': return 'text-red-500 bg-red-100';
       case 'High': return 'text-orange-500 bg-orange-100';
@@ -273,7 +273,7 @@ export default function HomePage() {
                               dataKey="value"
                               label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
                           >
-                            {customerData.map((entry, index) => (
+                            {customerData.map((_entry, index) => (
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
                             ))}
                           </Pie>
@@ -446,61 +446,7 @@ export default function HomePage() {
           </div>
 
           {/* Custom Animation Styles */}
-          <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        @keyframes fadeInUp {
-          from { 
-            opacity: 0;
-            transform: translate3d(0, 30px, 0);
-          }
-          to { 
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-          }
-        }
-        
-        @keyframes fadeInLeft {
-          from { 
-            opacity: 0;
-            transform: translate3d(-30px, 0, 0);
-          }
-          to { 
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-          }
-        }
-        
-        @keyframes fadeInRight {
-          from { 
-            opacity: 0;
-            transform: translate3d(30px, 0, 0);
-          }
-          to { 
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
-          }
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.8s ease-out forwards;
-        }
-        
-        .animate-fadeInUp {
-          animation: fadeInUp 0.8s ease-out forwards;
-        }
-        
-        .animate-fadeInLeft {
-          animation: fadeInLeft 0.8s ease-out forwards;
-        }
-        
-        .animate-fadeInRight {
-          animation: fadeInRight 0.8s ease-out forwards;
-        }
-      `}</style>
+         
         </div>
       </Layout>
   );
